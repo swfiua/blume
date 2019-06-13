@@ -1,0 +1,34 @@
+commit 5348ce9551e2975050a495af1259294f03d3af12
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Mon Dec 5 01:02:24 2016 -0800
+
+    Cleanups: Broadcasting, np.hypot, np.pi, etc.
+    
+    Also fixes a bug in fill_between with masked data.  In the modified test
+    figures, the area in green is supposed to correspond to the part of the
+    hatched area where the curve is below y=2.  The new behavior is the
+    correct one.
+    
+    Also fixes cbook._reshape2D for scalar object inputs.  Before the fix,
+    `plt.hist(None)` would fail with `x must have 2 or fewer dimensions`,
+    which it does have.  Now it fails with a bit later with `unsupported
+    operands type(s) for +: 'NoneType' and 'float'`, which is hopefully
+    clearer.
+
+commit c7d1a6eb45946d22a77477eb6f210ed6221edc61
+Author: David Stansby <dstansby@gmail.com>
+Date:   Mon Jul 10 18:25:57 2017 +0100
+
+    Small fixes
+
+commit bd8cb1e93c856fa3b08edb526337879d6ec49ef0
+Author: David Stansby <dstansby@gmail.com>
+Date:   Sat Jul 1 16:10:37 2017 +0100
+
+    Clean and fix links in moved examples
+
+commit 93199703ed6b7b8526eff94f28a7061d43fcbb11
+Author: David Stansby <dstansby@gmail.com>
+Date:   Sat Jul 1 16:10:08 2017 +0100
+
+    Move pylab examples referenced in tutorials

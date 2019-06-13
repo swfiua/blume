@@ -1,0 +1,379 @@
+commit 75241a123b6cc76a7b6bbc2e4b4da7d903b026dc
+Merge: 77019c8d9 7beb58d77
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Thu Jun 13 14:43:43 2019 -0400
+
+    merge customcell branch
+
+commit e6342abbcf5dd1a1dad7cd01926f27500f1ebe7d
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 15:33:55 2019 -0400
+
+    table auto font sizing and cell text padding fixes
+
+commit b815b9d93de668e82ece8a37415b6c4221437701
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 12:28:46 2019 -0400
+
+    merge CustomCell code into Cell
+
+commit 8108d337a45f5153435fe39b746325d8a4c0f1ab
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Wed May 8 00:09:08 2019 +0200
+
+    Shorten usage of `@image_comparison`.
+    
+    ```
+    @image_comparison(baseline_images=["foo"], extensions=["png"])
+    ```
+    is quite a mouthful.  Shorten it to
+    ```
+    @image_comparison(["foo.png"])
+    ```
+    instead (in the common cases when either only one extension or all
+    extensions are tested).
+    
+    The only interesting change is in `decorators.py`; the rest is just
+    regexps and manual changes.
+
+commit 791ad1b459b1ae79cc9589a6bf24c82704b807f3
+Author: Tim Hoffmann <2836374+timhoffm@users.noreply.github.com>
+Date:   Mon Apr 29 22:43:16 2019 +0200
+
+    Consistently use axs to refer to a set of Axes
+
+commit a089e06cb4a00f10f9724489dba80d3012216f7f
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Mon Jan 28 17:15:57 2019 +0100
+
+    Spelling fixes.
+
+commit 8168210211c598f32f683084460b104a3fe2255c
+Author: Zac Hatfield-Dodds <Zac-HD@users.noreply.github.com>
+Date:   Fri May 18 02:27:39 2018 +1000
+
+    Remove dependency on six - we're Py3 only now! (#11158)
+    
+    * Remove no-op imports of `six`
+    
+    * Strip out obsolete compatibility layer from `six`
+    
+    * Deprecate now-useless functions
+    
+    * Do not install `six` on py3-only version
+    
+    * Final edits for anntzer's review
+
+commit 81e8154dbba54ac1607b21b22984cabf7a6598fa
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sat Apr 28 22:16:46 2018 -0700
+
+    Finish removing future imports.
+
+commit 1d22714fb770cda7c914254c75c3aeecbfa6e280
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Thu Mar 15 21:09:18 2018 -0400
+
+    FIX: properties and setp on Table instances
+    
+    closes #10732
+
+commit 848ed7a2c171dad0e6a5fff69fb60cc41d0d0714
+Author: Federico Ariza <ariza.federico@gmail.com>
+Date:   Tue Feb 6 12:56:09 2018 -0500
+
+    fix error to raise, improved testing
+
+commit 7c9bd9914cb423ccd68bdb27ea59a0da82c749f6
+Author: Federico Ariza <fariza@matrox.com>
+Date:   Thu Aug 24 14:19:04 2017 -0400
+
+    acces table with getitem and setitem
+
+commit fa92b908c28186dd3fcfe50ada28c2f00c995e0d
+Author: Erik M. Bray <erik.bray@lri.fr>
+Date:   Mon Dec 18 12:45:42 2017 +0000
+
+    Some minimal changes needed to make `python -c 'import matplotlib'` work
+    when the home directory contains non-ASCII characters.
+    
+    This also went ahead and removed unicode_literals from most test modules,
+    opting instead to only use unicode literals explicitly for string literals
+    containing non-ASCII characters (naturally this only impacts Python 2; on
+    Python 3 all strings are unicode literals by default).
+    
+    This has all tests passing still on Python 2/3 *without* non-ASCII home
+    directory.
+
+commit 5348ce9551e2975050a495af1259294f03d3af12
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Mon Dec 5 01:02:24 2016 -0800
+
+    Cleanups: Broadcasting, np.hypot, np.pi, etc.
+    
+    Also fixes a bug in fill_between with masked data.  In the modified test
+    figures, the area in green is supposed to correspond to the part of the
+    hatched area where the curve is below y=2.  The new behavior is the
+    correct one.
+    
+    Also fixes cbook._reshape2D for scalar object inputs.  Before the fix,
+    `plt.hist(None)` would fail with `x must have 2 or fewer dimensions`,
+    which it does have.  Now it fails with a bit later with `unsupported
+    operands type(s) for +: 'NoneType' and 'float'`, which is hopefully
+    clearer.
+
+commit d2ffbd5b828982759fb9d7c433436c7d4ec9a76c
+Author: Taehoon Lee <taehoonlee@snu.ac.kr>
+Date:   Wed Jul 12 14:34:40 2017 +0900
+
+    Fix typos
+
+commit 0d013049e1067b3c5b1680d682354685434bf81e
+Author: Elliott Sales de Andrade <quantum.analyst@gmail.com>
+Date:   Thu Jan 26 04:06:33 2017 -0500
+
+    Remove all @cleanup decorator applications.
+
+commit a498e248fa9f1bb59545b13b9d74f1a567203de0
+Author: Elliott Sales de Andrade <quantum.analyst@gmail.com>
+Date:   Fri Jan 20 04:02:37 2017 -0500
+
+    Convert remaining test_t* files to pytest.
+
+commit 4d412fda1f2c6ba50bf3272a2e03eea2c4d4548e
+Author: David Stansby <dstansby@gmail.com>
+Date:   Sun Nov 27 17:23:18 2016 +0000
+
+    Test that non-square tables work
+
+commit f3ed922d935751e08494e5fb5311d3050a3b637b
+Merge: 46d6e6c82 0658343d5
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Mon Jun 13 15:52:39 2016 -0400
+
+    Merge remote-tracking branch 'matplotlib/v2.x'
+    
+    Conflicts:
+            lib/matplotlib/backend_tools.py
+            lib/matplotlib/font_manager.py
+            lib/matplotlib/legend_handler.py
+            lib/matplotlib/tests/test_dviread.py
+            lib/matplotlib/tests/test_image.py
+            lib/mpl_toolkits/axes_grid1/anchored_artists.py
+
+commit 07e227537dd807df848c03ddf6197be011a07326
+Author: Matthew Brett <matthew.brett@gmail.com>
+Date:   Mon Jun 6 12:08:35 2016 -0700
+
+    Revert "ENH: ship six 1.9.0"
+    
+    This reverts commit 8fe495a705153bdb7a224f58c02d54272c321094.
+    
+    Go back to using external six, to fix bug at #6537.
+    
+    Also - update six required version to 1.10
+    
+    Conflicts:
+            lib/matplotlib/artist.py
+            lib/matplotlib/axes/_base.py
+            lib/matplotlib/backend_tools.py
+            lib/matplotlib/backends/backend_mixed.py
+            lib/matplotlib/backends/backend_pdf.py
+            lib/matplotlib/backends/backend_svg.py
+            lib/matplotlib/colors.py
+            lib/matplotlib/dates.py
+            lib/matplotlib/font_manager.py
+            lib/matplotlib/legend_handler.py
+            lib/matplotlib/tests/test_artist.py
+            lib/matplotlib/tests/test_axes.py
+            lib/matplotlib/tests/test_backend_qt5.py
+            lib/matplotlib/tests/test_dviread.py
+            lib/matplotlib/tests/test_image.py
+            lib/matplotlib/tests/test_lines.py
+            lib/matplotlib/tests/test_spines.py
+            lib/matplotlib/textpath.py
+            lib/mpl_toolkits/axes_grid/colorbar.py
+            lib/mpl_toolkits/axes_grid1/anchored_artists.py
+            lib/mpl_toolkits/axes_grid1/inset_locator.py
+
+commit 8a3349fab68d9cb6e49132b9edd501c9dbc24bbc
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Sun Feb 28 00:11:59 2016 -0500
+
+    non integer interable test case
+
+commit 413f60ffe59625bf63e25e56a3220d6ac82798cd
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Thu Feb 25 21:09:07 2016 -0500
+
+    comment fix, rerun online testing
+
+commit 1898bec42495a3d9feae9abb1aa777c75b2fd42f
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Thu Feb 25 20:46:51 2016 -0500
+
+     pep8 line gt 80 fix
+
+commit 05d86b56ed4cab7b0f3801c9dab46f4630ba9658
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Thu Feb 25 20:35:03 2016 -0500
+
+    fix pep8 miss space after comma
+
+commit 9db6a5946ec8b054ea84de1971586c3967a62287
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Thu Feb 25 20:02:11 2016 -0500
+
+    pep8 new line at last
+
+commit c1633972de39baf5f01eab767043bcd073109158
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Thu Feb 25 19:59:53 2016 -0500
+
+    added test for bug#5479 auto column
+
+commit 8fe495a705153bdb7a224f58c02d54272c321094
+Author: Matthew Brett <matthew.brett@gmail.com>
+Date:   Sun Jun 7 13:17:04 2015 -0700
+
+    ENH: ship six 1.9.0
+    
+    Six seems to be the external dependency that is most likely to cause
+    problems, and it is a small standalone .py file that is designed for
+    projects to ship in their source tree.
+    
+    Shipping has the following advantages:
+    
+    * Reduces pip dependencies by one;
+    * Makes mpl less vulnerable to upstream changes in six.  At present, it
+      is possible for six to change upstream in pypi and break matplotlib
+      installs, requiring a new mpl release;
+    
+    It does mean that we don't get the lastest six, but I believe this is an
+    advantage for the reason above.  Now we are so far into the Python 3
+    era, six should be rather stable.
+
+commit 842a5c45961844b7b60d15a2b09608766ceb9636
+Author: Zair Mubashar <zair.mubashar@mail.utoronto.ca>
+Date:   Tue Apr 7 13:10:52 2015 -0400
+
+    Added tests for CustomCell
+
+commit 9337be7d43785eaf4bda2161b452d60db4bf2030
+Author: David Kua <david@kua.io>
+Date:   Wed Apr 1 23:31:04 2015 +0000
+
+    Updated tests to be more minimal.
+
+commit b68c05ff71893d4d60104f727a82126cbbd8223b
+Author: Zair Mubashar <zair.mubashar@mail.utoronto.ca>
+Date:   Tue Mar 31 18:19:45 2015 -0400
+
+    Fixed issue with CustomCell's get_path() + setter for CustomCell's visible_edges + various style fixes
+
+commit 7b32f5ef88853c16543983f45d72752a175e1e5a
+Author: David Kua <david@kua.io>
+Date:   Tue Mar 31 17:20:37 2015 +0000
+
+    Cleaned up test for test_table
+
+commit 39cecdc177fea0369f40123d503932f9f076eae5
+Author: Zair Mubashar <zair.mubashar@mail.utoronto.ca>
+Date:   Sat Mar 28 11:22:04 2015 -0400
+
+    Tests for new Table Cell feature (4044) added
+
+commit d2c31588bb6d910936a1ac261b748f99636e670e
+Author: David <david.kua@mail.utoronto.ca>
+Date:   Sun Mar 22 04:59:36 2015 +0000
+
+    Fixed pep8 issues in table.py and test_table.py
+
+commit d8a42dda009236f49c0399aaec3fcda260d0dbe6
+Author: David Kua <david@kua.io>
+Date:   Sun Mar 22 00:16:21 2015 -0400
+
+    Implemented different cell type selection method.
+    
+    Instead of having a separate subclass of Table, this commit implements a
+    new method for the Table class to select a kind of cell type. This way
+    was preferred by @tacaswell.
+
+commit d2b8b276fe77ce10165302c7287db8f8fa41b794
+Author: David <david.kua@mail.utoronto.ca>
+Date:   Sat Mar 21 23:14:00 2015 +0000
+
+    Added test + test image for new Table types
+
+commit 527503c661fd9dd07b2717065ee0c5036a42c39e
+Author: Ben Cohen <bj.cohen19@gmail.com>
+Date:   Mon Jan 13 14:35:49 2014 -0500
+
+    merge table tests down to one image file
+
+commit 9421a48ff4c269209ccf5a737ea0af976e261de0
+Author: Ben Cohen <bj.cohen19@gmail.com>
+Date:   Sat Sep 28 10:49:47 2013 -0400
+
+    fixed table test script and images
+
+commit 574f6aa22489fb724fb0f45266cb0301cf40a01e
+Author: Ben Cohen <bj.cohen19@gmail.com>
+Date:   Fri Sep 20 16:45:46 2013 -0400
+
+    WIP: added some basic image tests for tables with headers. tests need to be tested
+
+commit 799cbe62a2a8ff6efe02bc811c010d1bfcb4c298
+Merge: b060f7c4b 5fca7e316
+Author: Phil Elson <pelson.pub@gmail.com>
+Date:   Wed Sep 25 21:00:22 2013 -0700
+
+    Merge pull request #2460 from tacaswell/fix_future_import
+    
+    PEP8 fix on every file's from __future__ import
+
+commit 5fca7e316e66540de03f1a6ebd00926125dbef47
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Wed Sep 25 11:36:00 2013 -0500
+
+    The `from __future__ ...` line added in #2226 is three charachters
+    too long according to pep8.  This bulk-fixes every file in the library.
+
+commit 88c49a98eb4424f3b0f40bca30b013faf020aa64
+Merge: 7af7678e9 42165c8af
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Thu Sep 19 08:50:40 2013 -0400
+
+    Merge remote-tracking branch 'upstream/v1.3.x'
+
+commit babd28a838410a066edbb2964f84956a461e869b
+Author: Phil Elson <pelson.pub@gmail.com>
+Date:   Thu Sep 19 08:26:18 2013 +0100
+
+    Fixed failing PEP8 tests.
+
+commit f4adec7b569cfd0b30e0f8367ba8618b9e160f92
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Wed Aug 14 10:18:10 2013 -0400
+
+    Use six instead of 2to3
+
+commit a4289db78a4761602e1374ab1d708228f8391ab0
+Author: Damon McDougall <damon.mcdougall@gmail.com>
+Date:   Sat Jun 29 22:50:40 2013 -0700
+
+    Merge pull request #2167 from mrterry/table_zorder
+    
+    [sprint] forward keyword args though table
+
+commit 341dadb89bcc714f7309b0119dafed24d0eb3890
+Author: Matt Terry <terry10@llnl.gov>
+Date:   Sat Jun 29 15:04:20 2013 -0500
+
+    remove_text=True to test to testing issues
+
+commit 20e05d1b3c84a7851e4634701d46f57b919816c0
+Author: Matt Terry <terry10@llnl.gov>
+Date:   Sat Jun 29 10:16:56 2013 -0500
+
+    added test for table zorder

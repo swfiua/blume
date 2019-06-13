@@ -1,0 +1,1034 @@
+commit 61e07bae7e1fbc6c41c5c340cd6fe63d335a60cb
+Merge: 75241a123 74cc72dfd
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Thu Jun 13 14:43:58 2019 -0400
+
+    Merge branch 'colheadersnafu' into uber
+
+commit 75241a123b6cc76a7b6bbc2e4b4da7d903b026dc
+Merge: 77019c8d9 7beb58d77
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Thu Jun 13 14:43:43 2019 -0400
+
+    merge customcell branch
+
+commit 74cc72dfd26fa2a47960086255a39bf45f663a35
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Thu Jun 13 12:32:54 2019 -0400
+
+    column headers now row -1 of the table
+
+commit 7beb58d776c5be1b45de5b3e77fa14ba7ab85c3b
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Thu Jun 13 11:27:11 2019 -0400
+
+    checks on length of col and row EdgeColours and f-string fixes
+
+commit 1d0913c68ccd7bb05a2f44f58451cf4dea3649e3
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Wed Jun 12 08:45:54 2019 -0400
+
+    pep8 fixes
+
+commit 77c11bb28887d5ac9e93f660b4851077d07451a5
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 18:07:55 2019 -0400
+
+    try to handle long version of BRTL
+
+commit 3c14d5b597ccf0676cd33a57be99314fca8e1625
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 17:20:30 2019 -0400
+
+    add more aliases to table edge visibility
+
+commit 9196fa6442e9f45f867ccba445496fd32bb5d341
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 16:40:09 2019 -0400
+
+    pep8 white space fix
+
+commit 1c97ecc64a3644c86e2ccd39875c9208a33be867
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 16:38:17 2019 -0400
+
+    add cell edge colour options to table
+
+commit e6342abbcf5dd1a1dad7cd01926f27500f1ebe7d
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 15:33:55 2019 -0400
+
+    table auto font sizing and cell text padding fixes
+
+commit 7813e4580696e173133e5a95b26eb12dfb1d641f
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 14:47:13 2019 -0400
+
+    deprecate CustomCell
+
+commit 0cc443cee14b4f425d6fe2edbc557515ce5bdef7
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 13:16:33 2019 -0400
+
+    pep8 white space fixes
+
+commit b815b9d93de668e82ece8a37415b6c4221437701
+Author: Johnny Gill <swfiua@gmail.com>
+Date:   Tue Jun 11 12:28:46 2019 -0400
+
+    merge CustomCell code into Cell
+
+commit a2ff624d38a3dae8c37491763866999a1a238b99
+Merge: 5a3276f4a 63b7515fd
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Sat Jun 8 16:36:07 2019 -0400
+
+    Merge pull request #14470 from anntzer/check_isinstance
+    
+    MNT/API: Add _check_isinstance helper.
+
+commit 9b2d78a44f868767da6ae3fcee4e82d35af254e2
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Jun 6 17:18:53 2019 +0200
+
+    Docstrings cleanups.
+    
+    - "mpl" -> "Matplotlib".
+    - "color spec"/"mpl color spec" -> "color" (when it's clear in the
+      context)
+
+commit 63b7515fd5b31b5449175fbe8a3def5477b48e78
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Jun 6 23:36:34 2019 +0200
+
+    Add _check_isinstance helper.
+    
+    Does the same as _check_in_list... but for isinstance checks.
+    
+    A large number of checks for Normalize were grouped into
+    `ScalarMappable.set_norm`.
+
+commit 77a963395929a3ffad8c5b14e8eb4400591d5bbb
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Apr 25 11:39:46 2019 +0200
+
+    Improve properties formatting in interpolated docstrings.
+    
+    This makes docstring interpolation a bit less sensitive to the indent
+    where the inserted string goes.  For example, the docstring of
+    `add_subplot` goes from
+    
+    ```
+        **kwargs
+            This method also takes the keyword arguments for
+            the returned axes base class. The keyword arguments for the
+            rectilinear base class `~.axes.Axes` can be found in
+            the following table but there might also be other keyword
+            arguments if another projection is used.
+              adjustable: {'box', 'datalim'}
+          agg_filter: a filter function, which takes a (m, n, 3) float array and a dpi value, and returns a (m, n, 3) array
+          alpha: float or None
+          ...
+    ```
+    to
+    ```
+        **kwargs
+            This method also takes the keyword arguments for
+            the returned axes base class. The keyword arguments for the
+            rectilinear base class `~.axes.Axes` can be found in
+            the following table but there might also be other keyword
+            arguments if another projection is used.
+    
+            Properties:
+            adjustable: {'box', 'datalim'}
+            agg_filter: a filter function, which takes a (m, n, 3) float array and a dpi value, and returns a (m, n, 3) array
+            alpha: float or None
+    ```
+    Note that this does not affect sphinx rendering as that uses
+    pprint_setters_rest.
+    
+    Note that whether the properties list is indented relative to the
+    "Properties" header depends on the indent where the inserted string goes
+    (lines starting from the second one are *always* indented by 4
+    characters (8 looks like too much), but I think it's still an
+    (incremental) improvement.
+    
+    Also make sure that the property list is preceded by a newline.
+
+commit 4930fbc5f7063621cea310192a550bf0c1cd5512
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sat May 18 16:38:07 2019 +0200
+
+    Remove APIs deprecated in mpl3.0.
+
+commit f620c0e1354ed7eae0d438d74dc6b737bdd76e92
+Merge: 4c70e91b4 71db23e68
+Author: David Stansby <dstansby@gmail.com>
+Date:   Tue May 7 09:43:26 2019 +0100
+
+    Merge pull request #14134 from anntzer/dryrun
+    
+    Deprecate the dryrun parameter to print_foo().
+
+commit 09321e451decd6dec8311fa0f6021711f3b1043a
+Merge: 79c296c1c 160de568e
+Author: David Stansby <dstansby@gmail.com>
+Date:   Mon May 6 18:10:52 2019 +0100
+
+    Merge pull request #13593 from anntzer/lazy-autoscale
+    
+    Only autoscale_view() when needed, not after every plotting call.
+
+commit 71db23e6863031414cda1f105a75f6ebb1e735bf
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sun May 5 16:38:07 2019 +0200
+
+    Deprecate the dryrun parameter to print_foo().
+    
+    The print_foo() methods of all backends (that implement saving to a
+    given format -- print_svg saves to svg, etc.) all have an undocumented
+    `dryrun` parameter that effectively means "don't actually do the
+    drawing; just set the _cachedRenderer attribute on the figure" with the
+    intent of using that renderer object to determine the figure tight bbox
+    for saving with bbox_inches="tight".
+    
+    - This behavior is not actually implemented for the pdf backend, so
+      saving to pdf with bbox_inches="tight" will currently fully walk the
+      artist tree twice.
+    - This is a parameter that needs to be reimplemented again and again for
+      all third-party backends (cough cough, mplcairo).
+    
+    Instead, we can extract that renderer object by fiddling with
+    Figure.draw (see implementation of _get_renderer), which may not be the
+    most elegant, but avoids having to reimplement the same functionality
+    across each backend.
+    
+    This patch also found that Table's window_extent is incorrect until a
+    draw() is performed.  Fix that problem by correctly setting the table's
+    text positions in get_window_extent().
+
+commit 8e64156787f6cc1fe7206bf7e16fdf4c5ecddf62
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Fri Apr 12 17:05:04 2019 +0200
+
+    Bunch of docstring cleanups.
+
+commit e2ec05e55951955949700ae0c07294c82564f319
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Tue Mar 19 20:34:00 2019 +0100
+
+    Kill attributes that are never used/updated.
+    
+    Kill the private ones and deprecate the public ones (most of them are
+    leftovers from (very) old refactors).
+
+commit 160de568e1f6d3e5e1bd10192f049815bf778dea
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Tue Mar 5 01:47:10 2019 +0100
+
+    Only autoscale_view() when needed, not after every plotting call.
+    
+    This avoids quadratic complexity when accumulating sticky edges.
+    
+    Mostly, this just replaces autoscale_view() calls with setting a flag
+    requesting that autoscale_view() be called the next time viewLim is
+    accessed.  Note that we cannot just do this in draw as this would break
+    common idioms like
+    ```
+    ax.plot(...)
+    ax.set_xlim(0, None)  # keep top limit to what plot() set
+    ```
+    
+    The main nontrivial changes are
+    - Removal of sticky_edges from hexbin(): Previously, hexbin() actually
+      did *not* respect the sticky_egdes settings for some reason (this can
+      be checked visually); but with this patch it would respect them --
+      breaking the baseline images.  So just don't set sticky_edges instead.
+    - Making LinearLocator.numticks a property: Previously, some code using
+      LinearLocator would only work after the locator has been used once,
+      so that tick_values properly set numticks to not-None; but with this
+      patch, tick_values is no longer called early enough; making numticks
+      a property fixes that.  Note that LinearLocator is likely extremely
+      rarely used anyways...
+    - In test_bbox_inches_tight (which uses the old "round_numbers"
+      autolimits mode), the autolimits change depending on whether
+      autoscaling happens before the call to `xticks([])` (old behavior) or
+      after (because there's no notion of "round numbers" anymore.  Here we
+      can just force these limits.
+    - test_multi_color_hatch relied on ax.bar() triggering an autoscale but
+      ax.add_patch *not* doing so.  Just disable autoscaling then.
+    
+    This patch also prepares towards fixing collections autoscaling problems
+    when switching from linear to log scales (as that also needs to be
+    deferred to as late as possible, once the scale is actually known).
+
+commit 06081dcb07a4c92e2a7e3e51d1ab29e759e221e9
+Author: Thomas Hisch <t.hisch@gmail.com>
+Date:   Thu Dec 27 18:33:24 2018 +0100
+
+    Simplify callable(self._contains) checks
+    
+    Artist._contains can either be None (not-set) or a callable (see
+    docstring of Artist.set_contains). Therefore, the
+    callable(self._contains) checks can be simplified to
+    self._contains is not None.
+
+commit a9008f15a96bd709686a00f38b75abd4f785c679
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Mon Jan 14 07:55:43 2019 +0100
+
+    Remove signatures that duplicate introspectable data.
+    
+    (For the case of Axes.table, one can just directly use the
+    `matplotlib.table.table` function as the method.)
+
+commit 4fcfd4a9ba15b4cb4077dddacb1e184bba14747b
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sun Dec 9 17:22:00 2018 +0100
+
+    Misc. cleanups.
+
+commit 9c56881f9ca8ded7c2c26a61fbfc15543df6a5d7
+Merge: 72d9a86be 131f52b50
+Author: Jody Klymak <jklymak@gmail.com>
+Date:   Thu Dec 6 12:33:04 2018 -0800
+
+    Merge pull request #12880 from timhoffm/doc-table-2
+    
+    More table documentation
+
+commit 131f52b50e7e7a79e54b9ba0948bdbf2a3b9e132
+Author: Tim Hoffmann <2836374+timhoffm@users.noreply.github.com>
+Date:   Sat Nov 24 21:51:34 2018 +0100
+
+    More table documentation
+
+commit a6d689c1a370c1778683b9ea5882cee4b735e319
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Wed Dec 5 23:58:25 2018 +0100
+
+    Simplify argument checking in Table.__getitem__. (#12932)
+    
+    This just lets the exception, if any, propagate out of
+    `dict.__getitem__`; this avoids e.g. `Table[a, b, c]` silently "working"
+    by silently dropping the third argument.
+
+commit 0f1db96a8cf92e7ea2062949250bb040644b3995
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Wed Dec 5 00:32:35 2018 +0100
+
+    Shorten an argument check.
+
+commit ba4ad6d5e8b72b48544af343b7f8228676d11c91
+Author: Tim Hoffmann <2836374+timhoffm@users.noreply.github.com>
+Date:   Sat Sep 22 23:22:10 2018 +0200
+
+    Improve table docs
+
+commit 6c0aa84dfb53a631d5455e7ed167823ef062c37f
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Fri Oct 26 13:51:48 2018 +0200
+
+    Be a bit more stringent on invalid inputs. (#12627)
+    
+    and give the user fewer ways to shoot themselves in the foot.
+    
+    The change in backend_cairo is on private API; _save is only ever called
+    by the various print_foo methods, with a valid fmt.
+
+commit ff4ac6ddfc9165b964354166838b77e0761f4c20
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Jun 7 15:49:22 2018 +0200
+
+    Replace ACCEPTS by standard numpydoc params table.
+    
+    (In the cases where this is "easy".)
+
+commit 0f61459b2f41207a80b838a9f9f88ab4133906e9
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Fri Jan 19 21:48:18 2018 -0800
+
+    Small cleanups.
+
+commit b01bdf44c420115c923e266fbcbd97aab14960a5
+Merge: b33aabc2f a68784fdd
+Author: Jody Klymak <jklymak@gmail.com>
+Date:   Mon Apr 23 17:37:29 2018 -0700
+
+    Merge pull request #10545 from anntzer/kwonlyfy
+    
+    Change manual kwargs popping to kwonly arguments.
+
+commit a7d1e01c513167a90ad2fdb1f1f64b81e9fb1088
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sat Apr 21 14:43:16 2018 -0700
+
+    Some more deprecations of old, old stuff.
+    
+    (I think 2018 qualifies as beyond "the near future" of "sometime after
+    2008-08-01", but YMMV...)
+
+commit a68784fdd5f97d90e80c86a17551b19c0a466dbc
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Tue Feb 20 01:29:47 2018 -0800
+
+    Change manual kwargs popping to kwonly arguments.
+    
+    Only simple cases (no mutable defaults, no defaults depending on other
+    args) are handled so far.
+
+commit cba3ffd1abf8de2698cdffe867671d87ce8f744a
+Author: Tim Hoffmann <2836374+timhoffm@users.noreply.github.com>
+Date:   Thu Mar 22 01:27:21 2018 +0100
+
+    py3ify table.py and correct some docstrings
+
+commit b64e2d18daeec22fbb0f98c9155ac9d1b6bbf4cb
+Author: cclauss <cclauss@bluewin.ch>
+Date:   Sun Feb 18 22:46:09 2018 +0100
+
+    Convert six.moves.xrange() to range() for Python 3
+
+commit 848ed7a2c171dad0e6a5fff69fb60cc41d0d0714
+Author: Federico Ariza <ariza.federico@gmail.com>
+Date:   Tue Feb 6 12:56:09 2018 -0500
+
+    fix error to raise, improved testing
+
+commit 7c9bd9914cb423ccd68bdb27ea59a0da82c749f6
+Author: Federico Ariza <fariza@matrox.com>
+Date:   Thu Aug 24 14:19:04 2017 -0400
+
+    acces table with getitem and setitem
+
+commit d979874619af6dcaae5dd22d5b668811ba0cd845
+Author: Federico Ariza <fariza@matrox.com>
+Date:   Wed Aug 23 15:41:37 2017 -0400
+
+    table cell returned when added
+
+commit cf1b272fb1569cbb049cb22737905d103e7e0255
+Author: luz.paz <luzpaz@users.noreply.github.com>
+Date:   Thu Jan 18 15:47:02 2018 -0500
+
+    More misc. typos
+    
+    Follow-up to #10261
+
+commit 944a9e5f9d03bbde4034118751e6a4c2395a4578
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sat Nov 25 23:52:23 2017 -0800
+
+    Logging and exception messages cleanup.
+    
+    - `log.warning(msg % args)` => `log.warning(msg, *args)`
+    
+    - `msg = ...; raise ValueError(msg)` => `raise ValueError(...)`
+
+commit 5ca32abb4633431783c415c147ee943a32208bda
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Tue Jan 31 12:44:52 2017 -0800
+
+    Completely deprecate is_string_like.
+    
+    I had missed that numpy's `str_` (and `unicode_` on Py2) derive from the
+    corresponding builtin type(s), so `isinstance(x, six.string_types)` is
+    just as good.
+
+commit 14b47baf5c2835bb139ddec794c96044a803ac50
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Sun Dec 4 12:32:59 2016 -0800
+
+    More cleanups following PR comments.
+
+commit 39352a87b4e1094f28746409f310b5d2d681e1ed
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Fri Dec 2 00:15:00 2016 -0800
+
+    dict.keys() is nearly always useless.
+
+commit 7a83fc426f689f15df812676dc36d003f7d39a9a
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Dec 1 19:45:01 2016 -0800
+
+    Iterating over a dict is easy.
+
+commit 70909c4d9dcaa287e57b90cb24278e5f016992ce
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Thu Dec 1 16:59:11 2016 -0800
+
+    Cleanup: use `sorted()` whereever possible.
+
+commit cdb830db76434f058f11c1e3eb1a147e945e65f5
+Author: Antony Lee <anntzer.lee@gmail.com>
+Date:   Wed Nov 30 21:16:54 2016 -0500
+
+    Don't go via six for callable(); related cleanups.
+
+commit 1e54084f1ab684c9c0e317ff5330a387cfec6351
+Author: David Stansby <dstansby@gmail.com>
+Date:   Sun Nov 27 19:50:37 2016 +0000
+
+    Check at least one argument is provided for plt.table
+
+commit 31369064b9d24ecc02663137249b3b2adabc9fb4
+Author: David Stansby <dstansby@gmail.com>
+Date:   Sun Nov 27 17:00:29 2016 +0000
+
+    Fix bug in table.py
+
+commit 07adcdeb367c008229daafa932397c735123cd2d
+Merge: a30f45188 1c6b59acd
+Author: Elliott Sales de Andrade <quantum.analyst@gmail.com>
+Date:   Mon Oct 31 21:19:37 2016 -0400
+
+    Merge branch 'v2.x'
+
+commit 06f0dc4cbab948829315c85b4a1608b37bae0ac8
+Author: Elliott Sales de Andrade <quantum.analyst@gmail.com>
+Date:   Sat Oct 22 03:37:46 2016 -0400
+
+    Make Table use Figure's cached renderer.
+    
+    It doesn't seem like it needs to cache the renderer itself, since other
+    artists get it from the figure in the same way.
+
+commit f3ed922d935751e08494e5fb5311d3050a3b637b
+Merge: 46d6e6c82 0658343d5
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Mon Jun 13 15:52:39 2016 -0400
+
+    Merge remote-tracking branch 'matplotlib/v2.x'
+    
+    Conflicts:
+            lib/matplotlib/backend_tools.py
+            lib/matplotlib/font_manager.py
+            lib/matplotlib/legend_handler.py
+            lib/matplotlib/tests/test_dviread.py
+            lib/matplotlib/tests/test_image.py
+            lib/mpl_toolkits/axes_grid1/anchored_artists.py
+
+commit 07e227537dd807df848c03ddf6197be011a07326
+Author: Matthew Brett <matthew.brett@gmail.com>
+Date:   Mon Jun 6 12:08:35 2016 -0700
+
+    Revert "ENH: ship six 1.9.0"
+    
+    This reverts commit 8fe495a705153bdb7a224f58c02d54272c321094.
+    
+    Go back to using external six, to fix bug at #6537.
+    
+    Also - update six required version to 1.10
+    
+    Conflicts:
+            lib/matplotlib/artist.py
+            lib/matplotlib/axes/_base.py
+            lib/matplotlib/backend_tools.py
+            lib/matplotlib/backends/backend_mixed.py
+            lib/matplotlib/backends/backend_pdf.py
+            lib/matplotlib/backends/backend_svg.py
+            lib/matplotlib/colors.py
+            lib/matplotlib/dates.py
+            lib/matplotlib/font_manager.py
+            lib/matplotlib/legend_handler.py
+            lib/matplotlib/tests/test_artist.py
+            lib/matplotlib/tests/test_axes.py
+            lib/matplotlib/tests/test_backend_qt5.py
+            lib/matplotlib/tests/test_dviread.py
+            lib/matplotlib/tests/test_image.py
+            lib/matplotlib/tests/test_lines.py
+            lib/matplotlib/tests/test_spines.py
+            lib/matplotlib/textpath.py
+            lib/mpl_toolkits/axes_grid/colorbar.py
+            lib/mpl_toolkits/axes_grid1/anchored_artists.py
+            lib/mpl_toolkits/axes_grid1/inset_locator.py
+
+commit 893bfeaa1b07ba5044990d319786240da9cb9f6c
+Author: ryan <ryanbelt1993129@Hotmail.com>
+Date:   Mon Mar 7 20:26:44 2016 -0500
+
+    unknown CI server failure. compare to d86e805
+
+commit a5307d1109bb0bdacf6ff7d072d667dec841e2a4
+Author: ryan <ryanbelt1993129@Hotmail.com>
+Date:   Mon Mar 7 15:11:14 2016 -0500
+
+     docstring pep8 fixed
+
+commit 92ccded264edd0c9f86dc3d2c501b373d26ed79c
+Author: ryan <ryanbelt1993129@Hotmail.com>
+Date:   Mon Mar 7 10:17:12 2016 -0500
+
+    auto_set_column_width docstring with example given
+
+commit d86e8051671dae15116d0afc258bb1e4e640c9fa
+Author: ryan <ryanbelt1993129@Hotmail.com>
+Date:   Mon Mar 7 01:10:06 2016 -0500
+
+    docstring added
+
+commit 1b3f49ca50311e142f40d53337aa039cd96d3445
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Mon Feb 22 19:54:02 2016 -0500
+
+     fix indention to 4 space, but not tap
+
+commit 54eec611c8d826b25739f8c0af263af3923abce0
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Mon Feb 22 19:49:24 2016 -0500
+
+    revert to no indentation fix
+
+commit 32c55539be26b5747178a71d724b029ae3cdbd74
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Mon Feb 22 19:30:25 2016 -0500
+
+    raising error,rather then check type
+
+commit ced77e42e13611cf8dc4023c0ddbfcade7d5d419
+Author: RyanPan <ryanbelt1993129@hotmail.com>
+Date:   Mon Feb 22 16:46:16 2016 -0500
+
+    bug fix related #5479
+
+commit 8fe495a705153bdb7a224f58c02d54272c321094
+Author: Matthew Brett <matthew.brett@gmail.com>
+Date:   Sun Jun 7 13:17:04 2015 -0700
+
+    ENH: ship six 1.9.0
+    
+    Six seems to be the external dependency that is most likely to cause
+    problems, and it is a small standalone .py file that is designed for
+    projects to ship in their source tree.
+    
+    Shipping has the following advantages:
+    
+    * Reduces pip dependencies by one;
+    * Makes mpl less vulnerable to upstream changes in six.  At present, it
+      is possible for six to change upstream in pypi and break matplotlib
+      installs, requiring a new mpl release;
+    
+    It does mean that we don't get the lastest six, but I believe this is an
+    advantage for the reason above.  Now we are so far into the Python 3
+    era, six should be rather stable.
+
+commit 21c677f8edc6333f89568808b92ba9ea1fbb0d7e
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Tue May 5 16:49:41 2015 -0400
+
+    ENH : add stale flag to Table
+
+commit 3f3ef107db80c825793aeb41ebdd185924185f9d
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Tue May 5 16:48:06 2015 -0400
+
+    ENH : add stale flag to CustumCell
+
+commit cd70834a8459c71e2b9545dc6ed07844a6355da4
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Tue May 5 16:47:51 2015 -0400
+
+    ENH : add stale flag to Cell
+
+commit 62cce1429a521e40523374bf03f086ac5c549ad5
+Merge: be216b237 17576d8e3
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Sun Apr 19 17:31:51 2015 -0400
+
+    Merge pull request #4259 from dkua/feature_4044
+    
+    ENH : Make cell edges in Table configurable
+    
+    Closes #4044
+
+commit ac6f47146b145e822c264fd5780ad90c8be48099
+Author: David Kua <david@kua.io>
+Date:   Wed Apr 1 23:32:48 2015 +0000
+
+    Changed default edge type to be understandable
+
+commit b68c05ff71893d4d60104f727a82126cbbd8223b
+Author: Zair Mubashar <zair.mubashar@mail.utoronto.ca>
+Date:   Tue Mar 31 18:19:45 2015 -0400
+
+    Fixed issue with CustomCell's get_path() + setter for CustomCell's visible_edges + various style fixes
+
+commit 6169f0cf133cbf63d2ea1264c6b32f4310deccb9
+Author: David Kua <david@kua.io>
+Date:   Tue Mar 31 18:31:48 2015 +0000
+
+    Cleaned up code to get it ready for PR.
+    
+    * FancyCell renamed to CustomCell.
+    * Missing variables removed.
+    * Variables renamed to fit style better.
+    * Test changed to use single image instead of three separate ones.
+
+commit 4542ee7bc879154923d7a8bc30914282673c7f98
+Author: Zair Mubashar <zair.mubashar@mail.utoronto.ca>
+Date:   Sat Mar 28 04:45:43 2015 -0400
+
+    Reworked feature 4044 so that all cell boundries can be toggled into view or out of it
+
+commit d2c31588bb6d910936a1ac261b748f99636e670e
+Author: David <david.kua@mail.utoronto.ca>
+Date:   Sun Mar 22 04:59:36 2015 +0000
+
+    Fixed pep8 issues in table.py and test_table.py
+
+commit d8a42dda009236f49c0399aaec3fcda260d0dbe6
+Author: David Kua <david@kua.io>
+Date:   Sun Mar 22 00:16:21 2015 -0400
+
+    Implemented different cell type selection method.
+    
+    Instead of having a separate subclass of Table, this commit implements a
+    new method for the Table class to select a kind of cell type. This way
+    was preferred by @tacaswell.
+
+commit fffc63fff9f9a7d9f0f43d29d67b825a7da68c98
+Author: David <david.kua@mail.utoronto.ca>
+Date:   Sat Mar 21 22:46:38 2015 +0000
+
+    Updated comments for the Scientific Table and Cell
+
+commit e893f5843ea2a6c80bd483c6f8cb83044c6c7748
+Author: David <david.kua@mail.utoronto.ca>
+Date:   Sat Mar 21 22:31:06 2015 +0000
+
+    Added ScientificTable type and option.
+    
+    This creates a table with no vertical lines for issue #4044.
+
+commit d6c3c32ca19bfa974a24cce3567383ee5b905fce
+Author: Francesco Montesano <franz.bergesund@gmail.com>
+Date:   Sun Mar 22 09:51:10 2015 +0100
+
+    python2.6 string formatting. style more uniform
+
+commit 95ae2cd715f4869a16d5d489417f115fbe26f0ed
+Author: Francesco Montesano <franz.bergesund@gmail.com>
+Date:   Thu Mar 5 11:31:09 2015 +0100
+
+    PEP8 fixed - spines.py, table.py
+
+commit d12fbb8b7b217fe967f6535993a40eb2b35a690d
+Author: Francesco Montesano <franz.bergesund@gmail.com>
+Date:   Wed Jun 4 21:05:24 2014 +0200
+
+    asserts removed from t* file. test and tri directories ignored
+
+commit 6f9689ba82531a0475ce438bf764d42ad9bb9970
+Author: Ben Cohen <ben@cohen-family.org>
+Date:   Fri Sep 6 17:12:30 2013 -0400
+
+    table.py: clarified documentation
+
+commit cd83e07e755915d4d2bf69e61a91798dd0a734cc
+Author: Ben Cohen <ben@cohen-family.org>
+Date:   Fri Sep 6 17:06:04 2013 -0400
+
+    table.py: added comments to previous change and fixed other bugs
+    
+    1) Comment to clarify what we are offsetting and why.
+    
+    2) Switched `rows' and `cols' in code to create header rows with
+       color but no text, so our lists of empty strings have the
+       right length.
+
+commit 526ac195198296fa448d1c511e655eb98bc3b3fd
+Author: Ben Cohen <ben@cohen-family.org>
+Date:   Fri Sep 6 14:27:14 2013 -0400
+
+    fix bug in table.py when specifying both column header text and color
+    
+    row offset in table construction function was missed in case of specifying both text and color for column headers
+
+commit 5fca7e316e66540de03f1a6ebd00926125dbef47
+Author: Thomas A Caswell <tcaswell@gmail.com>
+Date:   Wed Sep 25 11:36:00 2013 -0500
+
+    The `from __future__ ...` line added in #2226 is three charachters
+    too long according to pep8.  This bulk-fixes every file in the library.
+
+commit f4adec7b569cfd0b30e0f8367ba8618b9e160f92
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Wed Aug 14 10:18:10 2013 -0400
+
+    Use six instead of 2to3
+
+commit cdbba2ffaf331f6750150da51dd9a100a4a36caf
+Author: Matt Terry <terry10@llnl.gov>
+Date:   Fri Jun 28 17:27:24 2013 -0500
+
+    forward keyword args though table
+
+commit b8bc21f4a5854a1cb5778b9ee1db41e1d352948a
+Author: Phil Elson <pelson.pub@gmail.com>
+Date:   Wed Mar 13 13:47:17 2013 +0000
+
+    bbox_inches=tight support for *all* figure artists.
+
+commit 1a562214788489bfadd2eb2df9c8e6c60f21ea39
+Author: Jens H. Nielsen <jenshnielsen@gmail.com>
+Date:   Sat Oct 20 18:45:07 2012 +0200
+
+    Tables: Fix get_window_extent for table to allow table to be added to bbox_extra_artists.
+    The get_window_extent is a method on the cells not the key of the cells.
+
+commit 0027451bb767545c085cdfccebcc23a9b8ecdc96
+Author: Damon McDougall <damon.mcdougall@gmail.com>
+Date:   Wed Oct 17 14:48:30 2012 +0100
+
+    Make table.py use BBox.union over bbox_all
+
+commit 9b7abbf34803fdcaabcb786d6637f095c666e069
+Author: Nelle Varoquaux <nelle.varoquaux@gmail.com>
+Date:   Sat Oct 13 16:09:19 2012 +0200
+
+    PEP8 fixes on table.py
+
+commit 97d7daf985983dca1d7c108c346ebe34ca617cb4
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Mon Mar 14 12:47:03 2011 -0400
+
+    Update to use print_function in all library Python files -- whether they actually use the print function or not.
+
+commit 503367f297cb4c2dba8fffec485f7580934ecea2
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Fri Feb 25 10:34:00 2011 -0500
+
+    Backporting lots of Python 2.x-safe changes based on the output of 2to3.
+
+commit 4f70c141a76774ba12b897a04445387cb3ee75aa
+Author: Eric Firing <efiring@hawaii.edu>
+Date:   Sat Aug 15 18:33:54 2009 +0000
+
+    Use decorators to manipulate docstrings; patch by Jason Coombs
+    Tracker 2835685, file DocstringOptimizedTypeErrorRev5.patch
+    
+    svn path=/trunk/matplotlib/; revision=7491
+
+commit a34c2fde972cf764c4e99208b5ebf92673471738
+Author: Jae-Joon Lee <lee.j.joon@gmail.com>
+Date:   Thu May 7 03:40:40 2009 +0000
+
+    per-artist rasterization
+    
+    svn path=/trunk/matplotlib/; revision=7089
+
+commit 41e1afc664d3deb383475d5efaadec90fec0ce9d
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Thu Oct 2 14:28:45 2008 +0000
+
+    Fix some python2.6 -3 warnings. (mainly usage of has_key)
+    
+    svn path=/trunk/matplotlib/; revision=6143
+
+commit df563dae6553deef43076e0e33113c3265e40921
+Author: Eric Firing <efiring@hawaii.edu>
+Date:   Thu Jan 24 18:15:56 2008 +0000
+
+    Change tabs to spaces, except in pyparsing.py
+    
+    svn path=/trunk/matplotlib/; revision=4894
+
+commit 74ceea44d51e9a00a9d73b22f36816e6fa075276
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Fri Oct 26 18:00:23 2007 +0000
+
+    Removed unused imports.
+    
+    svn path=/branches/transforms/; revision=4017
+
+commit 52d462fc3b0d830220e44b6d9704e1da69b24482
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Thu Oct 25 14:07:44 2007 +0000
+
+    table_demo working.  Lots of minor fixes.  Faster transforms when
+    debugging is turned off.
+    
+    svn path=/branches/transforms/; revision=4000
+
+commit 043d24feb1147917ee0891203a588cf264abf00c
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Fri Oct 12 12:27:25 2007 +0000
+
+    First pass through all of the examples -- not all working yet,
+    though.  (See PASSED_DEMOS).
+    
+    svn path=/branches/transforms/; revision=3937
+
+commit 7376a557f21fc9cf6d4407ffcd28234fad428cb6
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Fri Sep 14 13:03:31 2007 +0000
+
+    Removed transforms on the C++ side -- removed many methods that depend
+    on it in backend_agg in preparation for path generalization.
+    Lots of general renaming...
+    
+    svn path=/branches/transforms/; revision=3851
+
+commit 634c7bc6cf2950dad2be09ddea10ed5a8152617a
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Wed Sep 12 13:36:25 2007 +0000
+
+    Second pass, using a stateful transform tree.
+    
+    svn path=/branches/transforms/; revision=3835
+
+commit 0e60bcbfe7aa574868746d5afaf5cd5f081521e2
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Mon Sep 10 17:39:37 2007 +0000
+
+    Baby steps and horrible breakage on transforms branch.
+    
+    svn path=/branches/transforms/; revision=3822
+
+commit 37470b026664526d39b4c207ad44aff04253adee
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Thu Aug 30 15:11:23 2007 +0000
+
+    Remove the "markup" kwarg and rcParam everywhere and replace it with
+    an automatic detection of math markup.
+    
+    svn path=/trunk/matplotlib/; revision=3757
+
+commit 97bc0041451890372b4b8c7202e57a76e83f3d88
+Author: Michael Droettboom <mdboom@gmail.com>
+Date:   Mon Aug 27 19:33:45 2007 +0000
+
+    Allow markup kwarg in more places.
+    
+    svn path=/trunk/matplotlib/; revision=3741
+
+commit cbee25bf4b434ff7a87d317492f8fb563862421c
+Author: Norbert Nemec <Norbert@Nemec-online.de>
+Date:   Fri Jul 20 15:42:09 2007 +0000
+
+    Numpification new try: dont touch numerix/, but make mpl code independent of it.
+    (Including conversion to "import numpy as npy")
+    Complete except for pylab.py and mlab.py
+    
+    
+    svn path=/trunk/matplotlib/; revision=3592
+
+commit e1e73bbfcf17205d33e89db8c00481f038352b51
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Fri Jul 20 02:10:43 2007 +0000
+
+    reverted numerix breakage, with apologies
+    
+    svn path=/trunk/matplotlib/; revision=3580
+
+commit 18501b65748ee7fc61ed4aa355ac08361b4a5c35
+Author: Norbert Nemec <Norbert@Nemec-online.de>
+Date:   Thu Jul 19 16:53:36 2007 +0000
+
+    converted many non-numpy relicts
+    
+    svn path=/trunk/matplotlib/; revision=3575
+
+commit 8111a3a0f114d5206b2d0a9753e3a6cad4a095ed
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Mon Jul 9 15:13:40 2007 +0000
+
+    Applied Paul's pick restructure pick contains patch
+    
+    svn path=/trunk/matplotlib/; revision=3487
+
+commit 07e2ff4413fb29999d3a9272399825392a65a254
+Author: Eric Firing <efiring@hawaii.edu>
+Date:   Thu Jan 4 04:43:06 2007 +0000
+
+    kwdoc simplification
+    
+    svn path=/trunk/matplotlib/; revision=2961
+
+commit c2cd5a6087336abe94cbfb4e402bb19937a62901
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Tue Dec 5 17:58:53 2006 +0000
+
+    added lazy evaluation of default transform
+    
+    svn path=/trunk/matplotlib/; revision=2909
+
+commit 9c408950bef9d73cd90497be9be0899d1accebb8
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Mon Nov 20 00:12:57 2006 +0000
+
+    added kwargs documentation
+    
+    svn path=/trunk/matplotlib/; revision=2886
+
+commit 825a21d3250ff6301b501d3436e1fcbcf244cd96
+Author: Eric Firing <efiring@hawaii.edu>
+Date:   Sat Apr 15 05:32:47 2006 +0000
+
+    Reorganized axes.py, moved most of the table method into table.py
+    
+    svn path=/trunk/matplotlib/; revision=2293
+
+commit e945059b327d42a99938b939a1be867fa023e7ba
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Tue Feb 15 15:46:30 2005 +0000
+
+    error handling cleanup
+    
+    svn path=/trunk/matplotlib/; revision=976
+
+commit 280679e6b1b8c83d5064ac1cd9a38184835737fe
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Thu Dec 30 03:52:57 2004 +0000
+
+    handled visible property property on all artists
+    
+    svn path=/trunk/matplotlib/; revision=835
+
+commit 3daa977ba9349fbbc3cf7653f9aad9b594909761
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Tue Dec 14 22:27:08 2004 +0000
+
+    pychecker fixes
+    
+    svn path=/trunk/matplotlib/; revision=787
+
+commit 4b41a525025195ba1a968bc9d9b6a49512f8e83c
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Tue Dec 14 19:42:33 2004 +0000
+
+    rounded out set introsepction docstrings
+    
+    svn path=/trunk/matplotlib/; revision=785
+
+commit e50ff69d189a617d4773cb673897e673de6de7b9
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Mon Nov 29 20:32:48 2004 +0000
+
+    added bbox prop to text
+    
+    svn path=/trunk/matplotlib/; revision=722
+
+commit 29371f9465c074b336eb44b0d8d85bdcf3c5a34c
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Fri Oct 29 14:04:27 2004 +0000
+
+    some font tweaks
+    
+    svn path=/trunk/matplotlib/; revision=631
+
+commit 67c8b30f084b77a85fb799b2ecba1b2de40099b8
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Thu Sep 30 20:12:00 2004 +0000
+
+    more verbose updates
+    
+    svn path=/trunk/matplotlib/; revision=562
+
+commit e34a333d00814124d3e19d462b9d78ac35e7a49a
+Author: John Hunter <jdh2358@gmail.com>
+Date:   Fri Sep 24 15:24:50 2004 +0000
+
+    reorganizes py code
+    
+    svn path=/trunk/matplotlib/; revision=540
