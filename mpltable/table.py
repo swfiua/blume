@@ -131,7 +131,7 @@ class Cell(Rectangle):
     def set_text(self, value):
         """ The text for the cell """
         self._text._text = str(value)
-    
+
     def set_fontsize(self, size):
         """Set the text fontsize."""
         self._text.set_fontsize(size)
@@ -408,6 +408,7 @@ class Table(Artist):
         self._edges = None
         self._autoColumns = []
         self._autoFontsize = True
+        self._has_column_labels = False
         self.update(kwargs)
 
         self.set_clip_on(False)
@@ -480,6 +481,10 @@ class Table(Artist):
         self.stale = True
 
     def _approx_text_height(self):
+        """ Default cell height for case where no bbox is given.
+
+        Mystical ancient formula.
+        """
         return (self.FONTSIZE / 72.0 * self.figure.dpi /
                 self._axes.bbox.height * 1.2)
 
@@ -510,7 +515,7 @@ class Table(Artist):
 
         Only include those in the range (0,0) to (maxRow, maxCol)"""
         start_row = 0
-        if self.has_column_labels:
+        if self._has_column_labels:
             start_row = -1
         boxes = [cell.get_window_extent(renderer)
                  for (row, col), cell in self._cells.items()
@@ -593,8 +598,8 @@ class Table(Artist):
         except (TypeError, AttributeError):
             self._autoColumns.append(col)
         else:
-            for cell in col:
-                self._autoColumns.append(cell)
+            for cc in col:
+                self._autoColumns.append(cc)
 
         self.stale = True
 
@@ -603,6 +608,7 @@ class Table(Artist):
         cells = [cell for key, cell in self._cells.items() if key[1] == col]
         max_width = max((cell.get_required_width(renderer) for cell in cells),
                         default=0)
+
         for cell in cells:
             cell.set_width(max_width)
 
@@ -754,7 +760,7 @@ class Table(Artist):
         """
         return self._cells
 
-
+# not sure what this does -- augment table with kwdoc from artist?
 docstring.interpd.update(Table=artist.kwdoc(Table))
 
 
@@ -764,14 +770,14 @@ def table(ax,
           cellLoc='right', colWidths=None,
           rowLabels=None, rowColours=None, rowLoc='left',
           colLabels=None, colColours=None, colLoc='center',
-          loc='bottom', bbox=None, edges='closed',
+          edges='closed',
           edgeColour=None,
           cellEdgeColours=None,
           rowEdgeColours=None,
           colEdgeColours=None,
+          loc='bottom', bbox=None,
           **kwargs):
-    """
-    Add a table to an `~.axes.Axes`.
+    """Add a table to an `~.axes.Axes`.
 
     At least one of *cellText* or *cellColours* must be specified. These
     parameters must be 2D lists, in which the outer lists define the rows and
@@ -795,6 +801,10 @@ def table(ax,
 
     cellColours : 2D list of colors, optional
         The background colors of the cells.
+
+        Note that the actual area shaded will depend on the value of
+        visible_edges.  If not all edges are visible there may be no
+        background to fill, or just a triangle insted of a rectangle.
 
     cellLoc : {'left', 'center', 'right'}, default: 'right'
         The alignment of the text within the cells.
@@ -821,14 +831,6 @@ def table(ax,
     rowLoc : {'left', 'center', 'right'}, optional, default: 'left'
         The text alignment of the column header cells.
 
-    loc : str, optional
-        The position of the cell with respect to *ax*. This must be one of
-        the `~.Table.codes`.
-
-    bbox : `.Bbox`, optional
-        A bounding box to draw the table into. If this is not *None*, this
-        overrides *loc*.
-
     edges : substring of 'BRTL' or {'open', 'closed', 'horizontal', 'vertical'}
         The cell edges to be drawn with a line. See also
         `~.Cell.visible_edges`.
@@ -843,6 +845,14 @@ def table(ax,
 
     cellEdgeColours : 2D list of colors, optional
         The colors of the edges of the cells.
+
+    loc : str, optional
+        The position of the cell with respect to *ax*. This must be one of
+        the `~.Table.codes`.
+
+    bbox : `.Bbox`, optional
+        A bounding box to draw the table into. If this is not *None*, this
+        overrides *loc*.
 
     Other Parameters
     ----------------
@@ -880,7 +890,7 @@ def table(ax,
         for row in cellColours:
             if len(row) != cols:
                 raise ValueError(
-                    "Each row in 'cellColours' must have {cols} columns")
+                    f"Each row in 'cellColours' must have {cols} columns")
     else:
         cellColours = ['w' * cols] * rows
 
@@ -953,9 +963,9 @@ def table(ax,
                            edgecolor=cellEdgeColours[row][col],
                            loc=cellLoc)
     # Do column labels
-    table.has_column_labels = False
+    table._has_column_labels = False
     if colLabels is not None:
-        table.has_column_labels = True
+        table._has_column_labels = True
         for col in range(cols):
             table.add_cell(-1, col,
                            width=colWidths[col], height=height,
