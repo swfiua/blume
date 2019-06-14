@@ -24,7 +24,7 @@ create your tables instead of the `matplotlib.table.table`.
 
    from mpltable import table
 
-   tab = table(..)
+   tab = table(ax, ..)
 
 
 
@@ -36,6 +36,21 @@ Using pip::
   pip3 install mpltable
 
 
+Examples
+========
 
+The *examples* folder has a number of demonstrations of what can be
+done with this table.
   
    
+Testing
+=======
+
+Run tests using::
+
+  pytest tests
+
+Image comparison tests
+----------------------
+
+???
