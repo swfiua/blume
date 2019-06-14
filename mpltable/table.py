@@ -62,7 +62,10 @@ class Cell(Rectangle):
         values are the keyword arguments accepted by `.FontProperties`.
     visible_edges : str
         A substring of 'BRTL' (bottom, right, top, left) or one
-        of {'open', 'closed', 'horizontal', 'vertical'}.
+        of {'open', 'none', 'closed', 'all', 'horizontal', 'vertical'}.
+        Can also be given as a list using long forms, for example:
+        visible_edges = ['bottom', 'top']
+
     """
 
     VPAD = 0.1
@@ -119,10 +122,16 @@ class Cell(Rectangle):
         Rectangle.set_figure(self, fig)
         self._text.set_figure(fig)
 
-    def get_text(self):
-        """Return the cell `.Text` instance."""
-        return self._text
+    @property
+    def text(self):
+        """ The text for the cell """
+        return self._text._text
 
+    @text.setter
+    def set_text(self, value):
+        """ The text for the cell """
+        self._text._text = str(value)
+    
     def set_fontsize(self, size):
         """Set the text fontsize."""
         self._text.set_fontsize(size)
@@ -245,7 +254,7 @@ class Cell(Rectangle):
         if len(self._text._text) == 0:
             return 0.0
 
-        # Simply use font size as padding, looks reasonable in most cases.
+        # Simply use a multiple (self.HPAD) of font size as padding
         return self.get_fontsize() * self.HPAD
 
     @docstring.dedent_interpd
@@ -278,6 +287,7 @@ class Cell(Rectangle):
         if value is None:
             self._visible_edges = self._edges
         else:
+            # support list of 'BRTL' and long forms too
             lookup = dict(bottom='B', right='R', top='T', left='L')
             value = ''.join((lookup.setdefault(x, x) for x in value))
 
@@ -314,11 +324,6 @@ class Cell(Rectangle):
             codes,
             readonly=True
             )
-
-
-@cbook.deprecated('3.2', message='CustomCell functionality merged into Cell')
-class CustomCell(Cell):
-    pass
 
 
 class Table(Artist):
@@ -385,12 +390,10 @@ class Table(Artist):
 
         if isinstance(loc, str):
             if loc not in self.codes:
-                cbook.warn_deprecated(
-                    "3.1", message="Unrecognized location {!r}. Falling back "
-                    "on 'bottom'; valid locations are\n\t{}\n"
-                    "This will raise an exception %(removal)s."
+                raise ValueError(
+                    "Unrecognized location {!r}."
+                    "Valid locations are\n\t{}\n"
                     .format(loc, '\n\t'.join(self.codes)))
-                loc = 'bottom'
             loc = self.codes[loc]
         self.set_figure(ax.figure)
         self._axes = ax

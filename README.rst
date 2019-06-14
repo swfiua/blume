@@ -2,6 +2,8 @@
  mpltable
 ==========
 
+Displaying data as tables in matplotlib.
+
 Mpltable provides a replacement for the matplotlib table module.
 
 It fixes a number of issues with the existing table and has:
@@ -25,6 +27,17 @@ create your tables instead of the `matplotlib.table.table`.
    from mpltable import table
 
    tab = table(ax, ..)
+
+
+The first parameter to table should be an *matplotlib.axes*.
+
+If you are using the *pyplot* interface, note that calling
+*pyplot.table* will use `matplotlib.table.table`.
+
+Instead import table from mpltable and use as follows::
+
+  from mpltable.table import table
+  tab = table(plt.gca(), ...)
 
 
 
