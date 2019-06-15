@@ -3,13 +3,13 @@
 Chess board
 ===========
 
-Demo of mpltable.table function to display a chess board.
+Demo using blume.table function to display a chess board.
 """
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-from mpltable.table import table
+from blume.table import table
 
 columns = [x for x in 'abcdefgh']
 rows = [x for x in '87654321']

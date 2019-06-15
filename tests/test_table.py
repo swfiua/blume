@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.testing.decorators import image_comparison
 from matplotlib.colors import Normalize
 
-from mpltable.table import Cell, Table
+from mpltable.table import Cell, Table, table
 from matplotlib.path import Path
 
 
@@ -13,7 +13,8 @@ def test_non_square():
     plt.table(cellColours=cellcolors)
 
 
-@image_comparison(['table_zorder.png'], remove_text=True)
+@image_comparison(['table_zorder.png'], remove_text=True,
+                  checksums=['e057420d1d4440fb33c9d25b312f8878'])
 def test_zorder():
     data = [[66386, 174296],
             [58230, 381139]]
@@ -30,23 +31,25 @@ def test_zorder():
     t = np.linspace(0, 2*np.pi, 100)
     plt.plot(t, np.cos(t), lw=4, zorder=2)
 
-    plt.table(cellText=cellText,
-              rowLabels=rowLabels,
-              colLabels=colLabels,
-              loc='center',
-              zorder=-2,
-              )
+    table(plt.gca(),
+        cellText=cellText,
+        rowLabels=rowLabels,
+        colLabels=colLabels,
+        loc='center',
+        zorder=-2)
 
-    plt.table(cellText=cellText,
-              rowLabels=rowLabels,
-              colLabels=colLabels,
-              loc='upper center',
-              zorder=4,
-              )
+    table(plt.gca(),
+        cellText=cellText,
+        rowLabels=rowLabels,
+        colLabels=colLabels,
+        loc='upper center',
+        zorder=4)
+    
     plt.yticks([])
 
 
-@image_comparison(['table_labels.png'])
+@image_comparison(['table_labels.png'],
+                  checksums=['8e973562586d435317e7a57bc3f6f91e'])
 def test_label_colours():
     dim = 3
 
@@ -58,32 +61,41 @@ def test_label_colours():
 
     ax1 = fig.add_subplot(4, 1, 1)
     ax1.axis('off')
-    ax1.table(cellText=cellText,
-              rowColours=colours,
-              loc='best')
+    table(
+        ax1,
+        cellText=cellText,
+        rowColours=colours,
+        loc='best')
 
     ax2 = fig.add_subplot(4, 1, 2)
     ax2.axis('off')
-    ax2.table(cellText=cellText,
-              rowColours=colours,
-              rowLabels=['Header'] * dim,
-              loc='best')
+    table(
+        ax2,
+        cellText=cellText,
+        rowColours=colours,
+        rowLabels=['Header'] * dim,
+        loc='best')
 
     ax3 = fig.add_subplot(4, 1, 3)
     ax3.axis('off')
-    ax3.table(cellText=cellText,
-              colColours=colours,
-              loc='best')
+    table(
+        ax3,
+        cellText=cellText,
+        colColours=colours,
+        loc='best')
 
     ax4 = fig.add_subplot(4, 1, 4)
     ax4.axis('off')
-    ax4.table(cellText=cellText,
-              colColours=colours,
-              colLabels=['Header'] * dim,
-              loc='best')
+    table(
+        ax4,
+        cellText=cellText,
+        colColours=colours,
+        colLabels=['Header'] * dim,
+        loc='best')
 
 
-@image_comparison(['table_cell_manipulation.png'], remove_text=True)
+@image_comparison(['table_cell_manipulation.png'], remove_text=True,
+                  checksums=['3b6462922fa1402c7da77bc7af4c12f7'])
 def test_diff_cell_table():
     cells = ('horizontal', 'vertical', 'open', 'closed', 'T', 'R', 'B', 'L')
     cellText = [['1'] * len(cells)] * 2
@@ -91,12 +103,11 @@ def test_diff_cell_table():
 
     _, axs = plt.subplots(nrows=len(cells), figsize=(4, len(cells)+1))
     for ax, cell in zip(axs, cells):
-        ax.table(
-                colWidths=colWidths,
-                cellText=cellText,
-                loc='center',
-                edges=cell,
-                )
+        table(ax,
+              colWidths=colWidths,
+              cellText=cellText,
+              loc='center',
+              edges=cell)
         ax.axis('off')
     plt.tight_layout()
 
@@ -120,14 +131,15 @@ def test_cell_visible_edges():
         assert c == code
 
 
-@image_comparison(['table_auto_column.png'])
+@image_comparison(['table_auto_column.png'],
+                  checksums=['09f6c7399bb0d20478c30104e61fe572'])
 def test_auto_column():
     fig = plt.figure()
 
     # iterable list input
     ax1 = fig.add_subplot(4, 1, 1)
     ax1.axis('off')
-    tb1 = ax1.table(
+    tb1 = table(ax1,
         cellText=[['Fit Text', 2],
                   ['very long long text, Longer text than default', 1]],
         rowLabels=["A", "B"],
@@ -140,7 +152,7 @@ def test_auto_column():
     # iterable tuple input
     ax2 = fig.add_subplot(4, 1, 2)
     ax2.axis('off')
-    tb2 = ax2.table(
+    tb2 = table(ax2,
         cellText=[['Fit Text', 2],
                   ['very long long text, Longer text than default', 1]],
         rowLabels=["A", "B"],
@@ -153,7 +165,7 @@ def test_auto_column():
     # 3 single inputs
     ax3 = fig.add_subplot(4, 1, 3)
     ax3.axis('off')
-    tb3 = ax3.table(
+    tb3 = table(ax3,
         cellText=[['Fit Text', 2],
                   ['very long long text, Longer text than default', 1]],
         rowLabels=["A", "B"],
@@ -168,7 +180,7 @@ def test_auto_column():
     # 4 non integer iterable input
     ax4 = fig.add_subplot(4, 1, 4)
     ax4.axis('off')
-    tb4 = ax4.table(
+    tb4 = table(ax4,
         cellText=[['Fit Text', 2],
                   ['very long long text, Longer text than default', 1]],
         rowLabels=["A", "B"],
@@ -179,7 +191,8 @@ def test_auto_column():
     tb4.auto_set_column_width("-101")
 
 
-@image_comparison(['table_bbox.png'])
+@image_comparison(['table_bbox.png'],
+                  checksums=['faaebec0768be7c877d0cb742553c3b9'])
 def test_bbox_table():
 
     fig = plt.figure()
@@ -198,7 +211,7 @@ def test_bbox_table():
     ax = fig.add_subplot(1, 1, 1)
     ax.axis('off')
 
-    ax.table(
+    table(ax,
         cellText=data,
         cellColours=colours,
         bbox=(.0, .0, 1, 1))
@@ -206,7 +219,8 @@ def test_bbox_table():
     plt.draw()
 
 
-@image_comparison(['table_bad_pad.png'])
+@image_comparison(['table_bad_pad.png'],
+                  checksums=['fff8eea1f2c0214d6a4d37fcfc5cd24d'])
 def test_bad_pad_table():
 
     size_x, size_y = 12, 4
@@ -226,7 +240,7 @@ def test_bad_pad_table():
 
     # Left aligned cell text uses weird spacing
     # (if txt is long)
-    the_table = plt.table(
+    the_table = table(plt.gca(),
         cellText=cellText, rowLabels=rowLabels, colLabels=colLabels,
         loc='upper center', cellLoc="left",
         colWidths=[0.05, 0.52, 0.05, 0.05, 0.05, 0.05])

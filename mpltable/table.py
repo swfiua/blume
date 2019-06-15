@@ -71,7 +71,7 @@ class Cell(Rectangle):
     VPAD = 0.1
     """Vertical padding between text and rectangle."""
 
-    HPAD = 0.6
+    HPAD = 0.7
     """Multiple of fontsize to use as Horizontal between text and rectangle."""
 
     _edges = 'BRTL'
