@@ -89,18 +89,32 @@ class Top:
     """ A very simple top level window """
     def __init__(self, top=None):
 
-        self.canvas = Canvas()
+        if top is None:
+            self.app = Tk()
+            top = self.app.winfo_toplevel()
+
+        self.canvas = Canvas(top)
         self.queue = None
 
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
+
+    def on_configure(self, event):
+
+        print('new window size:', event.width, event.height)
+        self.recalc(event.width, event.height)
+
+    def recalc(self, width, height):
+
+        self.width = width
+        self.height = height
+
+        self.tkcanvas.configure(scrollregion=(0, 0, width, height))
 
     def display(self, ball):
         """ """
         width, height = self.width, self.height
 
-        image = ball.project('', quantise=False)
-        print('xxxxxxxxxx', type(image), image.shape)
-        image = Image.fromarray(image)
+        image = Image.fromarray(ball)
         image = image.resize((int(width), int(height)))
 
         self.phim = phim = ImageTk.PhotoImage(image)

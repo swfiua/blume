@@ -110,7 +110,6 @@ class PigFarm:
 
     def status(self):
 
-        print('builds: ', self.builds.qsize())
         print('tasks::', self.piglets.qsize())
         print(self.current)
 
@@ -124,7 +123,7 @@ class PigFarm:
 
     def toplevel(self):
         """ Return toplevel piglet """
-        return self.eloop.app.winfo_toplevel()
+        return Carpet()
 
     async def start(self):
         """ Start the farm running 
@@ -137,7 +136,9 @@ class PigFarm:
     async def start_piglet(self):
         """ Start the current piglet running """
 
-        self.current.pack(fill='both', expand=1)
+        # set current out queue to point at
+        self.current.out = self.viewer.queue
+        
         self.current_task = await spawn(self.current.run())
 
     async def stop_piglet(self):
@@ -208,41 +209,11 @@ class PigFarm:
     async def tend(self):
         """ Make the pigs run """
 
-        # spawn a task for each piglet
-
-        # spawn a task to deal with keyboard events
-
-        # spawn a task to deal with mouse events
-
-        # ... spawn tasks to deal with any events
-        print(self.quit_event)
-        builder = await curio.spawn(self.build())
-
         while True:
-            while self.piglets.qsize():
-                # spawn a task for each piglet
-                piglet = await self.piglets.get()
-
-                print('spawning', piglet)
-
-                await spawn(piglet)
-
-            # wait for an event
-            #event = await self.event.get()
-            #print(self, event)
-
-            # cycle through the widgets
-            print()
-            #self.next()
-            #await curio.sleep(1)
-
             event = await self.event.get()
 
             await self.process_event(event)
 
-            #print(event, type(event))
-
-            print('eq', self.event.qsize())
 
 
     async def run(self):
@@ -274,8 +245,6 @@ class PigFarm:
             print('no callback for event', event)
 
 
-
-
 class Carpet:
 
     def __init__(self):
@@ -283,8 +252,6 @@ class Carpet:
         self.top = tkapp.Top()
 
         self.queues = {}
-        self.width = 480
-        self.height = 6400
 
     async def add_queue(self, name):
         """ Add a new image queue to the carpet """
@@ -294,87 +261,43 @@ class Carpet:
 
         self.qname = name
 
-        return qq, self.width, self.height
-
-    def display(self, ball):
-        """ """
-        width, height = self.width, self.height
-
-        image = ball.project('', quantise=False)
-        print('xxxxxxxxxx', type(image), image.shape)
-        image = Image.fromarray(image)
-        image = image.resize((int(width), int(height)))
-
-        self.phim = phim = ImageTk.PhotoImage(image)
-
-        xx = int(width / 2)
-        yy = int(height / 2)
-        self.canvas.create_image(xx, yy, image=phim)
+        return qq, self.top.width, self.top.height
 
     async def run(self):
 
         while True:
             if not self.paused:
                 ball = await self.queues[self.qname].pop()
-                self.display(ball)
+                self.top.display(ball)
                 
             await curio.sleep(self.sleep)
 
+
+class RandPlot:
+
+    def __init__(self):
+
+
+    async def start(self):
+        from matplotlib import Figure
+        self.fig = figure()
+        self.ax = fig.add_subplot(111)
         
-class PlotImage(Pig):
-    """ An image widget
-
-    This is just a wrapper around matplotlib FigureCanvas.
-    """
-    def __init__(self, parent, axes=[111], dpi=100, **kwargs):
-
-        from matplotlib.figure import Figure
-        from matplotlib.backends.backend_tkagg import FigureCanvas
-
-        super().__init__(parent)
-
-        fig = Figure(dpi=dpi, **kwargs)
-        self.image = FigureCanvas(fig, master=self)
-        self.image._tkcanvas.pack(expand=1, fill=tkinter.BOTH)
-
-        #self.toolbar.update()
-        #self.toolbar.pack(expand=0)
-        if axes is None:
-            axes = []
-
-        self.subplots = []
-        for axis in axes:
-            self.axes = fig.add_subplot(axis)
-            self.subplots.append(self.axes)
-            
-        self.fig = fig
-
-
-    def __getattr__(self, attr):
-
-        return getattr(self.image, attr)
-
-    def dark(self):
-
-        self.fig.set_facecolor('black')
-        self.fig.set_edgecolor('white')
-        pass
-
-    def load_data(self, data):
-
-        self.data = data
-
-    def compute_data(self):
-        """ Over-ride to get whatever data you want to see
-        
-        """
-        self.data = pandas.np.random.randint(0,100, size=100)
-
+        self.out = None
 
     async def run(self):
-        
-        self.compute_data()
-        self.plot()
+
+        ax = self.ax
+        while True:
+            ax.clear()
+            data = [random.randint(50) for x in 100]
+            ax.plot(data)
+            if out:
+                await self.out.put(fig.toarray())
 
 
+            
         
+if __name__ == '__main__':
+    
+    
