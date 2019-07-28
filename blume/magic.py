@@ -10,6 +10,52 @@ clients set up their own queues
 
 draw from Q
 
+Going round in ever decreasing circles.  
+
+The idea is there is some sort of calculation going on that generates grids of
+numbers.
+
+You want to see what is going on without grinding the calculations to a halt.
+
+At the same time, the more you explore the data with plots (thanks matplotlib)
+the more questions appear.
+
+Often the calculation has a number of parameters, or a selection of data
+streams on which it could be run.
+
+So my code sprouts command line arguments and then the simple U/I might allow
+me to control more of the parameters.
+
+This module aims to provide a small number of components to help asynchronous
+data exploration and graphical monitoring of data processing pipelines.
+
+It is particularly focussed on global climate data that typically comes in a
+lat/lon grid of values.
+
+Internals?
+==========
+
+I have gone with Tk because it is usually around and I don't need much here.
+
+But I will be thinking about raspberry pi's with sense hats and a mini joy
+stick too.
+
+All the user interface and display handling are ultimately done by the
+EventLoop object, so a place to start when thinking beyond the current.
+
+For in put the focus is very much on keyboard, so things should work well with
+anything that can create a stream of key characters.
+
+I am also using David Beazeley's *curio* module to help me use python3.6+ async
+features.  
+
+I am starting off here with some pieces from my project *karmapi*.  
+
+So there will be Pig Farms, Piglets and widgets all mixed up for a while.
+
+Objects with a start and run.
+
+Some writing to queues where viewers are polling.
 
 """
 
@@ -21,7 +67,6 @@ class PigFarm:
     def __init__(self, meta=None, events=None):
 
         self.event = curio.UniversalQueue()
-        self.play = ''
 
         self.piglet_event = curio.UniversalQueue()
 
@@ -57,12 +102,12 @@ class PigFarm:
         self.event_map[event] = coro
 
     def create_event_map(self):
+        """ Bindings of characters to coroutines """
 
         self.event_map = {}
         self.add_event_map('p', self.previous)
         self.add_event_map('n', self.next)
         self.add_event_map('h', self.help)
-        self.add_event_map('c', self.show_monitor)
         self.add_event_map('e', self.show_eric)
         self.add_event_map('q', self.quit)
 
@@ -221,15 +266,6 @@ class PigFarm:
 
         self.quit_event = curio.Event()
 
-        print(f'PLAYYYYY TIME  *{self.play}*')
-        for x in self.play:
-            await self.event.put(x)
-            
-            #print(f'playing {x] qsize {self.event.qsize}')
-            print(f'{x} xxxx')
-
-        self.play = ''
-        
         runner = await spawn(self.tend())
 
         await self.quit_event.wait()
@@ -289,7 +325,7 @@ class PigFarm:
         #farm.toplevel().withdraw()
         
 
-class AppEventLoop:
+class EventLoop:
     """ An event loop
 
     tk specific application event loop
@@ -300,11 +336,12 @@ class AppEventLoop:
             self.app = Tk()
 
         self.outputs = []
+        self.queue = curio.UniversalQueue()
         self.events = curio.UniversalQueue()
         self.app.bind('<Key>', self.keypress)
 
     def set_event_queue(self, events):
-
+        """ Set keyboard event queue """
         self.events = events
 
     def keypress(self, event):
@@ -332,24 +369,35 @@ class AppEventLoop:
 
         nap = 0.05
         while True:
-
-            # FIXME - have Qt do the put when it wants refreshing
+            
+            # Would be good to find a Tk file pointer that
+            # can be used as a source of events
+            # for now poll just loops push events onto the queue
+            # to trigger event flushing with the flush method
             await self.put(event)
             event += 1
 
-            nap = await self.naptime(nap)
+            nap = self.naptime(nap)
 
             # FIXME should do away with the poll loop and just schedule
             # for some time in the future.
             await curio.sleep(nap)
 
-    async def naptime(self, naptime=None):
+    def naptime(self, naptime=None):
         """Return the time to nap """
 
         if naptime is None:
             naptime = 0.05
 
         return naptime
+
+    async def put(self, event):
+        """ Push gui events into a queue """
+        await self.queue.put(event)
+
+    def toplevel(self):
+        """ Return toplevel window """
+        return self.app.winfo_toplevel()
 
     async def run(self):
 
@@ -364,9 +412,11 @@ class AppEventLoop:
 
 class Carpet:
 
-    def __init__(self):
+    def __init__(self, toplevel):
 
         self.queues = {}
+        self.width = 480
+        self.height = 6400
 
     async def add_queue(self, name):
         """ Add a new image queue to the carpet """
@@ -374,7 +424,33 @@ class Carpet:
         qq = curio.UniversalQueue()
         self.queues[name] = qq
 
-        return qq
+        self.qname = name
+
+        return qq, self.width, self.height
+
+    def display(self, ball):
+        """ """
+        width, height = self.width, self.height
+
+        image = ball.project('', quantise=False)
+        print('xxxxxxxxxx', type(image), image.shape)
+        image = Image.fromarray(image)
+        image = image.resize((int(width), int(height)))
+
+        self.phim = phim = ImageTk.PhotoImage(image)
+
+        xx = int(width / 2)
+        yy = int(height / 2)
+        self.canvas.create_image(xx, yy, image=phim)
+
+    async def run(self):
+
+        while True:
+            if not self.paused:
+                ball = await self.queues[self.qname].pop()
+                self.display(ball)
+                
+            await curio.sleep(self.sleep)
 
         
 class PlotImage(Pig):
