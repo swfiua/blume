@@ -61,62 +61,58 @@ Some writing to queues where viewers are polling.
 
 import curio
 
+
+from .tkloop import EventLoop
+
+
 class PigFarm:
-    """ A pig farm event loop """
+    """ Connections to the outside world """
 
     def __init__(self, meta=None, events=None):
 
-        self.event = curio.UniversalQueue()
-
-        self.piglet_event = curio.UniversalQueue()
-
-        self.piglets = curio.UniversalQueue()
-
-        self.builds = curio.UniversalQueue()
-
         self.data = curio.UniversalQueue()
 
-        self.micks = curio.UniversalQueue()
+        # currently, a list of things being managed
+        self.piglets = deque()
+        self.tasks = curio.UniversalQueue()
 
-        self.widgets = deque()
         self.current = None
-        self.eric = None
 
+        # mapping of events to co-routines
+        self.event_map = {}
         self.create_event_map()
 
-        from karmapi import piglet
-
         # this probably needs to be a co-routine?
-        self.eloop = piglet.EventLoop()
-        self.eloop.set_event_queue(self.event)
-        self.eloop.farm = self
+        self.eloop = EventLoop()
 
-        self.piglets.put(self.eloop.run())
+        self.tasks.put(self.eloop.run())
         displays = getattr(self.eloop, 'displays', [])
         for output in displays:
             self.piglets.put(output)
 
 
     def add_event_map(self, event, coro):
+        """ Add a binding to the event map 
+        
+        Over-writes existing one if for same event
+        """
 
         self.event_map[event] = coro
 
     def create_event_map(self):
         """ Bindings of characters to coroutines """
 
-        self.event_map = {}
         self.add_event_map('p', self.previous)
         self.add_event_map('n', self.next)
         self.add_event_map('h', self.help)
-        self.add_event_map('e', self.show_eric)
         self.add_event_map('q', self.quit)
 
 
     def status(self):
 
         print('builds: ', self.builds.qsize())
-        print('piglets::', self.piglets.qsize())
-        print('micks:', self.micks.qsize())
+        print('tasks::', self.piglets.qsize())
+        print(self.current)
 
 
     def add(self, pig, kwargs=None):
@@ -126,39 +122,26 @@ class PigFarm:
 
         self.builds.put((pig, kwargs))
 
-    def add_mick(self, mick):
-
-        self.micks.put(mick)
-        #self.piglets.put(mick.start())
-
     def toplevel(self):
         """ Return toplevel piglet """
         return self.eloop.app.winfo_toplevel()
 
+    async def start(self):
+        """ Start the farm running 
+        
+        This should do any initialisation that has to
+        wait for async land.
+        """
 
-    async def build(self):
-        """ Do the piglet build """
-
-        while True:
-            meta, kwargs = await self.builds.get()
-            print('building piglet:', meta, kwargs.keys())
-
-            piglet = meta(self.toplevel(), **kwargs)
-
-            self.widgets.append(piglet)
-
-            # let the piglets see the farm
-            piglet.farm = self
-            print('built', meta, piglet)
-
-            await piglet.start()
 
     async def start_piglet(self):
+        """ Start the current piglet running """
 
         self.current.pack(fill='both', expand=1)
         self.current_task = await spawn(self.current.run())
 
     async def stop_piglet(self):
+        """ Stop the current piglet running """
 
         await self.current_task.cancel()
         self.current.pack_forget()
@@ -180,7 +163,7 @@ class PigFarm:
 
         from karmapi import piglet
 
-        piglet.Help(msg)
+        tkloop.Help(msg)
 
     def doc_firstline(self, doc):
         """ Return first line of doc """
@@ -197,28 +180,28 @@ class PigFarm:
 
     async def next(self):
         """ Show next widget """
-        if not len(self.widgets): return
+        if not len(self.piglets): return
         print('current', self.current)
         if self.current:
-            self.widgets.append(self.current)
+            self.pigets.append(self.current)
 
             await self.stop_piglet()
 
-        self.current = self.widgets.popleft()
+        self.current = self.piglets.popleft()
         await self.start_piglet()
 
 
     async def previous(self):
         """ Show previous widget """
-        if not len(self.widgets): return
+        if not len(self.piglets): return
         print('going to previous', self.current)
         if self.current:
 
-            self.widgets.appendleft(self.current)
+            self.piglets.appendleft(self.current)
 
             await self.stop_piglet()
 
-        self.current = self.widgets.pop()
+        self.current = self.piglets.pop()
         await self.start_piglet()
 
 
@@ -291,128 +274,13 @@ class PigFarm:
             print('no callback for event', event)
 
 
-    async def show_monitor(self):
-        """ Show curio monitor """
-        
-        from karmapi import milk
-        farm = PigFarm()
-        farm.add(milk.Curio)
-        await spawn(farm.run())
 
-    async def mon_update(self, mon):
-
-        while True:
-            #await mon.update()
-            await mon.next()
-            await sleep(1)
-
-    async def show_eric(self):
-        """ Show eric idle """
-
-        if self.eric:
-            return
-        self.eric = True
-        
-        from karmapi.eric import  Eric
-        farm = PigFarm()
-        filename = None
-        if self.current:
-            filename = inspect.getsourcefile(self.current.__class__)
-        farm.add(Eric, dict(filename=filename))
-
-        await spawn(farm.run())
-
-        #farm.toplevel().withdraw()
-        
-
-class EventLoop:
-    """ An event loop
-
-    tk specific application event loop
-    """
-    def __init__(self, app=None):
-
-        if app is None:
-            self.app = Tk()
-
-        self.outputs = []
-        self.queue = curio.UniversalQueue()
-        self.events = curio.UniversalQueue()
-        self.app.bind('<Key>', self.keypress)
-
-    def set_event_queue(self, events):
-        """ Set keyboard event queue """
-        self.events = events
-
-    def keypress(self, event):
-        """ Take tk events and stick them in a curio queue """
-        self.events.put(event.char)
-        
-        return True
-
-    async def flush(self):
-        """  Wait for an event to arrive in the queue.
-        """
-        while True:
-
-            event = await self.queue.get()
-
-            self.app.update_idletasks()
-            self.app.update()
-
-
-    async def poll(self):
-
-        # Experiment with sleep to keep gui responsive
-        # but not a cpu hog.
-        event = 0
-
-        nap = 0.05
-        while True:
-            
-            # Would be good to find a Tk file pointer that
-            # can be used as a source of events
-            # for now poll just loops push events onto the queue
-            # to trigger event flushing with the flush method
-            await self.put(event)
-            event += 1
-
-            nap = self.naptime(nap)
-
-            # FIXME should do away with the poll loop and just schedule
-            # for some time in the future.
-            await curio.sleep(nap)
-
-    def naptime(self, naptime=None):
-        """Return the time to nap """
-
-        if naptime is None:
-            naptime = 0.05
-
-        return naptime
-
-    async def put(self, event):
-        """ Push gui events into a queue """
-        await self.queue.put(event)
-
-    def toplevel(self):
-        """ Return toplevel window """
-        return self.app.winfo_toplevel()
-
-    async def run(self):
-
-        poll_task = await curio.spawn(self.poll())
-
-        flush_task = await curio.spawn(self.flush())
-
-        tasks = [flush_task, poll_task]
-
-        await curio.gather(tasks)
-    
 
 class Carpet:
 
-    def __init__(self, toplevel):
+    def __init__(self):
+
+        self.top = tkapp.Top()
 
         self.queues = {}
         self.width = 480
