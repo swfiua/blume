@@ -59,10 +59,12 @@ Some writing to queues where viewers are polling.
 
 """
 
+from collections import deque
+
 import curio
 
 
-from .tkloop import EventLoop
+from .tkloop import EventLoop, Top, Help
 
 
 class PigFarm:
@@ -74,7 +76,7 @@ class PigFarm:
 
         # currently, a list of things being managed
         self.piglets = deque()
-        self.tasks = curio.UniversalQueue()
+        self.tasks = []
 
         self.current = None
 
@@ -85,10 +87,11 @@ class PigFarm:
         # this probably needs to be a co-routine?
         self.eloop = EventLoop()
 
-        self.tasks.put(self.eloop.run())
-        displays = getattr(self.eloop, 'displays', [])
-        for output in displays:
-            self.piglets.put(output)
+        self.tasks.append(self.eloop.run())
+
+        #displays = getattr(self.eloop, 'displays', [])
+        #for output in displays:
+        #    self.piglets.put(output)
 
 
     def add_event_map(self, event, coro):
@@ -121,25 +124,30 @@ class PigFarm:
 
         self.builds.put((pig, kwargs))
 
-    def toplevel(self):
-        """ Return toplevel piglet """
-        return Carpet()
-
     async def start(self):
         """ Start the farm running 
         
         This should do any initialisation that has to
         wait for async land.
         """
+        for task in self.tasks:
+            await curio.spawn(task)
 
+        pigs = []
+        for piglet in self.piglets:
+            pig = await curio.spawn(piglet.start())
+            pigs.append(pig)
+
+        await curio.gather(pigs)
+            
 
     async def start_piglet(self):
         """ Start the current piglet running """
 
         # set current out queue to point at
-        self.current.out = self.viewer.queue
+        #self.current.out = self.viewer.queue
         
-        self.current_task = await spawn(self.current.run())
+        self.current_task = await curio.spawn(self.current.run())
 
     async def stop_piglet(self):
         """ Stop the current piglet running """
@@ -164,7 +172,7 @@ class PigFarm:
 
         from karmapi import piglet
 
-        tkloop.Help(msg)
+        Help(msg)
 
     def doc_firstline(self, doc):
         """ Return first line of doc """
@@ -210,7 +218,7 @@ class PigFarm:
         """ Make the pigs run """
 
         while True:
-            event = await self.event.get()
+            event = await self.eloop.events.get()
 
             await self.process_event(event)
 
@@ -220,7 +228,7 @@ class PigFarm:
 
         self.quit_event = curio.Event()
 
-        runner = await spawn(self.tend())
+        runner = await curio.spawn(self.tend())
 
         await self.quit_event.wait()
 
@@ -249,7 +257,7 @@ class Carpet:
 
     def __init__(self):
 
-        self.top = tkapp.Top()
+        self.top = Top()
 
         self.queues = {}
 
@@ -276,7 +284,7 @@ class Carpet:
 class RandPlot:
 
     def __init__(self):
-
+        pass
 
     async def start(self):
         from matplotlib import Figure
@@ -301,3 +309,4 @@ class RandPlot:
 if __name__ == '__main__':
     
     
+    pass

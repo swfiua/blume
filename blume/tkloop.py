@@ -1,6 +1,8 @@
 from tkinter import Tk, ttk, Text, messagebox, TOP, BOTH, Canvas
 from PIL import ImageTk
 
+import curio
+
 class EventLoop:
     """ An event loop
 
@@ -93,8 +95,13 @@ class Top:
             self.app = Tk()
             top = self.app.winfo_toplevel()
 
+        self.width = 480
+        self.height = 640
+
         self.canvas = Canvas(top)
+        self.recalc(width=480, height=640)
         self.queue = None
+
 
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
 
@@ -108,7 +115,7 @@ class Top:
         self.width = width
         self.height = height
 
-        self.tkcanvas.configure(scrollregion=(0, 0, width, height))
+        self.canvas.configure(scrollregion=(0, 0, width, height))
 
     def display(self, ball):
         """ """
