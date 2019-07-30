@@ -59,12 +59,22 @@ Some writing to queues where viewers are polling.
 
 """
 
+import io
+
 from collections import deque
 
 import curio
 
+import numpy as np
 
 from .tkloop import EventLoop, Top, Help
+
+from PIL import Image
+
+import matplotlib
+matplotlib.use('Agg')
+
+from matplotlib import figure
 
 
 class PigFarm:
@@ -118,17 +128,15 @@ class PigFarm:
 
     def carpet(self):
 
+        # fixme -- want a new top level each time, I think????
         carpet = Carpet(self.eloop.toplevel())
         self.tasks.append(carpet.run())
         return carpet
 
 
-    def add(self, pig, kwargs=None):
+    def add(self, piglet):
 
-        kwargs = kwargs or {}
-        print('pigfarm adding', pig, kwargs.keys())
-
-        self.builds.put((pig, kwargs))
+        self.piglets.appendleft(piglet)
 
     async def start(self):
         """ Start the farm running 
@@ -257,7 +265,7 @@ class PigFarm:
         if coro:
             await coro()
         else:
-            print('no callback for event', event)
+            print('no callback for event', event, len(event))
 
 
 class Carpet:
@@ -286,40 +294,83 @@ class Carpet:
                 print(f'CARPET waiting for plots from {self.qname}')
                 print(f'{id(self.queues[self.qname])}')
                 ball = await self.queues[self.qname].get()
+
+                print('WOWOWO got a  ball')
                 self.top.display(ball)
-                print('displayed ball', ball.shape)
+                print('displayed ball', ball.width, ball.height)
                 
             await curio.sleep(self.sleep)
 
 
+def fig2data (fig):
+    """ Convert a Matplotlib figure to a 4D numpy array with RGBA channels
+
+    fig: a matplotlib figure
+    return: a numpy 3D array of RGBA values
+    """
+
+    # no renderer without this
+    image = io.BytesIO()
+    fig.savefig(image)
+
+    return Image.open(image)
+
 
 # example below ignore for now
-class RandPlot:
+class MagicPlot:
 
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+
+        self.out = None
+
+        self.event_map = dict(
+            a=self.add)
+
+
+    async def add(self):
+          pass
 
     async def start(self):
-        from matplotlib import Figure
-        self.fig = figure()
-        self.ax = fig.add_subplot(111)
+        self.fig = figure.Figure()
+        self.ax = self.fig.add_subplot(111)
         
-        self.out = None
 
     async def run(self):
 
         ax = self.ax
         while True:
             ax.clear()
-            data = [random.randint(50) for x in 100]
+            data = np.random.randint(50, size=100)
+            print(data.mean())
             ax.plot(data)
-            if out:
-                await self.out.put(fig.toarray())
+            if self.out:
+                await self.out.put(fig2data(self.fig))
+                print('qsize', self.out.qsize())
+
+            await curio.sleep(1)
 
 
             
+async def run():
+
+    farm = PigFarm()
+
+    carpet = farm.carpet()
+    
+    iq, width, height = await carpet.add_queue('teaplot')
+    
+    print(f'image queue {width} {height}')
+    print(f'image queue id {id(iq)}')
+    magic_plotter = MagicPlot()
+    magic_plotter.out = iq
+
+    farm.add(magic_plotter)
+
+    await farm.start()
+    await farm.run()
+    
         
 if __name__ == '__main__':
     
     
-    pass
+    curio.run(run())

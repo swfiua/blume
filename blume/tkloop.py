@@ -93,8 +93,8 @@ class Top(ttk.Frame):
         super().__init__(top)
         self.width = 480
         self.height = 640
-
-        self.canvas = Canvas(top)
+        self.pack()
+        self.canvas = Canvas(self, width=self.width, height=self.height)
         self.recalc(width=480, height=640)
         self.queue = None
 
@@ -112,14 +112,14 @@ class Top(ttk.Frame):
 
         self.width = width
         self.height = height
-
+        print('scroll configure', width, height)
         self.canvas.configure(scrollregion=(0, 0, width, height))
 
     def display(self, ball):
         """ """
         width, height = self.width, self.height
 
-        image = Image.fromarray(ball)
+        image = ball
         image = image.resize((int(width), int(height)))
 
         self.phim = phim = ImageTk.PhotoImage(image)
@@ -129,6 +129,9 @@ class Top(ttk.Frame):
         print(f'creating canvas image at {xx} {yy}')
         self.canvas.create_image(xx, yy, image=phim)
 
+        self.canvas.create_oval(20, 20, 30, 30, fill='red')
+
+        
         
 
 class Help:
