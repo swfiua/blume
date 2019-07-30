@@ -1,5 +1,5 @@
-from tkinter import Tk, ttk, Text, messagebox, TOP, BOTH, Canvas
-from PIL import ImageTk
+from tkinter import Tk, ttk, Text, messagebox, TOP, BOTH, Canvas, Button
+from PIL import ImageTk, Image
 
 import curio
 
@@ -71,13 +71,11 @@ class EventLoop:
 
     def toplevel(self):
         """ Return toplevel window """
-        top = self.app.winfo_toplevel()
-
-        # add a canvas
-        
-        return top
+        return Top(self.app.winfo_toplevel())
 
     async def run(self):
+
+        print("Starting tkloop.EventLoop.run")
 
         poll_task = await curio.spawn(self.poll())
 
@@ -87,14 +85,12 @@ class EventLoop:
 
         await curio.gather(tasks)
     
-class Top:
+
+class Top(ttk.Frame):
     """ A very simple top level window """
-    def __init__(self, top=None):
+    def __init__(self, top):
 
-        if top is None:
-            self.app = Tk()
-            top = self.app.winfo_toplevel()
-
+        super().__init__(top)
         self.width = 480
         self.height = 640
 
@@ -102,8 +98,10 @@ class Top:
         self.recalc(width=480, height=640)
         self.queue = None
 
-
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
+        self.canvas.bind("<Configure>", self.on_configure)
+        button = Button(top, text='hello')
+        button.pack()
 
     def on_configure(self, event):
 
@@ -128,7 +126,9 @@ class Top:
 
         xx = int(width / 2)
         yy = int(height / 2)
+        print(f'creating canvas image at {xx} {yy}')
         self.canvas.create_image(xx, yy, image=phim)
+
         
 
 class Help:

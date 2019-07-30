@@ -116,6 +116,12 @@ class PigFarm:
         print('tasks::', self.piglets.qsize())
         print(self.current)
 
+    def carpet(self):
+
+        carpet = Carpet(self.eloop.toplevel())
+        self.tasks.append(carpet.run())
+        return carpet
+
 
     def add(self, pig, kwargs=None):
 
@@ -245,7 +251,8 @@ class PigFarm:
         coro = self.event_map.get(event)
 
         if coro is None and self.current:
-            coro = self.current.event_map.get(event)
+            if hasattr(self.current, 'event_map'):
+                coro = self.current.event_map.get(event)
 
         if coro:
             await coro()
@@ -255,10 +262,11 @@ class PigFarm:
 
 class Carpet:
 
-    def __init__(self):
+    def __init__(self, top):
 
-        self.top = Top()
-
+        self.top = Top(top)
+        self.paused = False
+        self.sleep = 1
         self.queues = {}
 
     async def add_queue(self, name):
@@ -275,12 +283,17 @@ class Carpet:
 
         while True:
             if not self.paused:
-                ball = await self.queues[self.qname].pop()
+                print(f'CARPET waiting for plots from {self.qname}')
+                print(f'{id(self.queues[self.qname])}')
+                ball = await self.queues[self.qname].get()
                 self.top.display(ball)
+                print('displayed ball', ball.shape)
                 
             await curio.sleep(self.sleep)
 
 
+
+# example below ignore for now
 class RandPlot:
 
     def __init__(self):
