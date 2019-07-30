@@ -91,34 +91,17 @@ class PigFarm:
         self.current = None
 
         # mapping of events to co-routines
-        self.event_map = {}
-        self.create_event_map()
+        self.event_map = dict(
+            p=self.previous,
+            n=self.next,
+            h=self.help,
+            q=self.quit)
 
-        # this probably needs to be a co-routine?
+
         self.eloop = EventLoop()
 
+        # create a task to run the event loop
         self.tasks.append(self.eloop.run())
-
-        #displays = getattr(self.eloop, 'displays', [])
-        #for output in displays:
-        #    self.piglets.put(output)
-
-
-    def add_event_map(self, event, coro):
-        """ Add a binding to the event map 
-        
-        Over-writes existing one if for same event
-        """
-
-        self.event_map[event] = coro
-
-    def create_event_map(self):
-        """ Bindings of characters to coroutines """
-
-        self.add_event_map('p', self.previous)
-        self.add_event_map('n', self.next)
-        self.add_event_map('h', self.help)
-        self.add_event_map('q', self.quit)
 
 
     def status(self):
@@ -244,6 +227,8 @@ class PigFarm:
 
         runner = await curio.spawn(self.tend())
 
+        await self.next()
+
         await self.quit_event.wait()
 
         print('over and out')
@@ -272,7 +257,7 @@ class Carpet:
 
     def __init__(self, top):
 
-        self.top = Top(top)
+        self.top = top
         self.paused = False
         self.sleep = 1
         self.queues = {}

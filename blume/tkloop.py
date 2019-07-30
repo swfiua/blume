@@ -84,6 +84,8 @@ class EventLoop:
         tasks = [flush_task, poll_task]
 
         await curio.gather(tasks)
+
+        print("Event loop over and out")
     
 
 class Top(ttk.Frame):
@@ -93,15 +95,15 @@ class Top(ttk.Frame):
         super().__init__(top)
         self.width = 480
         self.height = 640
-        self.pack()
+        self.pack(side=TOP, fill=BOTH)
         self.canvas = Canvas(self, width=self.width, height=self.height)
         self.recalc(width=480, height=640)
         self.queue = None
 
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
         self.canvas.bind("<Configure>", self.on_configure)
-        button = Button(top, text='hello')
-        button.pack()
+        #button = Button(top, text='hello')
+        #button.pack()
 
     def on_configure(self, event):
 
