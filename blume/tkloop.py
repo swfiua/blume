@@ -95,7 +95,7 @@ class Top(ttk.Frame):
         super().__init__(top)
         self.width = 480
         self.height = 640
-        self.pack(side=TOP, fill=BOTH)
+        self.pack(side=TOP, expand=1, fill=BOTH)
         self.canvas = Canvas(self, width=self.width, height=self.height)
         self.recalc(width=480, height=640)
         self.queue = None
@@ -114,6 +114,7 @@ class Top(ttk.Frame):
 
         self.width = width
         self.height = height
+        print()
         print('scroll configure', width, height)
         self.canvas.configure(scrollregion=(0, 0, width, height))
 
@@ -128,9 +129,10 @@ class Top(ttk.Frame):
 
         xx = int(width / 2)
         yy = int(height / 2)
-        print(f'creating canvas image at {xx} {yy}')
+
         self.canvas.create_image(xx, yy, image=phim)
 
+        # red dot
         self.canvas.create_oval(20, 20, 30, 30, fill='red')
 
         

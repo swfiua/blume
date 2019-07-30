@@ -72,7 +72,6 @@ from .tkloop import EventLoop, Top, Help
 from PIL import Image
 
 import matplotlib
-matplotlib.use('Agg')
 
 from matplotlib import figure
 
@@ -109,7 +108,7 @@ class PigFarm:
         print('tasks::', self.piglets.qsize())
         print(self.current)
 
-    def carpet(self):
+    async def carpet(self):
 
         # fixme -- want a new top level each time, I think????
         carpet = Carpet(self.eloop.toplevel())
@@ -121,15 +120,19 @@ class PigFarm:
 
         self.piglets.appendleft(piglet)
 
+    async def start_tasks(self):
+        while self.tasks:
+            await curio.spawn(self.tasks.pop())
+
     async def start(self):
         """ Start the farm running 
         
         This should do any initialisation that has to
         wait for async land.
         """
-        for task in self.tasks:
-            await curio.spawn(task)
 
+        await self.start_tasks()
+        
         pigs = []
         for piglet in self.piglets:
             pig = await curio.spawn(piglet.start())
@@ -259,7 +262,7 @@ class Carpet:
 
         self.top = top
         self.paused = False
-        self.sleep = 1
+        self.sleep = .1
         self.queues = {}
 
     async def add_queue(self, name):
@@ -274,6 +277,7 @@ class Carpet:
 
     async def run(self):
 
+        print('Carpet running')
         while True:
             if not self.paused:
                 print(f'CARPET waiting for plots from {self.qname}')
@@ -296,7 +300,7 @@ def fig2data (fig):
 
     # no renderer without this
     image = io.BytesIO()
-    fig.savefig(image)
+    fig.savefig(image, facecolor=fig.get_facecolor())
 
     return Image.open(image)
 
@@ -340,8 +344,8 @@ async def run():
 
     farm = PigFarm()
 
-    carpet = farm.carpet()
-    
+    carpet = await farm.carpet()
+
     iq, width, height = await carpet.add_queue('teaplot')
     
     print(f'image queue {width} {height}')
@@ -350,6 +354,7 @@ async def run():
     magic_plotter.out = iq
 
     farm.add(magic_plotter)
+
 
     await farm.start()
     await farm.run()
