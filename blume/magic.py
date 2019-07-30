@@ -108,11 +108,18 @@ class PigFarm:
         print('tasks::', self.piglets.qsize())
         print(self.current)
 
-    async def carpet(self):
+    async def create_carpet(self):
 
         # fixme -- want a new top level each time, I think????
         carpet = Carpet(self.eloop.toplevel())
         self.tasks.append(carpet.run())
+
+        self.event_map.update(dict(
+            s=carpet.sleepy,
+            w=carpet.wakey))
+        self.event_map[' '] = carpet.toggle_pause
+
+        self.carpet = carpet
         return carpet
 
 
@@ -264,6 +271,21 @@ class Carpet:
         self.paused = False
         self.sleep = .1
         self.queues = {}
+
+    async def sleepy(self):
+
+        self.sleep *= 2
+        print(f'sleepy {self.sleep}')
+
+    async def wakey(self):
+
+        self.sleep /= 2
+        print(f'wakey {self.sleep}')
+
+    async def toggle_pause(self):
+
+        print('toggle pause')
+        self.paused = not self.paused
 
     async def add_queue(self, name):
         """ Add a new image queue to the carpet """
