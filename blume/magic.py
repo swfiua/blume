@@ -58,8 +58,11 @@ Objects with a start and run.
 Some writing to queues where viewers are polling.
 
 """
+import random
 
 import io
+
+from pathlib import Path
 
 from collections import deque
 
@@ -114,10 +117,6 @@ class PigFarm:
         carpet = Carpet(self.eloop.toplevel())
         self.tasks.append(carpet.run())
 
-        self.event_map.update(dict(
-            s=carpet.sleepy,
-            w=carpet.wakey))
-        self.event_map[' '] = carpet.toggle_pause
 
         self.carpet = carpet
         return carpet
@@ -177,8 +176,6 @@ class PigFarm:
             msg += '{} {}\n'.format(key,
                                     self.doc_firstline(value.__doc__))
 
-        from karmapi import piglet
-
         Help(msg)
 
     def doc_firstline(self, doc):
@@ -195,7 +192,10 @@ class PigFarm:
         await self.quit_event.set()
 
     async def next(self):
-        """ Show next widget """
+        """ Show next
+
+        Connect to next piglet, whatever that may be
+        """
         if not len(self.piglets): return
         print('current', self.current)
         if self.current:
@@ -208,7 +208,10 @@ class PigFarm:
 
 
     async def previous(self):
-        """ Show previous widget """
+        """ Show previous 
+
+        Connect to next piglet, whatever that may be.
+        """
         if not len(self.piglets): return
         print('going to previous', self.current)
         if self.current:
@@ -237,6 +240,7 @@ class PigFarm:
 
         runner = await curio.spawn(self.tend())
 
+        # select next piglet
         await self.next()
 
         await self.quit_event.wait()
@@ -265,86 +269,110 @@ class PigFarm:
 
 class Carpet:
 
-    def __init__(self, top):
+    def __init__(self, top=None):
 
         self.top = top
+        self.ball = None
         self.paused = False
         self.sleep = .1
-        self.queues = {}
+        self.queue = None
+        self.iqname = 'incoming'
+        self.oqname = 'ouggoing'
+        self.incoming = None
+        self.outgoing = None
+
+        # ho hum update event_map to control carpet
+        self.event_map = dict(
+            s=self.sleepy,
+            w=self.wakey)
+        self.event_map[' '] = self.toggle_pause
 
     async def sleepy(self):
-
+        """ Sleep more between updates """
         self.sleep *= 2
         print(f'sleepy {self.sleep}')
 
     async def wakey(self):
-
+        """ Sleep less between updates """
         self.sleep /= 2
         print(f'wakey {self.sleep}')
 
     async def toggle_pause(self):
-
+        """ Toggle pause flag """
         print('toggle pause')
         self.paused = not self.paused
 
-    async def add_queue(self, name):
-        """ Add a new image queue to the carpet """
-    
-        qq = curio.UniversalQueue()
-        self.queues[name] = qq
+    async def set_incoming(self, queue, name=None):
+        """ Set the carpet incoming queue. """
+        self.incoming = queue
+        if name:
+            self.iqname = name
 
-        self.qname = name
-
-        return qq, self.top.width, self.top.height
+    async def set_outgoing(self, queue, name=None):
+        """ Set the carpet outgoing queue to. """
+        self.outgoing = queue
+        if name:
+            self.oqname = name
 
     async def run(self):
 
         print('Carpet running')
         while True:
             if not self.paused:
-                print(f'CARPET waiting for plots from {self.qname}')
-                print(f'{id(self.queues[self.qname])}')
-                ball = await self.queues[self.qname].get()
+                if self.incoming is None:
+                    continue
+                
+                print(f'CARPET waiting for plots from {self.iqname}')
+                print(f'{id(self.incoming)}')
+                self.ball = await self.incoming.get()
+
+                if self.outgoing is not None:
+                    await self.outgoing.put(self.ball)
 
                 print('WOWOWO got a  ball')
-                self.top.display(ball)
-                print('displayed ball', ball.width, ball.height)
+                self.display()
+                print('displayed ball', self.ball.width, self.ball.height)
                 
             await curio.sleep(self.sleep)
 
+    def display(self):
 
-def fig2data (fig):
+        if self.ball is not None:
+            self.top.display(self.ball)
+
+def fig2data(fig):
     """ Convert a Matplotlib figure to a 4D numpy array with RGBA channels
 
     fig: a matplotlib figure
     return: a numpy 3D array of RGBA values
     """
 
+    facecolor = 'black'
+    if hasattr(fig, 'get_facecolor'):
+        facecolor = fig.get_facecolor()
+
     # no renderer without this
     image = io.BytesIO()
-    fig.savefig(image, facecolor=fig.get_facecolor())
+       
+    fig.savefig(image, facecolor=facecolor)
 
     return Image.open(image)
 
 
 # example below ignore for now
-class MagicPlot:
-
-    def __init__(self, **kwargs):
-
-        self.out = None
-
-        self.event_map = dict(
-            a=self.add)
-
-
+class MagicPlot(Carpet):
+    """ A simple carpet carpet """
     async def add(self):
-          pass
+        """ Magic Plot key demo """
+        print('magic key was pressed')
 
     async def start(self):
+
+        self.event_map.update(dict(
+            a=self.add))
+
         self.fig = figure.Figure()
         self.ax = self.fig.add_subplot(111)
-        
 
     async def run(self):
 
@@ -354,26 +382,25 @@ class MagicPlot:
             data = np.random.randint(50, size=100)
             print(data.mean())
             ax.plot(data)
-            if self.out:
-                await self.out.put(fig2data(self.fig))
-                print('qsize', self.out.qsize())
+            if self.outgoing:
+                await self.outgoing.put(fig2data(self.fig))
+                print('qsize', self.outgoing.qsize())
 
             await curio.sleep(1)
-
 
             
 async def run():
 
     farm = PigFarm()
 
-    carpet = await farm.carpet()
+    carpet = await farm.create_carpet()
 
-    iq, width, height = await carpet.add_queue('teaplot')
-    
-    print(f'image queue {width} {height}')
-    print(f'image queue id {id(iq)}')
+    iq = curio.UniversalQueue()
+    await carpet.set_incoming(iq)
+
+    print(f'image queue: {iq}')
     magic_plotter = MagicPlot()
-    magic_plotter.out = iq
+    await magic_plotter.set_outgoing(iq)
 
     farm.add(magic_plotter)
 
