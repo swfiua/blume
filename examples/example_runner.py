@@ -19,28 +19,44 @@ class Examples(MagicPlot):
         from matplotlib import pyplot as plt
 
         # not sure this works -- stop others stealing the show
+
+        bans = ['embedding', '_runner']
+        
         plt.show = show
+        bads = set()
         while True:
             if not self.paused:
-                path = self.paths[random.randint(0, len(self.paths))]
+                idx = random.randint(0, len(self.paths) - 1)
+                path = self.paths[idx]
 
-                if 'embedding' in str(path):
+                if str(path) in bads:
                     continue
+
+                for ban in bans:
+                    if ban in str(path):
+                        bads.add(str(path))
+                    
+                if str(path) in bads:
+                    continue
+
                 print(path)
                 try:
                     exec(path.open().read())
                 except:
                     print('BAD ONE', path)
+                    bads.add(str(path))
                     continue
             
             await self.outgoing.put(fig2data(plt))
+
+            plt.close()
             print('qsize', self.outgoing.qsize())
 
             await curio.sleep(self.sleep * 10)
 
 def show():
 
-    print('n show today')
+    print('NO SHOW TODAY')
 
 
 

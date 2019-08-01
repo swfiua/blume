@@ -94,8 +94,8 @@ class PigFarm:
 
         # mapping of events to co-routines
         self.event_map = dict(
-            p=self.previous,
-            n=self.next,
+            P=self.previous,
+            N=self.next,
             h=self.help,
             q=self.quit)
 
@@ -329,16 +329,17 @@ class Carpet:
                 if self.outgoing is not None:
                     await self.outgoing.put(self.ball)
 
-                print('WOWOWO got a  ball')
                 self.display()
-                print('displayed ball', self.ball.width, self.ball.height)
-                
+
             await curio.sleep(self.sleep)
 
     def display(self):
 
         if self.ball is not None:
+            print('WOWOWO got a  ball to display')
+            print(f"BALL ID: {id(self.ball)} qsize: {self.incoming.qsize()}")
             self.top.display(self.ball)
+            print('displayed ball', self.ball.width, self.ball.height)
 
 def fig2data(fig):
     """ Convert a Matplotlib figure to a 4D numpy array with RGBA channels
