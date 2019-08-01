@@ -323,8 +323,10 @@ class Carpet:
                     continue
                 
                 print(f'CARPET waiting for plots from {self.iqname}')
-                print(f'{id(self.incoming)}')
+                print(f'{id(self.incoming)} size {self.incoming.qsize()}')
                 self.ball = await self.incoming.get()
+
+                print(type(self.ball), self.ball.width, self.ball.height)
 
                 if self.outgoing is not None:
                     await self.outgoing.put(self.ball)

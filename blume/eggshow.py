@@ -47,10 +47,9 @@ class Examples(MagicPlot):
                     bads.add(str(path))
                     continue
             
-            await self.outgoing.put(fig2data(plt))
+                await self.outgoing.put(fig2data(plt))
 
             plt.close()
-            print('qsize', self.outgoing.qsize())
 
             await curio.sleep(self.sleep * 10)
 
