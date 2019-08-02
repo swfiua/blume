@@ -17,7 +17,7 @@ numbers.
 
 You want to see what is going on without grinding the calculations to a halt.
 
-At the same time, the more you explore the data with plots (thanks matplotlib)
+At the same time, the more you explore the dyata with plots (thanks matplotlib)
 the more questions appear.
 
 Often the calculation has a number of parameters, or a selection of data
@@ -114,10 +114,12 @@ class PigFarm:
     async def create_carpet(self):
 
         # fixme -- want a new top level each time, I think????
+        # Also why is carpet special?
         carpet = Carpet(self.eloop.toplevel())
         self.tasks.append(carpet.run())
 
-
+        # for now merge carpet events
+        self.event_map.update(carpet.event_map)
         self.carpet = carpet
         return carpet
 
@@ -224,15 +226,6 @@ class PigFarm:
         await self.start_piglet()
 
 
-    async def tend(self):
-        """ Make the pigs run """
-
-        while True:
-            event = await self.eloop.events.get()
-
-            await self.process_event(event)
-
-
 
     async def run(self):
 
@@ -250,6 +243,15 @@ class PigFarm:
         await runner.cancel()
 
         print('runner gone')
+
+
+    async def tend(self):
+        """ Make the pigs run """
+
+        while True:
+            event = await self.eloop.events.get()
+
+            await self.process_event(event)
 
 
     async def process_event(self, event):
@@ -275,7 +277,13 @@ class Carpet:
         self.ball = None
         self.paused = False
         self.sleep = .1
-        self.queue = None
+
+        # grid related
+        self.size = 1
+        self.pos = 0
+
+        self.image = None
+        
         self.iqname = 'incoming'
         self.oqname = 'ouggoing'
         self.incoming = None
@@ -284,9 +292,25 @@ class Carpet:
         # ho hum update event_map to control carpet
         self.event_map = dict(
             s=self.sleepy,
-            w=self.wakey)
+            w=self.wakey,
+            m=self.more,
+            l=self.less)
         self.event_map[' '] = self.toggle_pause
 
+    async def more(self):
+        """ Show more pictures """
+        self.size += 1
+        self._update_pos()
+        self.image = None
+        print(f'more {self.size}')
+
+    async def less(self):
+        """ Show fewer pictures """
+        self.size -= 1
+        self._update_pos()
+        self.image = None
+        print(f'less {self.size}', id(self))
+    
     async def sleepy(self):
         """ Sleep more between updates """
         self.sleep *= 2
@@ -303,7 +327,7 @@ class Carpet:
         self.paused = not self.paused
 
     async def set_incoming(self, queue, name=None):
-        """ Set the carpet incoming queue. """
+        """ Set the carpet incoming queue. """ 
         self.incoming = queue
         if name:
             self.iqname = name
@@ -323,6 +347,7 @@ class Carpet:
                     continue
                 
                 print(f'CARPET waiting for plots from {self.iqname}')
+                print('idcheck', id(self))
                 print(f'{id(self.incoming)} size {self.incoming.qsize()}')
                 self.ball = await self.incoming.get()
 
@@ -337,17 +362,43 @@ class Carpet:
 
     def display(self):
 
-        if self.ball is not None:
-            print('WOWOWO got a  ball to display')
-            print(f"BALL ID: {id(self.ball)} qsize: {self.incoming.qsize()}")
-            self.top.display(self.ball)
-            print('displayed ball', self.ball.width, self.ball.height)
+        if self.ball is None:
+            return
+        
+        print('WOWOWO got a  ball to display', self.size)
+        print(f"BALL ID: {id(self.ball)} qsize: {self.incoming.qsize()}")
+        ball = self.ball
+        width, height = ball.width, ball.height
+
+        sz = self.size
+        if self.image is None:
+            self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
+
+        # now paste current image in according to self.pos and size
+        ps = self.pos
+        self._update_pos()
+        xx = ps // self.size
+        yy = ps % self.size
+        offx = xx * width
+        offy = yy * height
+        self.image.paste(self.ball, (offx,  offy, offx + width, offy + height))
+        self.top.display(self.image)
+        print('displayed ball', self.ball.width, self.ball.height)
+
+    def _update_pos(self):
+
+        self.pos += 1
+        if self.pos >= self.size * self.size:
+            self.pos = 0
+    
 
 def fig2data(fig):
-    """ Convert a Matplotlib figure to a 4D numpy array with RGBA channels
+    """ Convert a Matplotlib figure to a PIL image.
 
     fig: a matplotlib figure
-    return: a numpy 3D array of RGBA values
+    return: PIL image
+
+    FIXME? return numpy array of image pixels?
     """
 
     facecolor = 'black'

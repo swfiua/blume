@@ -20,7 +20,7 @@ class Examples(MagicPlot):
 
         # not sure this works -- stop others stealing the show
 
-        bans = ['embedding', '_runner']
+        bans = ['embedding', '_runner', 'tick_labels']
         
         plt.show = show
         bads = set()
