@@ -257,6 +257,7 @@ class PigFarm:
     async def process_event(self, event):
         """ Dispatch events when they come in """
 
+        print('EVENT', event)
         coro = self.event_map.get(event)
 
         if coro is None and self.current:
@@ -368,11 +369,18 @@ class Carpet:
         print('WOWOWO got a  ball to display', self.size)
         print(f"BALL ID: {id(self.ball)} qsize: {self.incoming.qsize()}")
         ball = self.ball
-        width, height = ball.width, ball.height
 
         sz = self.size
+
         if self.image is None:
+            width, height = ball.width, ball.height
             self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
+
+        width = int(self.image.width / sz)
+        height = int(self.image.height / sz)
+
+        print('WWW', width, ball.width)
+        print('HHH', height, ball.height)
 
         # now paste current image in according to self.pos and size
         ps = self.pos
@@ -381,7 +389,8 @@ class Carpet:
         yy = ps % self.size
         offx = xx * width
         offy = yy * height
-        self.image.paste(self.ball, (offx,  offy, offx + width, offy + height))
+        self.image.paste(self.ball.resize((width, height)),
+                         (offx,  offy, offx + width, offy + height))
         self.top.display(self.image)
         print('displayed ball', self.ball.width, self.ball.height)
 
