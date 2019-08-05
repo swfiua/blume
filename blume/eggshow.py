@@ -1,3 +1,16 @@
+"""
+Handle with care.
+
+Runs any python code it finds in examples folders.
+
+Hopes it is producing matplotlib plots.
+
+If so displays them.
+
+Press h for help.
+"""
+
+
 from blume.magic import PigFarm, MagicPlot, fig2data
 
 import curio
