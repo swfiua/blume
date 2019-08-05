@@ -286,7 +286,7 @@ class Carpet:
         self.image = None
         
         self.iqname = 'incoming'
-        self.oqname = 'ouggoing'
+        self.oqname = 'outgoing'
         self.incoming = None
         self.outgoing = None
 
@@ -357,7 +357,11 @@ class Carpet:
                 if self.outgoing is not None:
                     await self.outgoing.put(self.ball)
 
-                self.display()
+                # hmm. need to re-think what belongs where
+                # also maybe this method is "runner" and "run" is just
+                # the inner loop?
+                if self.top:
+                    self.display()
 
             await curio.sleep(self.sleep)
 
