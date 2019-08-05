@@ -789,7 +789,7 @@ def table(ax,
     *colLoc* respectively.
 
     For finer grained control over tables, use the `.Table` class and add it to
-    the axes with `.Axes.add_table`.
+    the axes with `.Axes.add_artist`.
 
     Parameters
     ----------
@@ -984,5 +984,5 @@ def table(ax,
         if rowLabelWidth == 0:
             table.auto_set_column_width(-1)
 
-    ax.add_table(table)
+    ax.add_artist(table)
     return table
