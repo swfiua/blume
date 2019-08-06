@@ -111,17 +111,15 @@ class PigFarm:
         print('tasks::', self.piglets.qsize())
         print(self.current)
 
-    async def create_carpet(self):
+    async def create_display(self):
 
         # fixme -- want a new top level each time, I think????
         # Also why is carpet special?
-        carpet = Carpet(self.eloop.toplevel())
-        self.tasks.append(carpet.run())
+        display = Display(self.eloop.toplevel())
+        self.tasks.append(display.start)
 
         # for now merge carpet events
-        self.event_map.update(carpet.event_map)
-        self.carpet = carpet
-        return carpet
+        self.event_map.update(display.event_map)
 
 
     def add(self, piglet):
@@ -155,7 +153,7 @@ class PigFarm:
         # set current out queue to point at
         #self.current.out = self.viewer.queue
         
-        self.current_task = await curio.spawn(self.current.run())
+        self.current_task = await curio.spawn(self.current.runner())
 
     async def stop_piglet(self):
         """ Stop the current piglet running """
@@ -270,11 +268,18 @@ class PigFarm:
             print('no callback for event', event, len(event))
 
 
-class Carpet:
+class RoundAbout:
+    """ 
+    A magic queue switch.
 
-    def __init__(self, top=None):
+    Time for bed, said zebedee 
+    """
+    pass
 
-        self.top = top
+class Ball:
+    
+    def __init__(self):
+
         self.ball = None
         self.paused = False
         self.sleep = .1
@@ -287,30 +292,16 @@ class Carpet:
         
         self.iqname = 'incoming'
         self.oqname = 'outgoing'
-        self.incoming = None
-        self.outgoing = None
+        self.incoming = RoundAbout()
+        self.outgoing = RoundAbout()
 
-        # ho hum update event_map to control carpet
+        # ho hum update event_map to control ball?
         self.event_map = dict(
             s=self.sleepy,
             w=self.wakey,
             m=self.more,
             l=self.less)
         self.event_map[' '] = self.toggle_pause
-
-    async def more(self):
-        """ Show more pictures """
-        self.size += 1
-        self._update_pos()
-        self.image = None
-        print(f'more {self.size}')
-
-    async def less(self):
-        """ Show fewer pictures """
-        self.size -= 1
-        self._update_pos()
-        self.image = None
-        print(f'less {self.size}', id(self))
     
     async def sleepy(self):
         """ Sleep more between updates """
@@ -339,12 +330,52 @@ class Carpet:
         if name:
             self.oqname = name
 
+    async def start(self):
+        pass
+
     async def run(self):
+        pass
+
+
+class Carpet(Ball):
+
+    def __init__(self):
+
+        super().__init__()
+        
+        # grid related
+        self.size = 1
+        self.pos = 0
+
+        self.image = None
+
+        self.event_map = dict(
+            m=self.more,
+            l=self.less)
+
+        
+    async def more(self):
+        """ Show more pictures """
+        self.size += 1
+        self._update_pos()
+        self.image = None
+        print(f'more {self.size}')
+
+    async def less(self):
+        """ Show fewer pictures """
+        self.size -= 1
+        self._update_pos()
+        self.image = None
+        print(f'less {self.size}', id(self))
+    
+
+    async def runner(self):
 
         print('Carpet running')
         while True:
             if not self.paused:
                 if self.incoming is None:
+                    #print('no incoming', id(self))
                     continue
                 
                 print(f'CARPET waiting for plots from {self.iqname}')
@@ -357,15 +388,21 @@ class Carpet:
                 if self.outgoing is not None:
                     await self.outgoing.put(self.ball)
 
-                # hmm. need to re-think what belongs where
-                # also maybe this method is "runner" and "run" is just
-                # the inner loop?
-                if self.top:
-                    self.display()
+                await self.run()
 
             await curio.sleep(self.sleep)
 
-    def display(self):
+    async def start(self):
+        
+        pass
+
+    async def run(self):
+
+        # hmm. need to re-think what belongs where
+        # also maybe this method is "runner" and "run" is just
+        # the inner loop?
+        if not self.outgoing:
+            return
 
         if self.ball is None:
             return
@@ -395,8 +432,11 @@ class Carpet:
         offy = yy * height
         self.image.paste(self.ball.resize((width, height)),
                          (offx,  offy, offx + width, offy + height))
-        self.top.display(self.image)
+
+        # put out in queue for displays
+        await self.outgoing.put(self.image)
         print('displayed ball', self.ball.width, self.ball.height)
+        return
 
     def _update_pos(self):
 
@@ -405,6 +445,24 @@ class Carpet:
             self.pos = 0
     
 
+class Display(Top, Ball):
+
+    def __init__(self, parent):
+
+    async def start(self):
+
+        curio.spawn(self.mainloop())
+
+    async def mainloop(self):
+
+        while True:
+
+            ball = await self.incoming.get()
+
+            self.display(ball)
+        
+
+            
 def fig2data(fig):
     """ Convert a Matplotlib figure to a PIL image.
 
@@ -427,7 +485,7 @@ def fig2data(fig):
 
 
 # example below ignore for now
-class MagicPlot(Carpet):
+class MagicPlot(Ball):
     """ A simple carpet carpet """
     async def add(self):
         """ Magic Plot key demo """
@@ -435,6 +493,7 @@ class MagicPlot(Carpet):
 
     async def start(self):
 
+        print('magic plot started')
         self.event_map.update(dict(
             a=self.add))
 
@@ -443,17 +502,15 @@ class MagicPlot(Carpet):
 
     async def run(self):
 
-        ax = self.ax
-        while True:
-            ax.clear()
-            data = np.random.randint(50, size=100)
-            print(data.mean())
-            ax.plot(data)
-            if self.outgoing:
-                await self.outgoing.put(fig2data(self.fig))
-                print('qsize', self.outgoing.qsize())
+        print('magic plot run')
+        ax.clear()
+        data = np.random.randint(50, size=100)
+        print(data.mean())
+        ax.plot(data)
 
-            await curio.sleep(1)
+        await self.outgoing.put(fig2data(self.fig))
+        print('qsize', self.outgoing.qsize())
+
 
             
 async def run():
@@ -462,6 +519,8 @@ async def run():
 
     carpet = await farm.create_carpet()
 
+    carpet = Carpet()
+    
     iq = curio.UniversalQueue()
     await carpet.set_incoming(iq)
 
@@ -470,10 +529,14 @@ async def run():
     await magic_plotter.set_outgoing(iq)
 
     farm.add(magic_plotter)
-
-
+    
+    print('starting farm')
     await farm.start()
-    await farm.run()
+
+    print('farm running')
+    runner = await farm.run()
+
+    await runner.join()
     
         
 if __name__ == '__main__':

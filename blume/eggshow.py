@@ -17,6 +17,7 @@ import curio
 
 import random
 
+from matplotlib import pyplot as plt
 from pathlib import Path
 
 class Examples(MagicPlot):
@@ -27,44 +28,41 @@ class Examples(MagicPlot):
             Path('./examples').glob('**/*.py'))
 
         print('PATHS', len(self.paths))
+        self.bans = ['embedding', '_runner', 'tick_labels']
+        
+        # not sure this works -- stop others stealing the show
+        plt.show = show
+        self.bads = set()
 
     async def run(self):
-        from matplotlib import pyplot as plt
 
-        # not sure this works -- stop others stealing the show
-
-        bans = ['embedding', '_runner', 'tick_labels']
+        idx = random.randint(0, len(self.paths) - 1)
+        path = self.paths[idx]
         
-        plt.show = show
-        bads = set()
-        while True:
-            if not self.paused:
-                idx = random.randint(0, len(self.paths) - 1)
-                path = self.paths[idx]
+        if str(path) in bads:
+            return
 
-                if str(path) in bads:
-                    continue
-
-                for ban in bans:
-                    if ban in str(path):
-                        bads.add(str(path))
+        for ban in self.bans:
+            if ban in str(path):
+                self.bads.add(str(path))
                     
-                if str(path) in bads:
-                    continue
+        if str(path) in bads:
+            return
 
-                print(path)
-                try:
-                    exec(path.open().read())
-                except:
-                    print('BAD ONE', path)
-                    bads.add(str(path))
-                    continue
+        print(path)
+        try:
+            exec(path.open().read())
+        except:
+            print('BAD ONE', path)
+            self.bads.add(str(path))
+            return
             
-                await self.outgoing.put(fig2data(plt))
+        await self.outgoing.put(fig2data(plt))
 
-            plt.close()
+        plt.close()
 
-            await curio.sleep(self.sleep * 10)
+        return True
+
 
 def show():
 
