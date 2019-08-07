@@ -70,8 +70,6 @@ import curio
 
 import numpy as np
 
-from .tkloop import EventLoop, Top, Help
-
 from PIL import Image
 
 import matplotlib
@@ -80,7 +78,9 @@ from matplotlib import figure
 
 import networkx as nx
 
-class PigFarm:
+from .teakhat import Hat, Help
+
+class Farm:
     """ Connections to the outside world """
 
     def __init__(self, meta=None, events=None):
@@ -88,8 +88,8 @@ class PigFarm:
         self.data = curio.UniversalQueue()
 
         # currently, a list of things being managed
-        self.piglets = deque()
-        self.tasks = []
+        self.nodes = deque()
+        self.hats = set()
 
         self.current = None
 
@@ -101,33 +101,19 @@ class PigFarm:
             q=self.quit)
 
 
-        self.eloop = EventLoop()
-
-        # create a task to run the event loop
-        self.tasks.append(self.eloop.run())
+        self.hats.add(Hat())
 
 
     def status(self):
 
-        print('tasks::', self.piglets.qsize())
         print(self.current)
 
-    async def create_display(self):
+    def add(self, node):
 
-        # fixme -- want a new top level each time, I think????
-        # Also why is carpet special?
-        display = Display(self.eloop.toplevel())
-        self.tasks.append(display.start)
-
-        return display
-
-
-    def add(self, piglet):
-
-        self.piglets.appendleft(piglet)
+        self.nodes.appendleft(node)
 
     async def start_tasks(self):
-        while self.tasks:
+        while self.qtasks:
             await curio.spawn(self.tasks.pop())
 
     async def start(self):
@@ -138,28 +124,31 @@ class PigFarm:
         """
 
         await self.start_tasks()
-        
-        pigs = []
-        for piglet in self.piglets:
-            pig = await curio.spawn(piglet.start())
-            pigs.append(pig)
 
-        await curio.gather(pigs)
+        starts = []
+        for node in self.nodes:
+            start = await curio.spawn(node.start())
+            starts.append(start)
+
+        for hat in self.hats:
+            start = await curio.spawn(hat.start())
+            starts.append(start)
+
+        self.starts = starts
             
 
-    async def start_piglet(self):
-        """ Start the current piglet running """
+    async def start_node(self):
+        """ Start the current node running """
 
         # set current out queue to point at
         #self.current.out = self.viewer.queue
         
         self.current_task = await curio.spawn(self.current.runner())
 
-    async def stop_piglet(self):
-        """ Stop the current piglet running """
+    async def stop_node(self):
+        """ Stop the current running node """
 
         await self.current_task.cancel()
-        self.current.pack_forget()
 
     async def help(self):
         """ Show help """
@@ -194,34 +183,33 @@ class PigFarm:
     async def next(self):
         """ Show next
 
-        Connect to next piglet, whatever that may be
+        Connect to next node, whatever that may be
         """
-        if not len(self.piglets): return
+        if not len(self.nodes): return
         print('current', self.current)
         if self.current:
-            self.pigets.append(self.current)
+            self.nodes.append(self.current)
 
-            await self.stop_piglet()
+            await self.stop_node()
 
-        self.current = self.piglets.popleft()
-        await self.start_piglet()
+        self.current = self.nodes.popleft()
+        await self.start_node()
 
 
     async def previous(self):
-        """ Show previous 
-
-        Connect to next piglet, whatever that may be.
+        """ Show previous
+        Connect to next node, whatever that may be.
         """
-        if not len(self.piglets): return
+        if not len(self.nodes): return
         print('going to previous', self.current)
         if self.current:
 
-            self.piglets.appendleft(self.current)
+            self.nodes.appendleft(self.current)
 
-            await self.stop_piglet()
+            await self.stop_node()
 
-        self.current = self.piglets.pop()
-        await self.start_piglet()
+        self.current = self.nodes.pop()
+        await self.start_node()
 
 
 
@@ -229,28 +217,31 @@ class PigFarm:
 
         self.quit_event = curio.Event()
 
-        runner = await curio.spawn(self.tend())
+        runners = []
+        for hat in self.hats:
+            runner = await curio.spawn(self.tend(hat))
+            runners.append(runner)
 
-        # select next piglet
+        # select next node
         await self.next()
 
         await self.quit_event.wait()
 
         print('over and out')
 
-        await runner.cancel()
+        for runner in runners:
+            await runner.cancel()
 
         print('runner gone')
 
 
-    async def tend(self):
-        """ Make the pigs run """
-
+    async def tend(self, queue):
+        """ Event handling for the hats  """
+                
         while True:
-            event = await self.eloop.events.get()
+            event = await queue.get()
 
             await self.process_event(event)
-
 
     async def process_event(self, event):
         """ Dispatch events when they come in """
@@ -267,8 +258,8 @@ class PigFarm:
         else:
             print('no callback for event', event, len(event))
 
-class Farm(PigFarm):
-    """ A farm, for now, a PigFarm 
+class GeeFarm:
+    """ A farm, for now.. 
 
     A network of things running around.
 
@@ -536,28 +527,24 @@ class MagicPlot(Ball):
 async def run():
 
 
-    pigfarm = PigFarm()
-
-    display = await pigfarm.create_display()
+    farm = Farm()
 
     carpet = Carpet()
 
     # for now merge carpet events
-    pigfarm.event_map.update(carpet.event_map)
+    farm.event_map.update(carpet.event_map)
 
 
-    edges = [
-        [carpet, display],
-        [MagicPlot(), carpet]]
-    
-    farm = Farm(edges=edges)
+    #edges = [[MagicPlot(), carpet]]
+    #farm = GFarm(edges=edges)
     
     
     iq = curio.UniversalQueue()
-    oq = curio.UniversalQueue()
+    oq = farm.hatque
     await carpet.set_incoming(iq)
     await carpet.set_outgoing(oq)
-    await display.set_incoming(oq)
+
+    # tell farm to connect oq to the hats
 
     print(f'image queue: {iq}')
     magic_plotter = MagicPlot()

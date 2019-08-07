@@ -41,7 +41,7 @@ class Hat(ttk.Frame):
 
         # Keyboard handling
         self.events = curio.UniversalQueue()
-        self.app.bind('<Key>', self.keypress)
+        self.top.bind('<Key>', self.keypress)
 
 
     def keypress(self, event):
