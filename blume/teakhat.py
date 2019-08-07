@@ -3,37 +3,52 @@ from PIL import ImageTk, Image
 
 import curio
 
-class EventLoop:
-    """ An event loop
+class Hat(ttk.Frame):
+    """ A hat
 
-    tk specific application event loop
+    Or a display.  
+
+    This hat gives you a Tk window.
+
+    It runs a Tk event loop, asynchronously (see below).
+
+    It puts keyboard events into *self.events*
+
+    display(ball) will do that.
+
+    formerly tk specific application event loop
     """
-    def __init__(self, app=None):
+    def __init__(self):
 
-        if app is None:
-            self.app = Tk()
+        self.top = Tk()
+        super().__init__(self.top)
 
-        self.outputs = []
-        self.queue = curio.UniversalQueue()
+        self.width = 480
+        self.height = 640
+        self.pack(side=TOP, expand=1, fill=BOTH)
+        self.canvas = Canvas(self, width=self.width, height=self.height)
+        self.recalc(width=480, height=640)
+        self.queue = None
+
+        self.canvas.pack(side=TOP, expand=1, fill=BOTH)
+        self.canvas.bind("<Configure>", self.on_configure)
+        #button = Button(top, text='hello')
+        #button.pack()
+        
+        self.hat
+
+        ## self.outputs = [] ???? 
+
+        # Keyboard handling
         self.events = curio.UniversalQueue()
         self.app.bind('<Key>', self.keypress)
+
 
     def keypress(self, event):
         """ Take tk events and stick them in a curio queue """
         self.events.put(event.char)
         
         return True
-
-    async def flush(self):
-        """  Wait for an event to arrive in the queue.
-        """
-        while True:
-
-            event = await self.queue.get()
-
-            self.app.update_idletasks()
-            self.app.update()
-
 
     async def poll(self):
 
@@ -44,6 +59,9 @@ class EventLoop:
         nap = 0.05
         while True:
             
+            self.app.update_idletasks()
+            self.app.update()
+
             # Would be good to find a Tk file pointer that
             # can be used as a source of events
             # for now poll just loops push events onto the queue
@@ -67,48 +85,41 @@ class EventLoop:
 
     async def put(self, event):
         """ Push gui events into a queue """
-        await self.queue.put(event)
+        await self.events.put(event)
 
-    def toplevel(self):
-        """ Return toplevel window """
-        return Top(self.app.winfo_toplevel())
+    def hat(self):
+        """ Return a new hat """
+        return Hat()
 
-    async def run(self):
+    async def receive(self):
 
-        print("Starting tkloop.EventLoop.run")
+        while True:
 
+            ball = await self.incoming.get()
+
+            self.display(ball)
+
+
+    async def start(self):
+
+        print("Starting teakhat.Hat")
+        receive_task = await curio.spawn(self.receive())
         poll_task = await curio.spawn(self.poll())
 
-        flush_task = await curio.spawn(self.flush())
-
-        tasks = [flush_task, poll_task]
+        tasks = [receive_task, poll_task]
 
         await curio.gather(tasks)
 
         print("Event loop over and out")
     
 
-class Top(ttk.Frame):
-    """ A very simple top level window """
-    def __init__(self, top):
-
-        super().__init__(top)
-        self.width = 480
-        self.height = 640
-        self.pack(side=TOP, expand=1, fill=BOTH)
-        self.canvas = Canvas(self, width=self.width, height=self.height)
-        self.recalc(width=480, height=640)
-        self.queue = None
-
-        self.canvas.pack(side=TOP, expand=1, fill=BOTH)
-        self.canvas.bind("<Configure>", self.on_configure)
-        #button = Button(top, text='hello')
-        #button.pack()
-
     def on_configure(self, event):
 
         print('new window size:', event.width, event.height)
         self.recalc(event.width, event.height)
+
+        # after re-size
+        self.display()
 
     def recalc(self, width, height):
 
@@ -118,11 +129,13 @@ class Top(ttk.Frame):
         print('scroll configure', width, height)
         self.canvas.configure(scrollregion=(0, 0, width, height))
 
-    def display(self, ball):
+    def display(self, ball=None):
         """ """
         width, height = self.width, self.height
 
-        image = ball
+        image = ball or self.ball
+        self.ball = image
+        
         image = image.resize((int(width), int(height)))
 
         self.phim = phim = ImageTk.PhotoImage(image)
@@ -134,7 +147,6 @@ class Top(ttk.Frame):
 
         # red dot
         self.canvas.create_oval(20, 20, 30, 30, fill='red')
-
         
         
 

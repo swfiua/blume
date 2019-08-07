@@ -78,6 +78,7 @@ import matplotlib
 
 from matplotlib import figure
 
+import networkx as nx
 
 class PigFarm:
     """ Connections to the outside world """
@@ -118,8 +119,7 @@ class PigFarm:
         display = Display(self.eloop.toplevel())
         self.tasks.append(display.start)
 
-        # for now merge carpet events
-        self.event_map.update(display.event_map)
+        return display
 
 
     def add(self, piglet):
@@ -267,6 +267,39 @@ class PigFarm:
         else:
             print('no callback for event', event, len(event))
 
+class Farm(PigFarm):
+    """ A farm, for now, a PigFarm 
+
+    A network of things running around.
+
+    Magic round-abouts of queues connecting it all.
+
+    Displays, keyboards, human input, outputs.
+
+    A graph of tools.
+
+    And something to help it run.
+    """
+
+    def __init__(self, hub=None, nodes=None, edges=None):
+        """ Turn graph into a running farm """
+        super().__init__()
+        self.hub = hub or nx.Graph()
+
+        self.hub.add_nodes_from(nodes or set())
+        self.hub.add_edges_from(edges or set())
+
+        print(f' nodes: {self.hub.number_of_nodes()}')
+        print(f' edges: {self.hub.number_of_edges()}')
+
+    def connect(self):
+
+        hub = self.hub
+        for item in hub.nodes:
+            print('degree', hub.degree[item])
+            continue      
+            rab = RoundAbout(source, destination)
+
 
 class RoundAbout:
     """ 
@@ -275,6 +308,13 @@ class RoundAbout:
     Time for bed, said zebedee 
     """
     pass
+
+    async def put(self, packet):
+        pass
+
+    async def get(self):
+        pass
+        
 
 class Ball:
     
@@ -292,15 +332,13 @@ class Ball:
         
         self.iqname = 'incoming'
         self.oqname = 'outgoing'
-        self.incoming = RoundAbout()
-        self.outgoing = RoundAbout()
+        self.incoming = curio.UniversalQueue()
+        self.outgoing = curio.UniversalQueue()
 
         # ho hum update event_map to control ball?
         self.event_map = dict(
             s=self.sleepy,
-            w=self.wakey,
-            m=self.more,
-            l=self.less)
+            w=self.wakey)
         self.event_map[' '] = self.toggle_pause
     
     async def sleepy(self):
@@ -445,24 +483,6 @@ class Carpet(Ball):
             self.pos = 0
     
 
-class Display(Top, Ball):
-
-    def __init__(self, parent):
-
-    async def start(self):
-
-        curio.spawn(self.mainloop())
-
-    async def mainloop(self):
-
-        while True:
-
-            ball = await self.incoming.get()
-
-            self.display(ball)
-        
-
-            
 def fig2data(fig):
     """ Convert a Matplotlib figure to a PIL image.
 
@@ -515,14 +535,29 @@ class MagicPlot(Ball):
             
 async def run():
 
-    farm = PigFarm()
 
-    carpet = await farm.create_carpet()
+    pigfarm = PigFarm()
+
+    display = await pigfarm.create_display()
 
     carpet = Carpet()
+
+    # for now merge carpet events
+    pigfarm.event_map.update(carpet.event_map)
+
+
+    edges = [
+        [carpet, display],
+        [MagicPlot(), carpet]]
+    
+    farm = Farm(edges=edges)
+    
     
     iq = curio.UniversalQueue()
+    oq = curio.UniversalQueue()
     await carpet.set_incoming(iq)
+    await carpet.set_outgoing(oq)
+    await display.set_incoming(oq)
 
     print(f'image queue: {iq}')
     magic_plotter = MagicPlot()
@@ -536,7 +571,6 @@ async def run():
     print('farm running')
     runner = await farm.run()
 
-    await runner.join()
     
         
 if __name__ == '__main__':
