@@ -90,6 +90,7 @@ class Farm:
         # currently, a list of things being managed
         self.nodes = deque()
         self.hats = set()
+        self.hatq = curio.UniversalQueue()
 
         self.current = None
 
@@ -112,9 +113,13 @@ class Farm:
 
         self.nodes.appendleft(node)
 
-    async def start_tasks(self):
-        while self.qtasks:
-            await curio.spawn(self.tasks.pop())
+    async def hat_stand(self):
+        """ Pass data on to hats """
+        while True:
+            event = await self.hatq.get()
+            print('hat stand event', event)
+            for hat in self.hats:
+                await hat.put(event)
 
     async def start(self):
         """ Start the farm running 
@@ -122,28 +127,49 @@ class Farm:
         This should do any initialisation that has to
         wait for async land.
         """
-
-        await self.start_tasks()
-
-        starts = []
         for node in self.nodes:
-            start = await curio.spawn(node.start())
-            starts.append(start)
+            await curio.spawn(node.start())
 
         for hat in self.hats:
-            start = await curio.spawn(hat.start())
-            starts.append(start)
+            await curio.spawn(hat.start())
 
-        self.starts = starts
-            
+        await curio.spawn(self.hat_stand())
 
-    async def start_node(self):
+
+    async def runner(self):
+
+        node = self.current
+
+        print('Farm running node:', str(node))
+        while True:
+            if not node.paused:
+                if node.incoming is None:
+                    #print('no incoming', id(node))
+                    continue
+                
+                print(f'FARM waiting for plots from {node.iqname}')
+                print('idcheck', id(node))
+                print(f'{id(node.incoming)} size {node.incoming.qsize()}')
+                self.ball = await node.incoming.get()
+
+                print(type(self.ball), self.ball.width, self.ball.height)
+
+                if self.outgoing is not None:
+                    await self.outgoing.put(self.ball)
+
+                await node.run()
+
+            await curio.sleep(self.sleep)
+
+    async def run_node(self):
         """ Start the current node running """
 
         # set current out queue to point at
         #self.current.out = self.viewer.queue
+
+        runner = getattr(self.current, 'runner', self.runner)
         
-        self.current_task = await curio.spawn(self.current.runner())
+        self.current_task = await curio.spawn(self.runner())
 
     async def stop_node(self):
         """ Stop the current running node """
@@ -193,7 +219,7 @@ class Farm:
             await self.stop_node()
 
         self.current = self.nodes.popleft()
-        await self.start_node()
+        await self.run_node()
 
 
     async def previous(self):
@@ -209,17 +235,18 @@ class Farm:
             await self.stop_node()
 
         self.current = self.nodes.pop()
-        await self.start_node()
+        await self.run_node()
 
 
 
     async def run(self):
 
+        print('Farm starting to run')
         self.quit_event = curio.Event()
 
         runners = []
         for hat in self.hats:
-            runner = await curio.spawn(self.tend(hat))
+            runner = await curio.spawn(self.tend(hat.events))
             runners.append(runner)
 
         # select next node
@@ -256,7 +283,7 @@ class Farm:
         if coro:
             await coro()
         else:
-            print('no callback for event', event, len(event))
+            print('no callback for event', event, type(event))
 
 class GeeFarm:
     """ A farm, for now.. 
@@ -398,29 +425,6 @@ class Carpet(Ball):
         print(f'less {self.size}', id(self))
     
 
-    async def runner(self):
-
-        print('Carpet running')
-        while True:
-            if not self.paused:
-                if self.incoming is None:
-                    #print('no incoming', id(self))
-                    continue
-                
-                print(f'CARPET waiting for plots from {self.iqname}')
-                print('idcheck', id(self))
-                print(f'{id(self.incoming)} size {self.incoming.qsize()}')
-                self.ball = await self.incoming.get()
-
-                print(type(self.ball), self.ball.width, self.ball.height)
-
-                if self.outgoing is not None:
-                    await self.outgoing.put(self.ball)
-
-                await self.run()
-
-            await curio.sleep(self.sleep)
-
     async def start(self):
         
         pass
@@ -465,7 +469,7 @@ class Carpet(Ball):
         # put out in queue for displays
         await self.outgoing.put(self.image)
         print('displayed ball', self.ball.width, self.ball.height)
-        return
+
 
     def _update_pos(self):
 
@@ -533,14 +537,15 @@ async def run():
 
     # for now merge carpet events
     farm.event_map.update(carpet.event_map)
+    farm.add(carpet)
 
 
     #edges = [[MagicPlot(), carpet]]
-    #farm = GFarm(edges=edges)
+    #farm = GFarm(edages=edges)
     
     
     iq = curio.UniversalQueue()
-    oq = farm.hatque
+    oq = farm.hatq
     await carpet.set_incoming(iq)
     await carpet.set_outgoing(oq)
 
@@ -553,7 +558,7 @@ async def run():
     farm.add(magic_plotter)
     
     print('starting farm')
-    await farm.start()
+    fstart = await curio.spawn(farm.start())
 
     print('farm running')
     runner = await farm.run()

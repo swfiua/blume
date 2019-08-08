@@ -25,20 +25,19 @@ class Hat(ttk.Frame):
 
         self.width = 480
         self.height = 640
+        self.sleep = 0.05
+        self.ball = Image.new('RGB', (10, 10))
+        
         self.pack(side=TOP, expand=1, fill=BOTH)
         self.canvas = Canvas(self, width=self.width, height=self.height)
         self.recalc(width=480, height=640)
-        self.queue = None
+        self.incoming = curio.UniversalQueue()
 
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
         self.canvas.bind("<Configure>", self.on_configure)
         #button = Button(top, text='hello')
         #button.pack()
         
-        self.hat
-
-        ## self.outputs = [] ???? 
-
         # Keyboard handling
         self.events = curio.UniversalQueue()
         self.top.bind('<Key>', self.keypress)
@@ -59,8 +58,8 @@ class Hat(ttk.Frame):
         nap = 0.05
         while True:
             
-            self.app.update_idletasks()
-            self.app.update()
+            self.top.update_idletasks()
+            self.top.update()
 
             # Would be good to find a Tk file pointer that
             # can be used as a source of events
@@ -69,30 +68,16 @@ class Hat(ttk.Frame):
             await self.put(event)
             event += 1
 
-            nap = self.naptime(nap)
-
             # FIXME should do away with the poll loop and just schedule
             # for some time in the future.
-            await curio.sleep(nap)
-
-    def naptime(self, naptime=None):
-        """Return the time to nap """
-
-        if naptime is None:
-            naptime = 0.05
-
-        return naptime
+            await curio.sleep(self.sleep)
 
     async def put(self, event):
         """ Push gui events into a queue """
-        await self.events.put(event)
+        await self.incoming.put(event)
 
-    def hat(self):
-        """ Return a new hat """
-        return Hat()
-
-    async def receive(self):
-
+    async def get(self):
+        """ Get stuff and display it """
         while True:
 
             ball = await self.incoming.get()
@@ -100,18 +85,26 @@ class Hat(ttk.Frame):
             self.display(ball)
 
 
+    def hat(self):
+        """ Return a new hat """
+        return Hat()
+
+
     async def start(self):
 
         print("Starting teakhat.Hat")
-        receive_task = await curio.spawn(self.receive())
+        get_task = await curio.spawn(self.get())
         poll_task = await curio.spawn(self.poll())
 
-        tasks = [receive_task, poll_task]
+        tasks = [get_task, poll_task]
 
         await curio.gather(tasks)
 
         print("Event loop over and out")
-    
+
+    async def run(self):
+
+        pass    
 
     def on_configure(self, event):
 
