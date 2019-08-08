@@ -128,17 +128,19 @@ class Farm:
         wait for async land.
         """
         for node in self.nodes:
+            print('farm.start starting', node)
             await curio.spawn(node.start())
 
         for hat in self.hats:
+            print('farm.start starting hat', hat)
             await curio.spawn(hat.start())
 
         await curio.spawn(self.hat_stand())
 
 
-    async def runner(self):
+    async def runner(self, node=None):
 
-        node = self.current
+        node = node or self.current
 
         print('Farm running node:', str(node))
         while True:
@@ -537,7 +539,7 @@ async def run():
 
     # for now merge carpet events
     farm.event_map.update(carpet.event_map)
-    farm.add(carpet)
+    #farm.add(carpet)
 
 
     #edges = [[MagicPlot(), carpet]]
@@ -556,6 +558,12 @@ async def run():
     await magic_plotter.set_outgoing(iq)
 
     farm.add(magic_plotter)
+
+
+    await carpet.start()
+
+    await curio.spawn(farm.runner(carpet))
+    print('Farm nodes', farm.nodes)
     
     print('starting farm')
     fstart = await curio.spawn(farm.start())

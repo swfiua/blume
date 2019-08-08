@@ -63,17 +63,14 @@ class Hat(ttk.Frame):
 
             # Would be good to find a Tk file pointer that
             # can be used as a source of events
-            # for now poll just loops push events onto the queue
-            # to trigger event flushing with the flush method
-            await self.put(event)
-            event += 1
 
-            # FIXME should do away with the poll loop and just schedule
-            # for some time in the future.
             await curio.sleep(self.sleep)
 
     async def put(self, event):
         """ Push gui events into a queue """
+        if type(event) is int:
+            print('incoming int', event)
+            
         await self.incoming.put(event)
 
     async def get(self):
@@ -81,6 +78,10 @@ class Hat(ttk.Frame):
         while True:
 
             ball = await self.incoming.get()
+
+            if type(ball) is int:
+                print('wtf', ball)
+                continue
 
             self.display(ball)
 
