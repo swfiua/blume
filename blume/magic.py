@@ -85,10 +85,10 @@ class Farm:
 
     def __init__(self, meta=None, events=None):
 
-        self.data = curio.UniversalQueue()
-
         # currently, a list of things being managed
         self.nodes = deque()
+        self.background = set()
+        self.running = set()
         self.hats = set()
         self.hatq = curio.UniversalQueue()
 
@@ -96,8 +96,8 @@ class Farm:
 
         # mapping of events to co-routines
         self.event_map = dict(
-            P=self.previous,
-            N=self.next,
+            p=self.previous,
+            n=self.next,
             h=self.help,
             q=self.quit)
 
@@ -109,9 +109,13 @@ class Farm:
 
         print(self.current)
 
-    def add(self, node):
+    def add(self, node, background=False):
 
-        self.nodes.appendleft(node)
+        if background:
+            self.background.add(node)
+        else:
+            self.nodes.appendleft(node)
+        
 
     async def hat_stand(self):
         """ Pass data on to hats """
@@ -137,7 +141,12 @@ class Farm:
 
         await curio.spawn(self.hat_stand())
 
-
+        for node in self.background:
+            print('farm starting background task', node)
+            await node.start()
+            runner = await curio.spawn(self.runner(node))
+            self.running.add(runner)
+            
     async def runner(self, node=None):
 
         node = node or self.current
@@ -145,23 +154,19 @@ class Farm:
         print('Farm running node:', str(node))
         while True:
             if not node.paused:
-                if node.incoming is None:
+                if node.incoming:
                     #print('no incoming', id(node))
-                    continue
                 
-                print(f'FARM waiting for plots from {node.iqname}')
-                print('idcheck', id(node))
-                print(f'{id(node.incoming)} size {node.incoming.qsize()}')
-                self.ball = await node.incoming.get()
+                    print(f'runner for {node} waiting for plots from {node.iqname}')
+                    print('idcheck', id(node))
+                    print(f'{id(node.incoming)} size {node.incoming.qsize()}')
+                    node.ball = await node.incoming.get()
 
-                print(type(self.ball), self.ball.width, self.ball.height)
-
-                if self.outgoing is not None:
-                    await self.outgoing.put(self.ball)
+                    print(type(node.ball), node.ball.width, node.ball.height)
 
                 await node.run()
 
-            await curio.sleep(self.sleep)
+            await curio.sleep(node.sleep)
 
     async def run_node(self):
         """ Start the current node running """
@@ -213,7 +218,7 @@ class Farm:
 
         Connect to next node, whatever that may be
         """
-        if not len(self.nodes): return
+        if len(self.nodes) == 0 and not self.current: return
         print('current', self.current)
         if self.current:
             self.nodes.append(self.current)
@@ -228,7 +233,7 @@ class Farm:
         """ Show previous
         Connect to next node, whatever that may be.
         """
-        if not len(self.nodes): return
+        if len(self.nodes) == 0 and not self.current: return
         print('going to previous', self.current)
         if self.current:
 
@@ -252,7 +257,7 @@ class Farm:
             runners.append(runner)
 
         # select next node
-        await self.next()
+        #await self.next()
 
         await self.quit_event.wait()
 
@@ -437,9 +442,11 @@ class Carpet(Ball):
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
         if not self.outgoing:
+            print('carpet got nowhere to go')
             return
 
         if self.ball is None:
+            print('carpet got no ball')
             return
         
         print('WOWOWO got a  ball to display', self.size)
@@ -517,9 +524,13 @@ class MagicPlot(Ball):
         self.fig = figure.Figure()
         self.ax = self.fig.add_subplot(111)
 
+        # temp hack
+        self.incoming = None
+
     async def run(self):
 
         print('magic plot run')
+        ax = self.ax
         ax.clear()
         data = np.random.randint(50, size=100)
         print(data.mean())
@@ -539,7 +550,7 @@ async def run():
 
     # for now merge carpet events
     farm.event_map.update(carpet.event_map)
-    #farm.add(carpet)
+    farm.add(carpet, background=True)
 
 
     #edges = [[MagicPlot(), carpet]]
@@ -559,10 +570,6 @@ async def run():
 
     farm.add(magic_plotter)
 
-
-    await carpet.start()
-
-    await curio.spawn(farm.runner(carpet))
     print('Farm nodes', farm.nodes)
     
     print('starting farm')
