@@ -412,9 +412,9 @@ class Carpet(Ball):
 
         self.image = None
 
-        self.event_map = dict(
+        self.event_map.update(dict(
             m=self.more,
-            l=self.less)
+            l=self.less))
 
         
     async def more(self):
