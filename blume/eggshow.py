@@ -11,7 +11,7 @@ Press h for help.
 """
 
 
-from blume.magic import PigFarm, MagicPlot, fig2data
+from blume.magic import Farm, Carpet, Ball, fig2data
 
 import curio
 
@@ -20,7 +20,7 @@ import random
 from matplotlib import pyplot as plt
 from pathlib import Path
 
-class Examples(MagicPlot):
+class Examples(Ball):
 
     async def start(self):
 
@@ -39,14 +39,14 @@ class Examples(MagicPlot):
         idx = random.randint(0, len(self.paths) - 1)
         path = self.paths[idx]
         
-        if str(path) in bads:
+        if str(path) in self.bads:
             return
 
         for ban in self.bans:
             if ban in str(path):
                 self.bads.add(str(path))
                     
-        if str(path) in bads:
+        if str(path) in self.bads:
             return
 
         print(path)
@@ -72,21 +72,27 @@ def show():
 
 async def run():
 
-    farm = PigFarm()
+    farm = Farm()
 
-    carpet = await farm.create_carpet()
+    carpet = Carpet()
 
     iq = curio.UniversalQueue()
     await carpet.set_incoming(iq)
+    await carpet.set_outgoing(farm.hatq)
+    farm.event_map.update(carpet.event_map)
 
     examples = Examples()
     await examples.set_outgoing(iq)
+    examples.incoming = None
 
+    farm.add(carpet, background=True)
     farm.add(examples)
 
 
-    await farm.start()
-    await farm.run()
+    starter = await curio.spawn(farm.start())
+
+    print('farm runnnnnnnnnning')
+    runner = await farm.run()
     
         
 if __name__ == '__main__':
