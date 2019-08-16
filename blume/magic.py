@@ -121,7 +121,7 @@ class Farm:
         """ Pass data on to hats """
         while True:
             event = await self.hatq.get()
-            print('hat stand event', event)
+            #print('hat stand event', event)
             for hat in self.hats:
                 await hat.put(event)
 
@@ -498,13 +498,14 @@ def fig2data(fig):
     """
 
     facecolor = 'black'
+    #facecolor = 'white'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
 
     # no renderer without this
     image = io.BytesIO()
        
-    fig.savefig(image, facecolor=facecolor)
+    fig.savefig(image, facecolor=facecolor, dpi=500)
 
     return Image.open(image)
 

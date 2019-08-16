@@ -12,6 +12,7 @@ Press h for help.
 
 
 from blume.magic import Farm, Carpet, Ball, fig2data
+from .mclock2 import GuidoClock
 
 import curio
 
@@ -19,15 +20,20 @@ import random
 
 from matplotlib import pyplot as plt
 from pathlib import Path
-
-from .mclock2 import GuidoClock
+import argparse
 
 class Examples(Ball):
+
+    def __init__(self, args):
+
+        super().__init__()
+        
+        self.path = args.path
 
     async def start(self):
 
         self.paths = list(
-            Path('./examples').glob('**/*.py'))
+            Path(self.path).glob('**/*.py'))
 
         print('PATHS', len(self.paths))
         self.bans = ['embedding', '_runner', 'tick_labels']
@@ -72,7 +78,7 @@ def show():
 
 
 
-async def run():
+async def run(args):
     """ Don't do things this way until things settle down ..."""
 
     farm = Farm()
@@ -91,7 +97,7 @@ async def run():
     farm.event_map.update(clock.event_map)
     farm.event_map.update(carpet.event_map)
 
-    examples = Examples()
+    examples = Examples(args)
     await examples.set_outgoing(iq)
     examples.incoming = None
     clock.incoming = None
@@ -109,5 +115,8 @@ async def run():
         
 if __name__ == '__main__':
     
-    
-    curio.run(run())
+    parser = argparse.ArgumentParser()
+    parser.add_argument('path', default='.')
+
+    args = parser.parse_args()
+    curio.run(run(args))

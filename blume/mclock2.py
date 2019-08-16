@@ -32,6 +32,7 @@ class GuidoClock(Ball):
 
         self.width = 480
         self.height = 640
+        self.sleep = 1
         segments=9
         
         self.segments = segments
@@ -75,7 +76,8 @@ class GuidoClock(Ball):
 
     def set_radius(self):
 
-        radius = min(self.width, self.height) // 2
+        #radius = min(self.width, self.height) // 2
+        radius = 1.5
         self.radius = radius
         self.bigsize = radius * .975
         self.litsize = radius * .67
@@ -161,14 +163,8 @@ class GuidoClock(Ball):
         plt.cla()
         self.set_radius()
         radius = self.radius
-        bigsize = self.bigsize / 100
-        litsize = self.litsize / 100
-        #bigsize = 1.1
-        #litsize = 1.1
-        
-
-        xx = int(self.width / 2)
-        yy = int(self.height / 2)
+        bigsize = self.bigsize
+        litsize = self.litsize
 
         # Set bigd, litd to angles in degrees for big, little hands
         # 12 => 90, 3 => 0, etc.
@@ -179,24 +175,24 @@ class GuidoClock(Ball):
         litr = math.radians(litd)
         # Draw the background colored arcs
         self.drawbg(bigd, litd, colors)
-        print('bigd/litd', bigd, litd, bigsize, litsize)
+
         # Draw the hands
-        #plt.plot(range(3))
         xx = yy = 0.0
+        print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
         b = plt.plot(
-            [xx, xx + int(bigsize*math.cos(bigr))],
-            [yy, yy - int(bigsize*math.sin(bigr))],
-            linewidth=int(radius/50), color='yellow')
+            [xx, xx + bigsize*math.cos(bigr)],
+            [yy, yy + bigsize*math.sin(bigr)],
+            linewidth=5, color='yellow')
         
         l = plt.plot(
-            [xx, xx + int(litsize*math.cos(litr))],
-            [yy, yy - int(litsize*math.sin(litr))],
-            linewidth=int(radius/33), color='green')
+            [xx, xx + litsize*math.cos(litr)],
+            [yy, yy + litsize*math.sin(litr)],
+            linewidth=10, color='green')
         
         # Draw the text
         if self.showtext:
-            t = self.text(
-                (xx - bigsize, yy + bigsize),
+            t = plt.text(
+                xx - bigsize, yy + bigsize,
                 text="%02d:%02d:%02d" % (hh, mm, ss),
                 fill="white")
 
@@ -243,17 +239,12 @@ class GuidoClock(Ball):
             fill[colorindex] = color
             if table[i+1][0] > angle:
                 extent = table[i+1][0] - angle
-                if extent < 1.:
-                    # XXX Work around a bug in Tk for very small angles
-                    extent = 1.
+                #if extent < 1.:
+                #    # XXX Work around a bug in Tk for very small angles
+                #    extent = 1.
 
                 colors.append("#%02x%02x%02x" % tuple(fill))
                 wedges.append(extent)
-                #patches.Wedge((xx, yy), radius, angle, extent + angle,
-                #              facecolor="#%02x%02x%02x" % tuple(fill))
-        plt.pie(wedges, colors=colors, radius=1.5)
 
-
-
-
-
+        plt.pie(wedges, colors=colors, radius=1.5,
+                startangle=0, counterclock=False)
