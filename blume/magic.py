@@ -426,7 +426,8 @@ class Carpet(Ball):
 
     async def less(self):
         """ Show fewer pictures """
-        self.size -= 1
+        if self.size > 1:
+            self.size -= 1
         self._update_pos()
         self.image = None
         print(f'less {self.size}', id(self))

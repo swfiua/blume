@@ -20,6 +20,8 @@ import random
 from matplotlib import pyplot as plt
 from pathlib import Path
 
+from .mclock2 import GuidoClock
+
 class Examples(Ball):
 
     async def start(self):
@@ -71,22 +73,32 @@ def show():
 
 
 async def run():
+    """ Don't do things this way until things settle down ..."""
 
     farm = Farm()
 
+    clock = GuidoClock()
+
     carpet = Carpet()
+
+    await clock.set_outgoing(farm.hatq)
 
     iq = curio.UniversalQueue()
     await carpet.set_incoming(iq)
     await carpet.set_outgoing(farm.hatq)
+
+
+    farm.event_map.update(clock.event_map)
     farm.event_map.update(carpet.event_map)
 
     examples = Examples()
     await examples.set_outgoing(iq)
     examples.incoming = None
+    clock.incoming = None
 
     farm.add(carpet, background=True)
     farm.add(examples)
+    farm.add(clock)
 
 
     starter = await curio.spawn(farm.start())
