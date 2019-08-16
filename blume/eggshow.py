@@ -21,6 +21,7 @@ import random
 from matplotlib import pyplot as plt
 from pathlib import Path
 import argparse
+import traceback
 
 class Examples(Ball):
 
@@ -28,16 +29,20 @@ class Examples(Ball):
 
         super().__init__()
         
-        self.path = args.path
+        self.path = Path(args.path)
 
     async def start(self):
 
-        self.paths = list(
-            Path(self.path).glob('**/*.py'))
+        if self.path.is_file():
+            self.paths = [self.path]
+        else:
+        
+            self.paths = list(
+                Path(self.path).glob('**/*.py'))
 
         print('PATHS', len(self.paths))
         self.bans = ['embedding', '_runner', 'tick_labels']
-        
+
         # not sure this works -- stop others stealing the show
         plt.show = show
         self.bads = set()
@@ -59,9 +64,10 @@ class Examples(Ball):
 
         print(path)
         try:
-            exec(path.open().read())
+            exec(path.open().read(), globals())
         except:
             print('BAD ONE', path)
+            traceback.print_exc(limit=20)
             self.bads.add(str(path))
             return
             
