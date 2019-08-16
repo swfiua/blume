@@ -4,6 +4,8 @@ by Guido van Rossum
 
 after a design by Rob Juda
 
+adapted too much with added buglets by Johnny Gill.
+
 """
 import sys
 
@@ -99,7 +101,7 @@ class GuidoClock(Ball):
             hh %= 24
 
     async def midnight(self, mtm=MINUTES_TO_MIDNIGHT):
-        """ Bulleting of atomic scientists """
+        """ Bulletin of Atomic Scientists """
         if self.timewarp:
             self.timewarp = None
             return
