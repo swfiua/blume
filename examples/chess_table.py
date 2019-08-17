@@ -67,7 +67,6 @@ cell_colours = []
 for row in range(8):
     cell_colours.append(arow.copy())
     arow.reverse()
-    print(arow)
     
 fig = plt.figure()
 ax = fig.add_subplot(1,1, 1)

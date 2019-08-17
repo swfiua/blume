@@ -505,7 +505,7 @@ def fig2data(fig):
     # no renderer without this
     image = io.BytesIO()
        
-    fig.savefig(image, facecolor=facecolor, dpi=500)
+    fig.savefig(image, facecolor=facecolor, dpi=200)
 
     return Image.open(image)
 

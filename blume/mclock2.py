@@ -177,17 +177,11 @@ class GuidoClock(Ball):
         self.drawbg(bigd, litd, colors)
 
         # Draw the hands
-        xx = yy = 0.0
         print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
-        b = plt.plot(
-            [xx, xx + bigsize*math.cos(bigr)],
-            [yy, yy + bigsize*math.sin(bigr)],
-            linewidth=5, color='yellow')
-        
-        l = plt.plot(
-            [xx, xx + litsize*math.cos(litr)],
-            [yy, yy + litsize*math.sin(litr)],
-            linewidth=10, color='green')
+
+        self.draw_hand(bigr, bigsize, width=5, color='yellow')
+
+        self.draw_hand(litr, litsize, width=10, color='green')
         
         # Draw the text
         if self.showtext:
@@ -200,6 +194,21 @@ class GuidoClock(Ball):
             
         if self.creditxy:
             self.text(self.creditxy, self.credits)
+
+
+    def draw_hand(self, angler, length, width, color):
+        
+        xx = yy = 0.0
+        
+        plt.plot(
+            [xx, xx + length*math.cos(angler)],
+            [yy, yy + length*math.sin(angler)],
+            linewidth=width * 1.2, color='black')
+
+        plt.plot(
+            [xx, xx + length*math.cos(angler)],
+            [yy, yy + length*math.sin(angler)],
+            linewidth=width, color=color)
 
 
     def drawbg(self, bigd, litd, colors=(0, 1, 2)):
