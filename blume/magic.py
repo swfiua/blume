@@ -280,12 +280,14 @@ class Farm:
     async def process_event(self, event):
         """ Dispatch events when they come in """
 
-        print('EVENT', event)
-        coro = self.event_map.get(event)
-
-        if coro is None and self.current:
+        coro = None
+        if self.current:
             if hasattr(self.current, 'event_map'):
                 coro = self.current.event_map.get(event)
+                
+        print('EVENT', event)
+        if coro is None:
+            coro = self.event_map.get(event)
 
         if coro:
             await coro()

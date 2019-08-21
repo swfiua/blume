@@ -93,8 +93,6 @@ async def run(args):
 
     carpet = Carpet()
 
-    await clock.set_outgoing(farm.hatq)
-
     iq = curio.UniversalQueue()
     await carpet.set_incoming(iq)
     await carpet.set_outgoing(farm.hatq)
@@ -105,6 +103,8 @@ async def run(args):
 
     examples = Examples(args)
     await examples.set_outgoing(iq)
+    await clock.set_outgoing(iq)
+
     examples.incoming = None
     clock.incoming = None
 

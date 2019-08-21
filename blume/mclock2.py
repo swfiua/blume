@@ -170,11 +170,13 @@ class GuidoClock(Ball):
         # 12 => 90, 3 => 0, etc.
         bigd = (90 - (mm*60 + ss) / 10) % 360
         litd = (90 - (hh*3600 + mm*60 + ss) / 120) % 360
+        secd = (90 - (ss*60)) % 360
         # Set bigr, litr to the same values in radians
         bigr = math.radians(bigd)
         litr = math.radians(litd)
+        secr = math.radians(secd)
         # Draw the background colored arcs
-        self.drawbg(bigd, litd, colors)
+        self.drawbg(bigd, litd, secd, colors)
 
         # Draw the hands
         print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
@@ -211,7 +213,7 @@ class GuidoClock(Ball):
             linewidth=width, color=color)
 
 
-    def drawbg(self, bigd, litd, colors=(0, 1, 2)):
+    def drawbg(self, bigd, litd, secd, colors=(0, 1, 2)):
         # This is tricky.  We have to simulate a white background with
         # three transparent discs in front of it; one disc is
         # stationary and the other two are attached to the big and
@@ -223,7 +225,7 @@ class GuidoClock(Ball):
         table = []
         for angle, colorindex in [(bigd - 180/N, 0),
                                   (litd - 180/N, 1),
-                                  (  90 - 180/N, 2)]:
+                                  (secd - 180/N, 2)]:
             angle %= 360
             for i in range(N):
                 color = 255
