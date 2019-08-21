@@ -49,7 +49,10 @@ class Examples(Ball):
 
     async def run(self):
 
-        idx = random.randint(0, len(self.paths) - 1)
+        idx = 0
+        if len(self.paths) > 1:
+            idx = random.randint(0, len(self.paths)-1)
+
         path = self.paths[idx]
         
         if str(path) in self.bads:
@@ -79,9 +82,7 @@ class Examples(Ball):
 
 
 def show():
-
     print('NO SHOW TODAY')
-
 
 
 async def run(args):
