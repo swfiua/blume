@@ -332,9 +332,27 @@ class RoundAbout:
     """ 
     A magic queue switch.
 
+    Processes waiting on something.
+
+    Input from queues.
+
+    Balls, outputs, inputs.
+
     Time for bed, said zebedee 
     """
-    pass
+    def __init__(self):
+
+        self.nodes = set()
+        self.edges = set()
+        self.qs = dict()
+
+    def add_edge(self, aa, bb, name):
+        """ Add an edge to the roundabout """
+        self.edges.add((aa, bb, name))
+
+        qq = curio.UniversalQueue()
+        
+        aa.add_output(qq, name)
 
     async def put(self, packet):
         pass
@@ -357,10 +375,7 @@ class Ball:
 
         self.image = None
         
-        self.iqname = 'incoming'
-        self.oqname = 'outgoing'
-        self.incoming = curio.UniversalQueue()
-        self.outgoing = curio.UniversalQueue()
+        self.rab = RoundAbout()
 
         # ho hum update event_map to control ball?
         self.event_map = dict(
@@ -385,13 +400,11 @@ class Ball:
 
     async def set_incoming(self, queue, name=None):
         """ Set the carpet incoming queue. """ 
-        self.incoming = queue
-        if name:
-            self.iqname = name
+        self.incoming = self.rab.set(queue, 'ink', name=name)
 
     async def set_outgoing(self, queue, name=None):
         """ Set the carpet outgoing queue to. """
-        self.outgoing = queue
+        self.outgoing = self.rab.set(queue, 'oink', name=name)
         if name:
             self.oqname = name
 
