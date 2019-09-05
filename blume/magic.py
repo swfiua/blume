@@ -60,6 +60,8 @@ Some writing to queues where viewers are polling.
 """
 import random
 
+import math
+
 import io
 
 from pathlib import Path
@@ -316,6 +318,9 @@ class GeeFarm:
         self.hub.add_nodes_from(nodes or set())
         self.hub.add_edges_from(edges or set())
 
+
+        self.ras = {}
+
         print(f' nodes: {self.hub.number_of_nodes()}')
         print(f' edges: {self.hub.number_of_edges()}')
 
@@ -325,7 +330,9 @@ class GeeFarm:
         for item in hub.nodes:
             print('degree', hub.degree[item])
             continue      
-            rab = RoundAbout(source, destination)
+            rab = RoundAbout()
+            source.rab = rab
+            
 
 
 class RoundAbout:
@@ -342,23 +349,30 @@ class RoundAbout:
     """
     def __init__(self):
 
-        self.nodes = set()
-        self.edges = set()
-        self.qs = dict()
+        self.qs = {}
+        self.add_queue()
 
-    def add_edge(self, aa, bb, name):
-        """ Add an edge to the roundabout """
-        self.edges.add((aa, bb, name))
+    async def select(self, name=None, create=True):
+        """ pick a q 
+        
+        create: if True, create if missing
+        """
+        qq = self.qs.setdefault(name)
+        if qq is None:
+            if create:
+                qq = self.add_queue(name)
+            else:
+                raise ValueError(f'no queue for {name}')
+
+        return qq
+
+    def add_queue(self, name=None):
 
         qq = curio.UniversalQueue()
-        
-        aa.add_output(qq, name)
+        self.qs[name] = qq
 
-    async def put(self, packet):
-        pass
+        return qq
 
-    async def get(self):
-        pass
         
 
 class Ball:
@@ -374,8 +388,9 @@ class Ball:
         self.pos = 0
 
         self.image = None
-        
-        self.rab = RoundAbout()
+
+        # Farm sets roundabout
+        self.rab = None
 
         # ho hum update event_map to control ball?
         self.event_map = dict(
@@ -400,7 +415,7 @@ class Ball:
 
     async def set_incoming(self, queue, name=None):
         """ Set the carpet incoming queue. """ 
-        self.incoming = self.rab.set(queue, 'ink', name=name)
+        self.incoming = self.rab.register(queue, 'ink', name=name)
 
     async def set_outgoing(self, queue, name=None):
         """ Set the carpet outgoing queue to. """
@@ -527,10 +542,16 @@ def fig2data(fig):
 
 # example below ignore for now
 class MagicPlot(Ball):
-    """ A simple carpet carpet """
+    """ Use a Ball to plot.
+    
+    FIXME: make this one more interesting.
+    """
     async def add(self):
-        """ Magic Plot key demo """
+        """ Magic Plot key demo  """
         print('magic key was pressed')
+
+        # now what to add?
+        return math.pi + math.e
 
     async def start(self):
 
