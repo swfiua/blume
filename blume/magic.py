@@ -319,17 +319,21 @@ class GeeFarm:
         self.hub.add_edges_from(edges or set())
 
 
-        self.ras = {}
+        self.rab = Roundabout()
 
         print(f' nodes: {self.hub.number_of_nodes()}')
         print(f' edges: {self.hub.number_of_edges()}')
 
-    def connect(self):
+    def show(self):
 
         hub = self.hub
         for item in hub.nodes:
             print('degree', hub.degree[item])
-            continue      
+
+        for edge in self.hub.edges:
+            print(edge)
+
+        
             rab = RoundAbout()
             source.rab = rab
             
