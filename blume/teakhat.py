@@ -45,6 +45,7 @@ class Hat(ttk.Frame):
 
     def keypress(self, event):
         """ Take tk events and stick them in a curio queue """
+        print('teakhat handlint', event.char)
         self.events.put(event.char)
         
         return True
@@ -66,12 +67,12 @@ class Hat(ttk.Frame):
 
             await curio.sleep(self.sleep)
 
-    async def put(self, event):
-        """ Push gui events into a queue """
-        if type(event) is int:
-            print('incoming int', event)
-            
-        await self.incoming.put(event)
+    #async def put(self, event):
+    #    """ Push gui events into a queue """
+    #    if type(event) is int:
+    #        print('incoming int', event)
+    #        
+    #    await self.incoming.put(event)
 
     async def get(self):
         """ Get stuff and display it """
@@ -103,7 +104,7 @@ class Hat(ttk.Frame):
 
         print("Event loop over and out")
 
-    async def run(self):
+    async def xrun(self):
 
         pass    
 

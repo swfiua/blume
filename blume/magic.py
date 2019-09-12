@@ -66,7 +66,7 @@ import io
 
 from pathlib import Path
 
-from collections import deque
+from collections import deque, defaultdict
 
 import curio
 
@@ -82,21 +82,23 @@ import networkx as nx
 
 from .teakhat import Hat, Help
 
+
 class Farm:
     """ Connections to the outside world """
 
     def __init__(self, meta=None, events=None):
 
         # currently, a list of things being managed
-        self.nodes = deque()
-        self.background = set()
+        self.balls = deque()
         self.running = set()
-        self.hats = set()
-        self.hatq = curio.UniversalQueue()
 
         self.current = None
 
+        self.hats = []
+
         # mapping of events to co-routines
+        self.gfarm = GeeFarm()
+
         self.event_map = dict(
             p=self.previous,
             n=self.next,
@@ -104,28 +106,37 @@ class Farm:
             q=self.quit)
 
 
-        self.hats.add(Hat())
+
+    def __getattr__(self, attr):
+
+        return getattr(self.gfarm, attr)
 
 
     def status(self):
 
-        print(self.current)
+        self.show()
 
-    def add(self, node, background=False):
+    def setup(self):
 
-        if background:
-            self.background.add(node)
-        else:
-            self.nodes.appendleft(node)
-        
+        for node in self.nodes:
+            data = self.nodes[node]
+            if 'hat' in data:
+                self.hats.append(node)
 
-    async def hat_stand(self):
-        """ Pass data on to hats """
-        while True:
-            event = await self.hatq.get()
-            #print('hat stand event', event)
-            for hat in self.hats:
-                await hat.put(event)
+        for edge in self.edges:
+            start, end = edge
+            qname = self.edges[edge].get('name')
+            sname = qname or 'outgoing'
+            ename = qname or 'incoming'
+
+            print('joining', start, end, sname, ename)
+            if hasattr(end, ename):
+                setattr(start, sname, getattr(end, ename))
+            else:
+                queue = curio.UniversalQueue()
+                setattr(start, sname, queue)
+                setattr(end, ename, queue)
+            
 
     async def start(self):
         """ Start the farm running 
@@ -135,19 +146,20 @@ class Farm:
         """
         for node in self.nodes:
             print('farm.start starting', node)
+            print(type(node))
             await curio.spawn(node.start())
 
-        for hat in self.hats:
-            print('farm.start starting hat', hat)
-            await curio.spawn(hat.start())
 
-        await curio.spawn(self.hat_stand())
-
-        for node in self.background:
-            print('farm starting background task', node)
-            await node.start()
-            runner = await curio.spawn(self.runner(node))
-            self.running.add(runner)
+        for node in self.nodes:
+            data = self.nodes[node]
+            background = data.get('background')
+            if background:
+                print('farm starting background task', node)
+                if hasattr(node, 'run'):
+                    runner = await curio.spawn(self.runner(node))
+                    self.running.add(runner)
+            else:
+                self.balls.appendleft(node)
             
     async def runner(self, node=None):
 
@@ -156,15 +168,10 @@ class Farm:
         print('Farm running node:', str(node))
         while True:
             if not node.paused:
-                if node.incoming:
-                    #print('no incoming', id(node))
-                
-                    print(f'runner for {node} waiting for plots from {node.iqname}')
-                    print('idcheck', id(node))
-                    print(f'{id(node.incoming)} size {node.incoming.qsize()}')
-                    node.ball = await node.incoming.get()
 
-                    print(type(node.ball), node.ball.width, node.ball.height)
+                incoming = getattr(node, 'incoming', None)
+                if incoming:
+                    node.ball = await node.incoming.get()
 
                 await node.run()
 
@@ -176,8 +183,6 @@ class Farm:
         # set current out queue to point at
         #self.current.out = self.viewer.queue
 
-        runner = getattr(self.current, 'runner', self.runner)
-        
         self.current_task = await curio.spawn(self.runner())
 
     async def stop_node(self):
@@ -220,30 +225,30 @@ class Farm:
 
         Connect to next node, whatever that may be
         """
-        if len(self.nodes) == 0 and not self.current: return
+        if len(self.balls) == 0 and not self.current: return
         print('current', self.current)
         if self.current:
-            self.nodes.append(self.current)
+            self.balls.append(self.current)
 
             await self.stop_node()
 
-        self.current = self.nodes.popleft()
+        self.current = self.balls.popleft()
         await self.run_node()
 
 
     async def previous(self):
         """ Show previous
-        Connect to next node, whatever that may be.
+        Connect to previous node, whatever that may be.
         """
-        if len(self.nodes) == 0 and not self.current: return
+        if len(self.balls) == 0 and not self.current: return
         print('going to previous', self.current)
         if self.current:
 
-            self.nodes.appendleft(self.current)
+            self.balls.appendleft(self.current)
 
             await self.stop_node()
 
-        self.current = self.nodes.pop()
+        self.current = self.balls.pop()
         await self.run_node()
 
 
@@ -259,7 +264,7 @@ class Farm:
             runners.append(runner)
 
         # select next node
-        #await self.next()
+        await self.next()
 
         await self.quit_event.wait()
 
@@ -273,7 +278,8 @@ class Farm:
 
     async def tend(self, queue):
         """ Event handling for the hats  """
-                
+
+        print('TENDING', queue.qsize())
         while True:
             event = await queue.get()
 
@@ -296,7 +302,50 @@ class Farm:
         else:
             print('no callback for event', event, type(event))
 
-class GeeFarm:
+class Ball:
+    
+    def __init__(self):
+
+        self.ball = None
+        self.paused = False
+        self.sleep = .1
+
+        # grid related
+        self.size = 1
+        self.pos = 0
+
+        self.image = None
+
+        # ho hum update event_map to control ball?
+        self.event_map = dict(
+            s=self.sleepy,
+            w=self.wakey)
+        self.event_map[' '] = self.toggle_pause
+
+    async def sleepy(self):
+        """ Sleep more between updates """
+        self.sleep *= 2
+        print(f'sleepy {self.sleep}')
+
+    async def wakey(self):
+        """ Sleep less between updates """
+        self.sleep /= 2
+        print(f'wakey {self.sleep}')
+
+    async def toggle_pause(self):
+        """ Toggle pause flag """
+        print('toggle pause')
+        self.paused = not self.paused
+
+    async def start(self):
+        pass
+
+    async def run(self):
+        pass
+
+
+
+class GeeFarm(Ball):
     """ A farm, for now.. 
 
     A network of things running around.
@@ -313,33 +362,44 @@ class GeeFarm:
     def __init__(self, hub=None, nodes=None, edges=None):
         """ Turn graph into a running farm """
         super().__init__()
-        self.hub = hub or nx.Graph()
+        self.hub = hub or nx.DiGraph()
 
         self.hub.add_nodes_from(nodes or set())
         self.hub.add_edges_from(edges or set())
 
 
-        self.rab = Roundabout()
+    def __getattr__(self, attr):
+        """ Delegate to hub or Round
+        """
+        return getattr(self.hub, attr)
+        
+
+    def show(self):
 
         print(f' nodes: {self.hub.number_of_nodes()}')
         print(f' edges: {self.hub.number_of_edges()}')
 
-    def show(self):
-
         hub = self.hub
         for item in hub.nodes:
-            print('degree', hub.degree[item])
+            print('degree', hub.degree[item], hub[item])
 
         for edge in self.hub.edges:
             print(edge)
 
-        
-            rab = RoundAbout()
-            source.rab = rab
+    def to_roundabout(self):
+        """ Convert graph to a roundabout """
+        rab = RoundAbout()
+        # set rabqn on the balls in question
+        for node in self.nodes:
+            print(node)
+
+        for edge in self.edges:
+            pass
+        return rab
             
 
 
-class RoundAbout:
+class RoundAbout(Ball):
     """ 
     A magic queue switch.
 
@@ -349,14 +409,17 @@ class RoundAbout:
 
     Balls, outputs, inputs.
 
+    Of course, the round about is a ball.
+
     Time for bed, said zebedee 
     """
     def __init__(self):
 
         self.qs = {}
+        self.infos = defaultdict(set)
         self.add_queue()
 
-    async def select(self, name=None, create=True):
+    def select(self, name=None, create=True):
         """ pick a q 
         
         create: if True, create if missing
@@ -377,61 +440,30 @@ class RoundAbout:
 
         return qq
 
-        
 
-class Ball:
+    async def tee(self, ink, outs):
+        """ Pass data on  
+
+        Idea for here: relays.
+        """
+        while True:
+            event = await ink.get()
+            #print('hat stand event', event)
+            for out in outs:
+                await out.put(event)
     
-    def __init__(self):
-
-        self.ball = None
-        self.paused = False
-        self.sleep = .1
-
-        # grid related
-        self.size = 1
-        self.pos = 0
-
-        self.image = None
-
-        # Farm sets roundabout
-        self.rab = None
-
-        # ho hum update event_map to control ball?
-        self.event_map = dict(
-            s=self.sleepy,
-            w=self.wakey)
-        self.event_map[' '] = self.toggle_pause
-    
-    async def sleepy(self):
-        """ Sleep more between updates """
-        self.sleep *= 2
-        print(f'sleepy {self.sleep}')
-
-    async def wakey(self):
-        """ Sleep less between updates """
-        self.sleep /= 2
-        print(f'wakey {self.sleep}')
-
-    async def toggle_pause(self):
-        """ Toggle pause flag """
-        print('toggle pause')
-        self.paused = not self.paused
-
-    async def set_incoming(self, queue, name=None):
-        """ Set the carpet incoming queue. """ 
-        self.incoming = self.rab.register(queue, 'ink', name=name)
-
-    async def set_outgoing(self, queue, name=None):
-        """ Set the carpet outgoing queue to. """
-        self.outgoing = self.rab.set(queue, 'oink', name=name)
-        if name:
-            self.oqname = name
 
     async def start(self):
+        """ How do you start a magic round-a-bout? """
         pass
 
     async def run(self):
+        """ Run the magic roundabout """
+
+        # create an image to show what is going on?
         pass
+
+        
 
 
 class Carpet(Ball):
@@ -439,6 +471,8 @@ class Carpet(Ball):
     def __init__(self):
 
         super().__init__()
+
+        self.ball = None
         
         # grid related
         self.size = 1
@@ -465,7 +499,7 @@ class Carpet(Ball):
         self._update_pos()
         self.image = None
         print(f'less {self.size}', id(self))
-    
+
 
     async def start(self):
         
@@ -476,10 +510,6 @@ class Carpet(Ball):
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
-        if not self.outgoing:
-            print('carpet got nowhere to go')
-            return
-
         if self.ball is None:
             print('carpet got no ball')
             return
@@ -567,7 +597,7 @@ class MagicPlot(Ball):
         self.ax = self.fig.add_subplot(111)
 
         # temp hack
-        self.incoming = None
+        #self.incoming = None
 
     async def run(self):
 
@@ -590,31 +620,25 @@ async def run():
 
     carpet = Carpet()
 
-    # for now merge carpet events
+    # for now merge carpet events  -- need to sort events a little
     farm.event_map.update(carpet.event_map)
-    farm.add(carpet, background=True)
 
+    #farm.add(carpet, background=True)
+    farm.add_node(carpet, background=True)
+    hat = Hat()
+    farm.add_node(hat, background=True, hat=True)
+    farm.add_edge(carpet, hat)
 
-    #edges = [[MagicPlot(), carpet]]
-    #farm = GFarm(edages=edges)
-    
-    
-    iq = curio.UniversalQueue()
-    oq = farm.hatq
-    await carpet.set_incoming(iq)
-    await carpet.set_outgoing(oq)
-
-    # tell farm to connect oq to the hats
-
-    print(f'image queue: {iq}')
     magic_plotter = MagicPlot()
-    await magic_plotter.set_outgoing(iq)
+    farm.add_edge(magic_plotter, carpet)
 
-    farm.add(magic_plotter)
+    farm.show()
 
     print('Farm nodes', farm.nodes)
     
     print('starting farm')
+    farm.setup()
+
     fstart = await curio.spawn(farm.start())
 
     print('farm running')

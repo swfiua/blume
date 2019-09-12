@@ -11,7 +11,7 @@ Press h for help.
 """
 
 
-from blume.magic import Farm, Carpet, Ball, fig2data
+from blume.magic import Farm, Carpet, Ball, Hat, fig2data
 from .mclock2 import GuidoClock
 
 import curio
@@ -73,7 +73,8 @@ class Examples(Ball):
             traceback.print_exc(limit=20)
             self.bads.add(str(path))
             return
-            
+
+        print('publishing', path)
         await self.outgoing.put(fig2data(plt))
 
         plt.close()
@@ -93,27 +94,24 @@ async def run(args):
     clock = GuidoClock()
 
     carpet = Carpet()
-
-    iq = curio.UniversalQueue()
-    await carpet.set_incoming(iq)
-    await carpet.set_outgoing(farm.hatq)
-
-
+    
     farm.event_map.update(clock.event_map)
     farm.event_map.update(carpet.event_map)
 
     examples = Examples(args)
-    await examples.set_outgoing(iq)
-    await clock.set_outgoing(iq)
 
-    examples.incoming = None
-    clock.incoming = None
+    hat = Hat()
+    farm.add_node(hat, background=True, hat=True)
+    farm.add_node(carpet, background=True)
+    farm.add_node(examples)
+    farm.add_node(clock)
 
-    farm.add(carpet, background=True)
-    farm.add(examples)
-    farm.add(clock)
+    farm.add_edge(carpet, hat)
+    farm.add_edge(examples, carpet)
+    farm.add_edge(clock, carpet)
 
 
+    farm.setup()
     starter = await curio.spawn(farm.start())
 
     print('farm runnnnnnnnnning')
