@@ -78,6 +78,8 @@ import matplotlib
 
 from matplotlib import figure
 
+from matplotlib import pyplot as plt
+
 import networkx as nx
 
 from .teakhat import Hat, Help
@@ -99,6 +101,11 @@ class Farm:
         # mapping of events to co-routines
         self.gfarm = GeeFarm()
 
+        self.radii = RoundAbout()
+        
+        # wonder what happens here?
+        # self.balls.appendleft(self.gfarm)
+
         self.event_map = dict(
             p=self.previous,
             n=self.next,
@@ -106,7 +113,22 @@ class Farm:
             q=self.quit)
 
 
+        # start the farm going
+        carpet = Carpet()
+        hat = Hat()
 
+        # for now merge carpet events  -- need to sort events a little
+        self.event_map.update(carpet.event_map)
+
+        self.add_node(carpet, background=True)
+        self.add_node(hat, background=True, hat=True)
+
+        self.add_edge(carpet, hat)
+        #self.add_edge('hat', carpet)
+
+        self.carpet = carpet
+
+        
     def __getattr__(self, attr):
 
         return getattr(self.gfarm, attr)
@@ -117,11 +139,19 @@ class Farm:
         self.show()
 
     def setup(self):
+        """ Process the trees, set up all the connections 
 
+        If it is here ... maybe it's because not figured out where
+        it really belongs.
+        """
         for node in self.nodes:
             data = self.nodes[node]
             if 'hat' in data:
                 self.hats.append(node)
+
+        # hmm maybe this.. add it to itself...
+        self.add_edge(self.gfarm, self.carpet)
+                
 
         for edge in self.edges:
             start, end = edge
@@ -132,10 +162,28 @@ class Farm:
             print('joining', start, end, sname, ename)
             if hasattr(end, ename):
                 setattr(start, sname, getattr(end, ename))
+            elif hasattr(start, sname):
+                # this case is tricky
+                # for now just do the case where a one to many
+                # shares its outputs
+                setattr(end, ename, getattr(start, sname))
             else:
-                queue = curio.UniversalQueue()
-                setattr(start, sname, queue)
-                setattr(end, ename, queue)
+                # This is where a magic roundabout
+                # would come in handy .. but then above would be different
+                # start or end might be just strings
+                queue = self.radii.select(name=ename)
+                
+                if isinstance(start, str):
+                    # cross fingers this gets fixed by some later magic
+                    pass
+                else:
+                    setattr(start, sname, queue)
+
+                if isinstance(end, str):
+                    # again, what to do?
+                    pass
+                else:
+                    setattr(end, ename, queue)
             
 
     async def start(self):
@@ -374,7 +422,7 @@ class GeeFarm(Ball):
         return getattr(self.hub, attr)
         
 
-    def show(self):
+    def dump(self):
 
         print(f' nodes: {self.hub.number_of_nodes()}')
         print(f' edges: {self.hub.number_of_edges()}')
@@ -386,17 +434,19 @@ class GeeFarm(Ball):
         for edge in self.hub.edges:
             print(edge)
 
-    def to_roundabout(self):
-        """ Convert graph to a roundabout """
-        rab = RoundAbout()
-        # set rabqn on the balls in question
-        for node in self.nodes:
-            print(node)
+    async def start(self):
 
-        for edge in self.edges:
-            pass
-        return rab
-            
+        pass
+    
+    async def run(self):
+
+        print('magic tree farm')
+
+        # delegated to hub
+        nx.draw(self.hub)
+
+        await self.outgoing.put(fig2data(plt))
+        print('qsize', self.outgoing.qsize())
 
 
 class RoundAbout(Ball):
@@ -618,25 +668,13 @@ async def run():
 
     farm = Farm()
 
-    carpet = Carpet()
-
-    # for now merge carpet events  -- need to sort events a little
-    farm.event_map.update(carpet.event_map)
-
-    #farm.add(carpet, background=True)
-    farm.add_node(carpet, background=True)
-    hat = Hat()
-    farm.add_node(hat, background=True, hat=True)
-    farm.add_edge(carpet, hat)
-
     magic_plotter = MagicPlot()
-    farm.add_edge(magic_plotter, carpet)
 
-    farm.show()
+    farm.add_edge(magic_plotter, farm.carpet)
 
-    print('Farm nodes', farm.nodes)
-    
-    print('starting farm')
+    farm.dump()
+
+    print('set up the farm .. move to start for added thrills? or not?') 
     farm.setup()
 
     fstart = await curio.spawn(farm.start())
