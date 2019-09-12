@@ -114,17 +114,18 @@ class Farm:
 
 
         # start the farm going
-        carpet = Carpet()
         hat = Hat()
-
-        # for now merge carpet events  -- need to sort events a little
-        self.event_map.update(carpet.event_map)
+        carpet = Carpet()
 
         self.add_node(carpet, background=True)
         self.add_node(hat, background=True, hat=True)
 
         self.add_edge(carpet, hat)
         #self.add_edge('hat', carpet)
+
+        # for now merge carpet events  -- need to sort events a little
+        # follow the magic roundabout
+        self.event_map.update(carpet.event_map)
 
         self.carpet = carpet
 
@@ -210,6 +211,25 @@ class Farm:
                 self.balls.appendleft(node)
             
     async def runner(self, node=None):
+        """ runner for node.run and more
+
+        This was an an attempt to factor out some boiler plate from 
+        run methods.
+
+        so run has turned into "do one iteration of what you do"
+
+        and runner here is managing pausing, and has a curious obsession
+        with the incoming queue if you have one.
+
+        I guess it is checking the in-tray if there is one.
+
+        then running anyway and then taking a short nap.
+
+        Now we could loop round doing timeouts on queues and then firing
+        off runs.
+
+        With a bit more work when building things ... self.radii time?
+        """
 
         node = node or self.current
 
@@ -308,7 +328,8 @@ class Farm:
 
         runners = []
         for hat in self.hats:
-            runner = await curio.spawn(self.tend(hat.events))
+            runner = await curio.spawn(self.radii.tend(
+                queue=hat.events, coro=self.process_event))
             runners.append(runner)
 
         # select next node
@@ -323,15 +344,6 @@ class Farm:
 
         print('runner gone')
 
-
-    async def tend(self, queue):
-        """ Event handling for the hats  """
-
-        print('TENDING', queue.qsize())
-        while True:
-            event = await queue.get()
-
-            await self.process_event(event)
 
     async def process_event(self, event):
         """ Dispatch events when they come in """
@@ -443,6 +455,7 @@ class GeeFarm(Ball):
         print('magic tree farm')
 
         # delegated to hub
+        fig = plt.figure()
         nx.draw(self.hub)
 
         await self.outgoing.put(fig2data(plt))
@@ -482,6 +495,19 @@ class RoundAbout(Ball):
                 raise ValueError(f'no queue for {name}')
 
         return qq
+
+    async def tend(self, queue=None, name=None, coro=None):
+        """ A co-routine to mind a queue and pass stuff on to another """
+
+        queue = queue or self.select(name)
+
+        print('TENDING', name, coro)
+
+        while True:
+            event = await queue.get()
+
+            await coro(event)
+
 
     def add_queue(self, name=None):
 

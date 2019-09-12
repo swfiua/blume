@@ -93,20 +93,12 @@ async def run(args):
 
     clock = GuidoClock()
 
-    carpet = Carpet()
-    
+    # ??? 
     farm.event_map.update(clock.event_map)
-    farm.event_map.update(carpet.event_map)
 
     examples = Examples(args)
 
-    hat = Hat()
-    farm.add_node(hat, background=True, hat=True)
-    farm.add_node(carpet, background=True)
-    farm.add_node(examples)
-    farm.add_node(clock)
-
-    farm.add_edge(carpet, hat)
+    carpet = farm.carpet
     farm.add_edge(examples, carpet)
     farm.add_edge(clock, carpet)
 
