@@ -176,12 +176,17 @@ class Farm:
                 
                 if isinstance(start, str):
                     # cross fingers this gets fixed by some later magic
-                    pass
+                    souts = set()
+                    
                 else:
                     setattr(start, sname, queue)
+                    souts = start.outs
 
                 if isinstance(end, str):
                     # again, what to do?
+                    # see what outs start has
+                    print(end, souts, end in souts)
+                    
                     pass
                 else:
                     setattr(end, ename, queue)
