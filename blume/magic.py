@@ -237,8 +237,8 @@ class Farm:
         while True:
             if not node.paused:
 
-                incoming = getattr(node, 'incoming', None)
-                if incoming:
+                #incoming = getattr(node, 'incoming', None)
+                if 'incoming' in node.ins:
                     node.ball = await node.incoming.get()
 
                 await node.run()
@@ -369,6 +369,8 @@ class Ball:
         self.ball = None
         self.paused = False
         self.sleep = .1
+        self.ins = set()
+        self.outs = set()
 
         # grid related
         self.size = 1
@@ -452,7 +454,7 @@ class GeeFarm(Ball):
     
     async def run(self):
 
-        print('magic tree farm')
+        print('MAGIC TREE FARM')
 
         # delegated to hub
         fig = plt.figure()
@@ -555,6 +557,7 @@ class Carpet(Ball):
         self.pos = 0
 
         self.image = None
+        self.ins.add('incoming')
 
         self.event_map.update(dict(
             m=self.more,
