@@ -106,12 +106,14 @@ class Farm:
         # wonder what happens here?
         # self.balls.appendleft(self.gfarm)
 
+        # tell roundabout about the event map?
         self.event_map = dict(
             p=self.previous,
             n=self.next,
             h=self.help,
             q=self.quit)
 
+        self.radii.???
 
         # start the farm going
         hat = Hat()
@@ -120,7 +122,7 @@ class Farm:
         self.add_node(carpet, background=True)
         self.add_node(hat, background=True, hat=True)
 
-        self.add_edge(carpet, hat)
+        #self.add_edge(carpet, hat)
         #self.add_edge('hat', carpet)
 
         # for now merge carpet events  -- need to sort events a little
@@ -152,7 +154,12 @@ class Farm:
 
         # hmm maybe this.. add it to itself...
         self.add_edge(self.gfarm, self.carpet)
-                
+
+        # see what ins and outs comes up with
+        self.dump()
+        print('ins and outs')
+        self.ins_and_outs()
+        self.dump()
 
         for edge in self.edges:
             start, end = edge
@@ -367,6 +374,8 @@ class Farm:
         else:
             print('no callback for event', event, type(event))
 
+
+            
 class Ball:
     
     def __init__(self):
@@ -374,8 +383,9 @@ class Ball:
         self.ball = None
         self.paused = False
         self.sleep = .1
-        self.ins = set()
-        self.outs = set()
+
+        # let roundabouts deal with connections
+        self.radii = RoundAbout()
 
         # grid related
         self.size = 1
@@ -411,6 +421,32 @@ class Ball:
         pass
 
 
+class Shepherd(Ball):
+    """ Watches things nobody else is watching """
+
+    def __init__(self):
+
+        super().__init__()
+
+
+    async def run(self):
+
+        print(self.radii)
+
+        # pick a random input and wait on it?
+        value = await self.radii.select()
+        if self.ins:
+           
+            this = random.choice(list(self.ins))
+            print(this)
+            value = await getattr(self, this).get()
+            print('SHEPHERD')
+            print(value)
+
+    def __str__(self):
+
+        return f'shepherd of ins and outs'
+            
 
 class GeeFarm(Ball):
     """ A farm, for now.. 
@@ -434,12 +470,55 @@ class GeeFarm(Ball):
         self.hub.add_nodes_from(nodes or set())
         self.hub.add_edges_from(edges or set())
 
+        self.shep = Shepherd()
+
 
     def __getattr__(self, attr):
         """ Delegate to hub or Round
         """
         return getattr(self.hub, attr)
         
+
+    def ins_and_outs(self):
+        """ Ins and outs based connections """
+        ins = defaultdict(set)
+        outs = defaultdict(set)
+        
+        for node in self.nodes:
+
+            if hasattr(node, 'ins'):
+                for item in node.ins:
+                    ins[item].add(node)
+
+            if hasattr(node, 'outs'):
+                for item in node.outs:
+                    outs[item].add(node)
+
+        print(ins)
+        print(outs)
+
+        # ok. now ins and outs have who has what
+        for key in ins.keys():
+            if key in outs:
+                for out in outs[key]:
+                    for item in ins[key]:
+                        if out is not item:
+                            self.add_edge(out, item, name=key)
+                        
+        inks = set(ins.keys())
+        oinks = set(outs.keys())
+        for key in oinks - inks:
+            for node in outs[key]:
+                print(f'{node} has output nobody wants: {key}')
+                self.add_edge(node, self.shep, name=key)
+                self.shep.ins.add(key)
+
+        for key in inks - oinks:
+            for node in ins[key]:
+                print(f'{node} wants input nobody has: {key}')
+                self.add_edge(self.shep, node, name=key)
+                self.shep.outs.add(key)
+
 
     def dump(self):
 
@@ -450,8 +529,8 @@ class GeeFarm(Ball):
         for item in hub.nodes:
             print('degree', hub.degree[item], hub[item])
 
-        for edge in self.hub.edges:
-            print(edge)
+        for edge in hub.edges:
+            print(edge, hub.edges[edge])
 
     async def start(self):
 
@@ -562,7 +641,9 @@ class Carpet(Ball):
         self.pos = 0
 
         self.image = None
+        
         self.ins.add('incoming')
+        self.outs.add('hat')
 
         self.event_map.update(dict(
             m=self.more,
@@ -625,7 +706,7 @@ class Carpet(Ball):
                          (offx,  offy, offx + width, offy + height))
 
         # put out in queue for displays
-        await self.outgoing.put(self.image)
+        await self.hat.put(self.image)
         print('displayed ball', self.ball.width, self.ball.height)
 
 
@@ -664,6 +745,12 @@ class MagicPlot(Ball):
     
     FIXME: make this one more interesting.
     """
+    def __init__(self):
+
+        super().__init__()
+
+        #self.outs.add('outgoing')
+               
     async def add(self):
         """ Magic Plot key demo  """
         print('magic key was pressed')
@@ -706,10 +793,13 @@ async def run():
 
     farm.add_edge(magic_plotter, farm.carpet)
 
-    farm.dump()
-
     print('set up the farm .. move to start for added thrills? or not?') 
     farm.setup()
+
+    print()
+    print('DUMP')
+    farm.dump()
+
 
     fstart = await curio.spawn(farm.start())
 

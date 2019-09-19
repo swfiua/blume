@@ -39,15 +39,13 @@ class Hat(ttk.Frame):
         #button.pack()
         
         # Keyboard handling
-        self.ins = set(['incoming'])
-        self.outs = set(['events'])
         self.events = curio.UniversalQueue()
         self.top.bind('<Key>', self.keypress)
 
 
     def keypress(self, event):
         """ Take tk events and stick them in a curio queue """
-        print('teakhat handlint', event.char)
+        print('teakhat handling', event.char)
         self.events.put(event.char)
         
         return True
