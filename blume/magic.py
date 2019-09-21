@@ -113,7 +113,6 @@ class Farm:
             h=self.help,
             q=self.quit)
 
-        self.radii.???
 
         # start the farm going
         hat = Hat()
@@ -141,6 +140,47 @@ class Farm:
 
         self.show()
 
+    def ins_and_outs(self):
+        """ Ins and outs based connections """
+        ins = defaultdict(set)
+        outs = defaultdict(set)
+        
+        for node in self.nodes:
+
+            if hasattr(node, 'ins'):
+                for item in node.ins:
+                    ins[item].add(node)
+
+            if hasattr(node, 'outs'):
+                for item in node.outs:
+                    outs[item].add(node)
+
+        print(ins)
+        print(outs)
+
+        # ok. now ins and outs have who has what
+        for key in ins.keys():
+            if key in outs:
+                for out in outs[key]:
+                    for item in ins[key]:
+                        if out is not item:
+                            self.add_edge(out, item, name=key)
+                        
+        inks = set(ins.keys())
+        oinks = set(outs.keys())
+        for key in oinks - inks:
+            for node in outs[key]:
+                print(f'{node} has output nobody wants: {key}')
+                self.add_edge(node, self.shep, name=key)
+                self.shep.ins.add(key)
+
+        for key in inks - oinks:
+            for node in ins[key]:
+                print(f'{node} wants input nobody has: {key}')
+                self.add_edge(self.shep, node, name=key)
+                self.shep.outs.add(key)
+
+
     def setup(self):
         """ Process the trees, set up all the connections 
 
@@ -158,8 +198,20 @@ class Farm:
         # see what ins and outs comes up with
         self.dump()
         print('ins and outs')
+
+        pos = nx.spring_layout(self.hub)
+        
+        nx.draw_networkx_nodes(self.hub, pos)
+        nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
+        nx.draw_networkx_labels(self.hub, pos, font_color='blue')
+        plt.show()
         self.ins_and_outs()
         self.dump()
+
+        nx.draw_networkx_nodes(self.hub, pos)
+        nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
+        nx.draw_networkx_labels(self.hub, pos, font_color='blue')
+        plt.show()
 
         for edge in self.edges:
             start, end = edge
@@ -248,10 +300,6 @@ class Farm:
         print('Farm running node:', str(node))
         while True:
             if not node.paused:
-
-                #incoming = getattr(node, 'incoming', None)
-                if 'incoming' in node.ins:
-                    node.ball = await node.incoming.get()
 
                 await node.run()
 
@@ -479,47 +527,6 @@ class GeeFarm(Ball):
         return getattr(self.hub, attr)
         
 
-    def ins_and_outs(self):
-        """ Ins and outs based connections """
-        ins = defaultdict(set)
-        outs = defaultdict(set)
-        
-        for node in self.nodes:
-
-            if hasattr(node, 'ins'):
-                for item in node.ins:
-                    ins[item].add(node)
-
-            if hasattr(node, 'outs'):
-                for item in node.outs:
-                    outs[item].add(node)
-
-        print(ins)
-        print(outs)
-
-        # ok. now ins and outs have who has what
-        for key in ins.keys():
-            if key in outs:
-                for out in outs[key]:
-                    for item in ins[key]:
-                        if out is not item:
-                            self.add_edge(out, item, name=key)
-                        
-        inks = set(ins.keys())
-        oinks = set(outs.keys())
-        for key in oinks - inks:
-            for node in outs[key]:
-                print(f'{node} has output nobody wants: {key}')
-                self.add_edge(node, self.shep, name=key)
-                self.shep.ins.add(key)
-
-        for key in inks - oinks:
-            for node in ins[key]:
-                print(f'{node} wants input nobody has: {key}')
-                self.add_edge(self.shep, node, name=key)
-                self.shep.outs.add(key)
-
-
     def dump(self):
 
         print(f' nodes: {self.hub.number_of_nodes()}')
@@ -594,6 +601,23 @@ class RoundAbout(Ball):
 
             await coro(event)
 
+    async def dispatch(self, name, maps):
+        """ Assume maps is a dictionary which 
+        
+        maps inputs to coroutines.
+        """
+        queue = queue or self.select(name)
+
+        async def watch():
+
+            event = await queue.get()
+            if event in maps:
+                result = await maps[event]
+
+                
+        return await self.tend(coro=watch, queue=queue)
+        
+
 
     def add_queue(self, name=None):
 
@@ -642,9 +666,9 @@ class Carpet(Ball):
 
         self.image = None
         
-        self.ins.add('incoming')
-        self.outs.add('hat')
-
+        self.incoming = self.radii.select('incoming')
+        self.outgoing = self.radii.select('outgoing')
+        
         self.event_map.update(dict(
             m=self.more,
             l=self.less))
@@ -675,6 +699,8 @@ class Carpet(Ball):
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
+        self.ball = await self.incoming.get()
+        
         if self.ball is None:
             print('carpet got no ball')
             return
