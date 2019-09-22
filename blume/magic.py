@@ -183,6 +183,27 @@ class GeeFarm(Ball):
         await self.outgoing.put(fig2data(plt))
         print('qsize', self.outgoing.qsize())
 
+def fig2data(fig):
+    """ Convert a Matplotlib figure to a PIL image.
+
+    fig: a matplotlib figure
+    return: PIL image
+
+    FIXME? return numpy array of image pixels?
+    """
+
+    facecolor = 'black'
+    #facecolor = 'white'
+    if hasattr(fig, 'get_facecolor'):
+        facecolor = fig.get_facecolor()
+
+    # no renderer without this
+    image = io.BytesIO()
+       
+    fig.savefig(image, facecolor=facecolor, dpi=200)
+
+    return Image.open(image)
+
 
 class RoundAbout:
     """ 
