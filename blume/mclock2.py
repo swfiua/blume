@@ -18,7 +18,7 @@ import curio
 
 from matplotlib import pyplot as plt
 
-from .magic import Ball, fig2data
+from .farm import Ball, fig2data
 
 
 

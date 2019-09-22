@@ -11,7 +11,9 @@ Press h for help.
 """
 
 
-from blume.magic import Farm, Carpet, Ball, Hat, fig2data
+from blume.farm import Farm, Carpet, Ball, Hat, fig2data
+
+
 from .mclock2 import GuidoClock
 
 import curio
