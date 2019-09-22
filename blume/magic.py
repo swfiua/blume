@@ -87,18 +87,11 @@ class Ball:
     
     def __init__(self):
 
-        self.ball = None
         self.paused = False
         self.sleep = .1
 
         # let roundabouts deal with connections
         self.radii = RoundAbout()
-
-        # grid related
-        self.size = 1
-        self.pos = 0
-
-        self.image = None
 
         # ho hum update event_map to control ball?
         self.event_map = dict(
@@ -173,11 +166,14 @@ class GeeFarm(Ball):
             print(edge, hub.edges[edge])
 
     async def start(self):
-
+        """ Traverse the graph do some plumbing? """
         pass
     
     async def run(self):
+        """ Run the farm 
 
+        For now, just plot the current graph.
+        """
         print('MAGIC TREE FARM')
 
         # delegated to hub
@@ -188,7 +184,7 @@ class GeeFarm(Ball):
         print('qsize', self.outgoing.qsize())
 
 
-class RoundAbout(Ball):
+class RoundAbout:
     """ 
     A magic queue switch.
 
