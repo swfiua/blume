@@ -121,7 +121,6 @@ class Ball:
         pass
 
 
-
 class GeeFarm(Ball):
     """ A farm, for now.. 
 
@@ -148,7 +147,7 @@ class GeeFarm(Ball):
 
 
     def __getattr__(self, attr):
-        """ Delegate to hub or Round
+        """ Delegate to hub
         """
         return getattr(self.hub, attr)
         
@@ -166,8 +165,15 @@ class GeeFarm(Ball):
             print(edge, hub.edges[edge])
 
     async def start(self):
-        """ Traverse the graph do some plumbing? """
-        pass
+        """ Traverse the graph do some plumbing? 
+
+        Let the shepherd look after the components
+        """
+        for compoment in nx.connected_components(self):
+            print('Component', component)
+            print(type(component))
+            # get the shepherd to manage the component
+            self.shep.add(component)
     
     async def run(self):
         """ Run the farm 
@@ -307,20 +313,32 @@ class Shepherd(Ball):
 
         super().__init__()
 
+        self.flocks = set()
+
+    def add(self, flock):
+        """  Add a flock to be watched """
+        self.flocks.add(flock)
+
+    async def start(self):
+        
+        for flock in self.flocks:
+            # make sure the roundabouts for the flock are suitably connected
+            pass
+
+            # see what inputs and outputs are missing
+            pass
+        
 
     async def run(self):
+        """ Check the flocks """
+        
 
         print(self.radii)
 
         # pick a random input and wait on it?
-        value = await self.radii.select()
-        if self.ins:
-           
-            this = random.choice(list(self.ins))
-            print(this)
-            value = await getattr(self, this).get()
-            print('SHEPHERD')
-            print(value)
+        flock = random.choice(self.flocks)
+        print(flock)
+        
 
     def __str__(self):
 
@@ -333,6 +351,7 @@ async def run():
     radii = RoundAbout()
 
     print('do something with roundabouts and GeeFarms')
+    start = await radii.start()
     runner = await radii.run()
 
     

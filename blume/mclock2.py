@@ -18,9 +18,7 @@ import curio
 
 from matplotlib import pyplot as plt
 
-from .farm import Ball, fig2data
-
-
+from .magic import Ball, fig2data
 
 MINUTES_TO_MIDNIGHT = -5.0
 

@@ -29,6 +29,7 @@ import networkx as nx
 from .teakhat import Hat, Help
 
 from .magic import Ball, RoundAbout, GeeFarm, fig2data
+from .mclock2 import GuidoClock
 
 class Farm:
     """ Connections to the outside world """
@@ -507,9 +508,9 @@ async def run():
     farm = Farm()
 
     magic_plotter = MagicPlot()
-
+    clock = GuidoClock()
     farm.add_edge(magic_plotter, farm.carpet)
-    
+    farm.add_edge(clock, farm.carpet)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     farm.setup()
