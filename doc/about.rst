@@ -6,32 +6,64 @@
 new home, to turn into flowers.
 
 
+Better Looking?
+===============
 
+*Better Looking?*  Really?
 
-Better Looking
-==============
+Maybe BL stands for something else?
 
 BL big and little?
 
 Universal
 =========
 
-Why not?
 
-How?
+Well right now there's only me here, so that's hardly Universal.
+
+But the code I am building here `blume.magic` and `blume.farm` are
+aimed at helping me build and run software that is exploring,
+modelling, simulating, forecasting and displaying information.
 
 
 Matplotlib
 ==========
 
-Surfing data with matplotlib.
+Turns data into pictures.
+
+There is not much that *matplotlib* cannot do in the world of drawing.
 
 
 Engine
 ======
 
-Matplotlib and python
-=====================
+Run small snippets of code that create an interesting *matplotlib*
+figure?
+
+The *Farm* and its *Magic*.
+
+The idea with the farm is a collection of *Balls* you can *start* and
+*run* as you like.
+
+Connections between *balls* turn them into a graph which `networkx`
+handles very nicely.
+
+
+
+*matplotlib*
+
+*curio*
+
+*networkx*
+
+
+Matplotlib and python and other magic wonders
+=============================================
+
+
+
+curio
+-----
 
 
 Beginning with Tables
@@ -49,19 +81,23 @@ The initial goal here is to provide an upgrade to the
 There is a version here that tries to work around problems in the
 current module.
 
-There are improvements in the automat font sizing and cell padding and
+There are improvements in the automatic font sizing and cell padding and
 some new options available.
 
-In amongst all this are some changes to the API the module exposes,
-where people may have written code to work around some limitation.
+In amongst all this are some changes to the API the current module
+(matplotlib>=3.1) module exposes.
 
-So the question remains how best to transition to the new table?
+There is a good chance if you switch your code to use the table here
+that everything will work just fine, hopefully with some slightly
+better looking tables.
+
+So the question remains on how best to transition to the new table?
 
 In particular,
 
   #. what does the end goal look like and
 
-  #. do we need an interim fix to existing table?
+  #. do we need an interim fix to existing `matplotlib` table?
 
 
 It may be too early to decide, but if there is some sort of working
