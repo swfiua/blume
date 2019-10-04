@@ -43,15 +43,32 @@ It would be good to be able to write something like::
 
 In a way that lets other objects manipulate *self.input*.
 
-So perhaps::
+So perhaps, the following for getting things in and putting things out::
 
-  value = await self.magic.get()
+  data = await self.magic.get()
 
-  info = await self.magic.put(image)
+  status = await self.magic.put(data)
+
+And if you want to use something other than the default queues::
 
   key = await self.magic.get('event')
 
-Names as `pathlib.Path` if farm graph is a tree?
-     
+  status = await self.magic.put(data, 'image')
+  
+`Ball.get` and `Ball.put` actually work with `ball.radii` which is
+some sort of `magic.RoundAbout`.
+
+So have a shepherd or two or more to take care of all the balls and
+roundabouts.
+
+Graphs showing connection, one shepherd per connected graph in the
+bigger picture.
+
+File systems
+============
+
+If farm graph is a tree?
+
+Queue names as `pathlib.Path` 
 
 *stdin*, *stdout*, *stderr* ?

@@ -94,6 +94,8 @@ class Ball:
         self.radii = RoundAbout()
 
         # ho hum update event_map to control ball?
+        # this should be done via roundabout,
+        # let shepherd control things?
         self.event_map = dict(
             s=self.sleepy,
             w=self.wakey)
@@ -113,6 +115,14 @@ class Ball:
         """ Toggle pause flag """
         print('toggle pause')
         self.paused = not self.paused
+
+    async def get(self, name='stdin'):
+
+        return await self.radii.select(name).get()
+
+    async def put(self, data, name='stdout'):
+
+        return await self.radii.select(name).put(data)
 
     async def start(self):
         pass
@@ -354,8 +364,7 @@ async def run():
     start = await radii.start()
     runner = await radii.run()
 
-    
-        
+
 if __name__ == '__main__':
     
     
