@@ -255,6 +255,14 @@ class RoundAbout:
 
         return qq
 
+    def status(self):
+
+        result = {}
+        for qname, qq in self.qs():
+            result[qname] = qq.qsize()
+
+        return result
+
     async def tend(self, queue=None, name=None, coro=None):
         """ A co-routine to mind a queue and pass stuff on to another """
 
@@ -337,7 +345,6 @@ class Shepherd(Ball):
 
             # see what inputs and outputs are missing
             pass
-        
 
     async def run(self):
         """ Check the flocks """
@@ -346,9 +353,54 @@ class Shepherd(Ball):
         print(self.radii)
 
         # pick a random input and wait on it?
-        flock = random.choice(self.flocks)
-        print(flock)
+        self.flock = random.choice(self.flocks)
+        print(self.flock)
         
+
+    def ins_and_outs(self):
+        """ Ins and outs based connections 
+
+        This back from Farm -- may be of use for
+        roundabout merging.
+        """
+        ins = defaultdict(set)
+        outs = defaultdict(set)
+        
+        for flock in self.flocks:
+
+            if hasattr(node, 'ins'):
+                for item in node.ins:
+                    ins[item].add(node)
+
+            if hasattr(node, 'outs'):
+                for item in node.outs:
+                    outs[item].add(node)
+
+        print(ins)
+        print(outs)
+
+        # ok. now ins and outs have who has what
+        for key in ins.keys():
+            if key in outs:
+                for out in outs[key]:
+                    for item in ins[key]:
+                        if out is not item:
+                            self.add_edge(out, item, name=key)
+                        
+        inks = set(ins.keys())
+        oinks = set(outs.keys())
+        for key in oinks - inks:
+            for node in outs[key]:
+                print(f'{node} has output nobody wants: {key}')
+                self.add_edge(node, self.shep, name=key)
+                self.shep.ins.add(key)
+
+        for key in inks - oinks:
+            for node in ins[key]:
+                print(f'{node} wants input nobody has: {key}')
+                self.add_edge(self.shep, node, name=key)
+                self.shep.outs.add(key)
+
 
     def __str__(self):
 

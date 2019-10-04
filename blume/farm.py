@@ -86,45 +86,6 @@ class Farm:
 
         self.show()
 
-    def ins_and_outs(self):
-        """ Ins and outs based connections """
-        ins = defaultdict(set)
-        outs = defaultdict(set)
-        
-        for node in self.nodes:
-
-            if hasattr(node, 'ins'):
-                for item in node.ins:
-                    ins[item].add(node)
-
-            if hasattr(node, 'outs'):
-                for item in node.outs:
-                    outs[item].add(node)
-
-        print(ins)
-        print(outs)
-
-        # ok. now ins and outs have who has what
-        for key in ins.keys():
-            if key in outs:
-                for out in outs[key]:
-                    for item in ins[key]:
-                        if out is not item:
-                            self.add_edge(out, item, name=key)
-                        
-        inks = set(ins.keys())
-        oinks = set(outs.keys())
-        for key in oinks - inks:
-            for node in outs[key]:
-                print(f'{node} has output nobody wants: {key}')
-                self.add_edge(node, self.shep, name=key)
-                self.shep.ins.add(key)
-
-        for key in inks - oinks:
-            for node in ins[key]:
-                print(f'{node} wants input nobody has: {key}')
-                self.add_edge(self.shep, node, name=key)
-                self.shep.outs.add(key)
 
 
     def setup(self):
@@ -151,7 +112,7 @@ class Farm:
         nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
         nx.draw_networkx_labels(self.hub, pos, font_color='blue')
         plt.show()
-        self.ins_and_outs()
+        #self.ins_and_outs()
         self.dump()
 
         nx.draw_networkx_nodes(self.hub, pos)
