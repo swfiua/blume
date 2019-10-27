@@ -141,7 +141,7 @@ class GuidoClock(Ball):
         self.redraw()
 
         # blit the image to the canvas
-        await self.outgoing.put(fig2data(plt))
+        await self.put(fig2data(plt))
 
         return True
         await curio.sleep(1)

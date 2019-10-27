@@ -66,7 +66,7 @@ import io
 
 from pathlib import Path
 
-from collections import deque, defaultdict
+from collections import deque, defaultdict, Counter
 
 import curio
 
@@ -118,11 +118,11 @@ class Ball:
 
     async def get(self, name='stdin'):
 
-        return await self.radii.select(name).get()
+        return await self.radii.get(name)
 
     async def put(self, data, name='stdout'):
 
-        return await self.radii.select(name).put(data)
+        return await self.radii.put(data, name)
 
     async def start(self):
         pass
@@ -179,7 +179,7 @@ class GeeFarm(Ball):
 
         Let the shepherd look after the components
         """
-        for compoment in nx.connected_components(self):
+        for component in nx.connected_components(nx.to_undirected(self)):
             print('Component', component)
             print(type(component))
             # get the shepherd to manage the component
@@ -196,7 +196,7 @@ class GeeFarm(Ball):
         fig = plt.figure()
         nx.draw(self.hub)
 
-        await self.outgoing.put(fig2data(plt))
+        await self.put(fig2data(plt))
         print('qsize', self.outgoing.qsize())
 
 def fig2data(fig):
@@ -212,6 +212,7 @@ def fig2data(fig):
     #facecolor = 'white'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
+        print('facecolor', facecolor)
 
     # no renderer without this
     image = io.BytesIO()
@@ -240,6 +241,8 @@ class RoundAbout:
         self.qs = {}
         self.infos = defaultdict(set)
         self.add_queue()
+        self.counts = Counter()
+        self.filters = defaultdict(dict)
 
     def select(self, name=None, create=True):
         """ pick a q 
@@ -255,13 +258,29 @@ class RoundAbout:
 
         return qq
 
+    async def put(self, value, name='stdout'):
+
+        self.counts.update([('put', name)])
+        await self.select(name).put(value)
+
+    async def get(self, name='stdout'):
+
+        self.counts.update([('get', name)])
+        await self.select(name).get()
+
     def status(self):
 
         result = {}
+        results['counts'] = self.counts
+        
         for qname, qq in self.qs():
             result[qname] = qq.qsize()
 
         return result
+
+    def add_filter(self, key, coro, name='stdin'):
+
+        self.filters[name][key] = coro
 
     async def tend(self, queue=None, name=None, coro=None):
         """ A co-routine to mind a queue and pass stuff on to another """
@@ -282,6 +301,7 @@ class RoundAbout:
         """
         queue = queue or self.select(name)
 
+        # nested co-routine to bind queue
         async def watch():
 
             event = await queue.get()
@@ -331,11 +351,26 @@ class Shepherd(Ball):
 
         super().__init__()
 
-        self.flocks = set()
+        self.flocks = []
 
-    def add(self, flock):
+    def set(self, flock):
         """  Add a flock to be watched """
-        self.flocks.add(flock)
+        self.flock = flock
+
+    async def whistle(self, key, name=None):
+        """ send out a message 
+        
+        follow the graph to see who's interested
+
+        feels like this should be some sort of broadcast
+
+        or perhaps directional if there's a name?
+
+        or just send it to anything with an ear?
+        """
+        for flock in self.flocks
+
+
 
     async def start(self):
         

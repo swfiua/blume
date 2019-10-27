@@ -102,23 +102,6 @@ class Farm:
         # hmm maybe this.. add it to itself...
         self.add_edge(self.gfarm, self.carpet)
 
-        # see what ins and outs comes up with
-        self.dump()
-        print('ins and outs')
-
-        pos = nx.spring_layout(self.hub)
-        
-        nx.draw_networkx_nodes(self.hub, pos)
-        nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
-        nx.draw_networkx_labels(self.hub, pos, font_color='blue')
-        plt.show()
-        #self.ins_and_outs()
-        self.dump()
-
-        nx.draw_networkx_nodes(self.hub, pos)
-        nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
-        nx.draw_networkx_labels(self.hub, pos, font_color='blue')
-        plt.show()
 
         for edge in self.edges:
             start, end = edge
@@ -290,6 +273,14 @@ class Farm:
 
     async def run(self):
 
+        if False:
+            nx.draw_networkx_nodes(self.hub, pos)
+            nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
+            nx.draw_networkx_labels(self.hub, pos, font_color='blue')
+            plt.show()
+            # how to from farm ?? self.carpet.(plt)
+
+        
         print('Farm starting to run')
         self.quit_event = curio.Event()
 
