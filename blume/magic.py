@@ -101,6 +101,13 @@ class Ball:
             w=self.wakey)
         self.event_map[' '] = self.toggle_pause
 
+
+    def __getattr__(self, attr):
+        """ Delegate to roundabout
+        """
+        return getattr(self.radii, attr)
+        
+
     async def sleepy(self):
         """ Sleep more between updates """
         self.sleep *= 2
@@ -115,14 +122,6 @@ class Ball:
         """ Toggle pause flag """
         print('toggle pause')
         self.paused = not self.paused
-
-    async def get(self, name='stdin'):
-
-        return await self.radii.get(name)
-
-    async def put(self, data, name='stdout'):
-
-        return await self.radii.put(data, name)
 
     async def start(self):
         pass
@@ -177,14 +176,13 @@ class GeeFarm(Ball):
     async def start(self):
         """ Traverse the graph do some plumbing? 
 
-        Let the shepherd look after the components
+        Let the shepherd look after the running of everything
         """
-        for component in nx.connected_components(nx.to_undirected(self)):
-            print('Component', component)
-            print(type(component))
-            # get the shepherd to manage the component
-            self.shep.add(component)
-    
+        self.shep.flock = self.hub
+
+        await self.shep.start()
+
+
     async def run(self):
         """ Run the farm 
 
@@ -192,12 +190,8 @@ class GeeFarm(Ball):
         """
         print('MAGIC TREE FARM')
 
-        # delegated to hub
-        fig = plt.figure()
-        nx.draw(self.hub)
+        await self.shep.run()
 
-        await self.put(fig2data(plt))
-        print('qsize', self.outgoing.qsize())
 
 def fig2data(fig):
     """ Convert a Matplotlib figure to a PIL image.
@@ -232,8 +226,6 @@ class RoundAbout:
 
     Balls, outputs, inputs.
 
-    Of course, the round about is a ball.
-
     Time for bed, said zebedee 
     """
     def __init__(self):
@@ -263,7 +255,7 @@ class RoundAbout:
         self.counts.update([('put', name)])
         await self.select(name).put(value)
 
-    async def get(self, name='stdout'):
+    async def get(self, name='stdin'):
 
         self.counts.update([('get', name)])
         await self.select(name).get()
@@ -271,14 +263,14 @@ class RoundAbout:
     def status(self):
 
         result = {}
-        results['counts'] = self.counts
+        result['counts'] = self.counts
         
-        for qname, qq in self.qs():
+        for qname, qq in self.qs.items():
             result[qname] = qq.qsize()
 
         return result
 
-    def add_filter(self, key, coro, name='stdin'):
+    def add_filter(self, key, coro, name='keys'):
 
         self.filters[name][key] = coro
 
@@ -351,13 +343,14 @@ class Shepherd(Ball):
 
         super().__init__()
 
-        self.flocks = []
+        self.flock = None
+        self.running = {}
 
     def set(self, flock):
-        """  Add a flock to be watched """
+        """  Supply the flock to be watched """
         self.flock = flock
 
-    async def whistle(self, key, name=None):
+    async def whistle(self, key, name='keys'):
         """ send out a message 
         
         follow the graph to see who's interested
@@ -366,30 +359,120 @@ class Shepherd(Ball):
 
         or perhaps directional if there's a name?
 
-        or just send it to anything with an ear?
+        or just send it to anything that is running and seems to care?
         """
-        for flock in self.flocks
+        for sheep in self.flock:
+            if sheep in self.running:
+                
+                lu = sheep.radii.filters[name]
+                if key in lu.keys():
+                    await lu[key]()
 
+                    # first one gets it?
+                    return
+
+    async def help(self):
+        """ Show what keys do what """
+        msg = ''
+        for sheep in self.flock:
+            if sheep in self.running:
+                msg += repr(sheep) + '\n'
+                lu = sheep.radii.lookup
+        
+                for key, value in lu.items():
+                    msg += '{} {}\n'.format(
+                        key,
+                        self.doc_firstline(value.__doc__))
+
+        self.put(msg, 'help')
+
+
+    def doc_firstline(self, doc):
+        """ Return first line of doc """
+        if doc:
+            return doc.split('\n')[0]
+        else:
+            return "????"
 
 
     async def start(self):
+        """ Start things going """
         
-        for flock in self.flocks:
-            # make sure the roundabouts for the flock are suitably connected
-            pass
+        self.current = None
+        for sheep in self.flock:
+            print('starting', sheep)
+            # just start all the nodes
+            await sheep.start()
+            
+            info = self.flock[sheep]
+            print('info', info)
+            if info.get('background'):
+                # run in background
+                runner = await curio.spawn(canine(sheep))
+                self.running[sheep] = runner
 
-            # see what inputs and outputs are missing
-            pass
+                self.current = sheep
+            print('current', self.current)
+
+        await self.watch_roundabouts()
+
+
+        # what set up is needed for run?
+        # navigate the tree
+        # R for run
+        # S for stop
+        # u/d/p/n up down previous next
+
+    async def watch_roundabouts(self):
+
+        print('watching roundabouts')
+        for a, b in self.flock.edges:
+            print('xxx', a, b)
+            print(a.radii.qs.keys())
+            print(b.radii.qs.keys())
+        
+    async def next(self):
+        """ Move focus to next """
+        pass
+
+    async def previous(self):
+        """ Move focus to previous """
+        pass
+
+    async def up(self):
+        """ Move focus to next node """
+        pass
+
+    async def down(self):
+        """ Move focus to next node """
+        pass
+
 
     async def run(self):
-        """ Check the flocks """
-        
+        """ run the flock 
 
+        Decide what to run.
+
+        Manage the resulting set of roundabouts.
+
+        Pass messages along.
+        """
+        for sheep in self.flock:
+            print(f'shepherd running {sheep in self.running}')
+            print(f'   {sheep.status()}')
+
+        # delegated to hub
+        fig = plt.figure()
+        nx.draw(self.flock)
+
+        await self.put(fig2data(plt))
+        
         print(self.radii)
 
-        # pick a random input and wait on it?
-        self.flock = random.choice(self.flocks)
         print(self.flock)
+
+        while True:
+            await curio.sleep(self.sleep)
         
 
     def ins_and_outs(self):
@@ -439,20 +522,56 @@ class Shepherd(Ball):
 
     def __str__(self):
 
-        return f'shepherd of ins and outs'
+        return f'shepherd of flock degree {self.flock.degree()}'
             
+
+async def canine(ball):
+    """ A sheep dog, something to control when it pauses and sleeps
+
+    runner for node.run and more
+
+    This was an an attempt to factor out some boiler plate from 
+    run methods.
+
+    so run has turned into "do one iteration of what you do"
+
+    and `canine` here is managing pausing and sleep
+
     
+    
+    Now we could loop round doing timeouts on queues and then firing
+    off runs.
+
+    With a bit more work when building things ... self.radii time?
+    
+    """
+
+    print('Farm running ball:', ball)
+    while True:
+        if not ball.paused:
+
+            await ball.run()
+
+        await curio.sleep(ball.sleep)
+
 
 async def run():
 
-    radii = RoundAbout()
+    farm = GeeFarm()
 
-    print('do something with roundabouts and GeeFarms')
-    start = await radii.start()
-    runner = await radii.run()
+    a = Ball()
+    b = Ball()
+    
+    farm.add_edge(a, b)
+
+    print('starting farm')
+    await farm.start()
+
+    print('running farm')
+    await farm.run()
 
 
 if __name__ == '__main__':
     
     
-    curio.run(run())
+    curio.run(run(), with_monitor=True)

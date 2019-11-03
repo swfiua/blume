@@ -51,7 +51,7 @@ from matplotlib import pyplot as plt
 
 async def run(**args):
 
-    farm = magic.GeeFarm()
+    farm = fm.Farm()
 
     spiral = Spiral()
 
@@ -59,6 +59,7 @@ async def run(**args):
     farm.add_node(fm.GuidoClock())
 
     await farm.start()
+    print('about to run farm')
     await farm.run()
 
 
@@ -67,7 +68,7 @@ def main(args=None):
     parser = argparse.ArgumentParser()
     args = parser.parse_args(args)
 
-    curio.run(run(**args.__dict__))
+    curio.run(run(**args.__dict__), with_monitor=True)
 
 
 class Spiral(magic.Ball):

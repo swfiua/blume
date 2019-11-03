@@ -1,9 +1,11 @@
 from tkinter import Tk, ttk, Text, messagebox, TOP, BOTH, Canvas, Button
 from PIL import ImageTk, Image
 
+from .magic import Ball
+
 import curio
 
-class Hat(ttk.Frame):
+class Hat(Ball):
     """ A hat
 
     Or a display.  
@@ -20,18 +22,20 @@ class Hat(ttk.Frame):
     """
     def __init__(self):
 
+        super().__init__()
+
         self.top = Tk()
-        super().__init__(self.top)
+        self.frame = ttk.Frame(self.top)
+
 
         self.width = 480
         self.height = 640
         self.sleep = 0.05
         self.ball = Image.new('RGB', (10, 10))
         
-        self.pack(side=TOP, expand=1, fill=BOTH)
-        self.canvas = Canvas(self, width=self.width, height=self.height)
+        self.frame.pack(side=TOP, expand=1, fill=BOTH)
+        self.canvas = Canvas(self.frame, width=self.width, height=self.height)
         self.recalc(width=480, height=640)
-        self.incoming = curio.UniversalQueue()
 
         self.canvas.pack(side=TOP, expand=1, fill=BOTH)
         self.canvas.bind("<Configure>", self.on_configure)
@@ -41,7 +45,6 @@ class Hat(ttk.Frame):
         # Keyboard handling
         self.events = curio.UniversalQueue()
         self.top.bind('<Key>', self.keypress)
-
 
     def keypress(self, event):
         """ Take tk events and stick them in a curio queue """
@@ -74,11 +77,11 @@ class Hat(ttk.Frame):
     #        
     #    await self.incoming.put(event)
 
-    async def get(self):
+    async def watch(self):
         """ Get stuff and display it """
         while True:
 
-            ball = await self.incoming.get()
+            ball = await self.get()
 
             if type(ball) is int:
                 print('wtf', ball)
@@ -95,18 +98,17 @@ class Hat(ttk.Frame):
     async def start(self):
 
         print("Starting teakhat.Hat")
-        get_task = await curio.spawn(self.get())
+        watch_task = await curio.spawn(self.watch())
         poll_task = await curio.spawn(self.poll())
 
-        tasks = [get_task, poll_task]
+        self.tasks = [watch_task, poll_task]
 
-        await curio.gather(tasks)
+    async def run(self):
+
+        await curio.gather(self.tasks)
 
         print("Event loop over and out")
 
-    async def xrun(self):
-
-        pass    
 
     def on_configure(self, event):
 

@@ -28,54 +28,31 @@ import networkx as nx
 
 from .teakhat import Hat, Help
 
-from .magic import Ball, RoundAbout, GeeFarm, fig2data
+from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd
 from .mclock2 import GuidoClock
 
-class Farm:
+class Farm(Ball):
     """ Connections to the outside world """
 
-    def __init__(self, meta=None, events=None):
-
-        # currently, a list of things being managed
-        self.balls = deque()
-        self.running = set()
-
-        self.current = None
-
-        self.hats = []
+    def __init__(self):
 
         # mapping of events to co-routines
         self.gfarm = GeeFarm()
-
-        self.radii = RoundAbout()
-        
-        # wonder what happens here?
-        # self.balls.appendleft(self.gfarm)
-
-        # tell roundabout about the event map?
-        self.event_map = dict(
-            p=self.previous,
-            n=self.next,
-            h=self.help,
-            q=self.quit)
-
 
         # start the farm going
         hat = Hat()
         carpet = Carpet()
 
+        self.shepherd = Shepherd()
+
         self.add_node(carpet, background=True)
         self.add_node(hat, background=True, hat=True)
 
         self.add_edge(carpet, hat)
-        #self.add_edge('hat', carpet)
-
-        # for now merge carpet events  -- need to sort events a little
-        # follow the magic roundabout
-        self.event_map.update(carpet.event_map)
 
         self.carpet = carpet
 
+        self.shepherd.set(self.gfarm.hub)
         
     def __getattr__(self, attr):
 
@@ -147,22 +124,9 @@ class Farm:
         This should do any initialisation that has to
         wait for async land.
         """
-        for node in self.nodes:
-            print('farm.start starting', node)
-            print(type(node))
-            await curio.spawn(node.start())
+        print('starting shepherd')
+        await self.shepherd.start()
 
-
-        for node in self.nodes:
-            data = self.nodes[node]
-            background = data.get('background')
-            if background:
-                print('farm starting background task', node)
-                if hasattr(node, 'run'):
-                    runner = await curio.spawn(self.runner(node))
-                    self.running.add(runner)
-            else:
-                self.balls.appendleft(node)
             
     async def runner(self, node=None):
         """ runner for node.run and more
@@ -280,19 +244,14 @@ class Farm:
             plt.show()
             # how to from farm ?? self.carpet.(plt)
 
+        await self.shepherd.run()
+        return
+
         
         print('Farm starting to run')
         self.quit_event = curio.Event()
 
-        runners = []
-        for hat in self.hats:
-            runner = await curio.spawn(self.radii.tend(
-                queue=hat.events, coro=self.process_event))
-            runners.append(runner)
-
         # select next node
-        await self.next()
-
         await self.quit_event.wait()
 
         print('over and out')
@@ -332,15 +291,9 @@ class Carpet(Ball):
         self.pos = 0
 
         self.image = None
-        
-        self.incoming = self.radii.select('incoming')
-        self.outgoing = self.radii.select('outgoing')
-        
-        self.event_map.update(dict(
-            m=self.more,
-            l=self.less))
 
-        self.radii.dispatch('events', self.event_map)
+        self.radii.add_filter('m', self.more)
+        self.radii.add_filter('l', self.less)
 
         
     async def more(self):
@@ -368,7 +321,7 @@ class Carpet(Ball):
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
-        ball = await self.incoming.get()
+        ball = await self.get('image')
         
         if ball is None:
             print('carpet got no ball')
