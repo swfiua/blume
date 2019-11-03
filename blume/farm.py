@@ -50,6 +50,8 @@ class Farm(Ball):
 
         self.add_edge(carpet, hat)
 
+        self.add_edge(self.shepherd, carpet)
+
         self.carpet = carpet
 
         self.shepherd.set(self.gfarm.hub)

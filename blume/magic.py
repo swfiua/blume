@@ -345,14 +345,24 @@ class Shepherd(Ball):
 
         self.flock = None
         self.running = {}
+        self.whistlers = {}
+
+        self.add_filter('q', self.quit)
 
     def set(self, flock):
         """  Supply the flock to be watched """
         self.flock = flock
 
+    async def whistler(self, queue, name='keys'):
+        """ Send out whistles fromm a queue """
+        while True:
+            key = await queue.get()
+            print('WOOOHOO whistle time')
+            await self.whistle(key, name)
+    
     async def whistle(self, key, name='keys'):
         """ send out a message 
-        
+         
         follow the graph to see who's interested
 
         feels like this should be some sort of broadcast
@@ -365,11 +375,15 @@ class Shepherd(Ball):
             if sheep in self.running:
                 
                 lu = sheep.radii.filters[name]
+                print('whistle', sheep, lu)
                 if key in lu.keys():
                     await lu[key]()
 
                     # first one gets it?
-                    return
+                    return True
+
+        # nobody cares :(
+        return False
 
     async def help(self):
         """ Show what keys do what """
@@ -400,11 +414,15 @@ class Shepherd(Ball):
         
         self.current = None
         for sheep in self.flock:
+            if sheep is self:
+                print("skipping starting myself")
+                continue
+                
             print('starting', sheep)
             # just start all the nodes
             await sheep.start()
             
-            info = self.flock[sheep]
+            info = self.flock.nodes[sheep]
             print('info', info)
             if info.get('background'):
                 # run in background
@@ -414,6 +432,14 @@ class Shepherd(Ball):
                 self.current = sheep
             print('current', self.current)
 
+            if info.get('hat'):
+                # set task to whistle out output
+                whistle = await curio.spawn(
+                    self.whistler(sheep.select('stdout')))
+
+                self.whistlers[sheep] = whistle
+
+        print('whistlers', self.whistlers)
         await self.watch_roundabouts()
 
 
@@ -475,50 +501,13 @@ class Shepherd(Ball):
             await curio.sleep(self.sleep)
         
 
-    def ins_and_outs(self):
-        """ Ins and outs based connections 
+    async def quit(self):
+        """ Cancel all the tasks """
 
-        This back from Farm -- may be of use for
-        roundabout merging.
-        """
-        ins = defaultdict(set)
-        outs = defaultdict(set)
-        
-        for flock in self.flocks:
-
-            if hasattr(node, 'ins'):
-                for item in node.ins:
-                    ins[item].add(node)
-
-            if hasattr(node, 'outs'):
-                for item in node.outs:
-                    outs[item].add(node)
-
-        print(ins)
-        print(outs)
-
-        # ok. now ins and outs have who has what
-        for key in ins.keys():
-            if key in outs:
-                for out in outs[key]:
-                    for item in ins[key]:
-                        if out is not item:
-                            self.add_edge(out, item, name=key)
-                        
-        inks = set(ins.keys())
-        oinks = set(outs.keys())
-        for key in oinks - inks:
-            for node in outs[key]:
-                print(f'{node} has output nobody wants: {key}')
-                self.add_edge(node, self.shep, name=key)
-                self.shep.ins.add(key)
-
-        for key in inks - oinks:
-            for node in ins[key]:
-                print(f'{node} wants input nobody has: {key}')
-                self.add_edge(self.shep, node, name=key)
-                self.shep.outs.add(key)
-
+        for task in self.whistles.values():
+            await task.cancel()
+        for task in self.running.values():
+            await task.cancel()
 
     def __str__(self):
 
