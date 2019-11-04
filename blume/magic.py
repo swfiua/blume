@@ -348,6 +348,7 @@ class Shepherd(Ball):
         self.whistlers = {}
 
         self.add_filter('q', self.quit)
+        self.add_filter('h', self.help)
 
     def set(self, flock):
         """  Supply the flock to be watched """
@@ -385,19 +386,19 @@ class Shepherd(Ball):
         # nobody cares :(
         return False
 
-    async def help(self):
+    async def help(self, name='keys'):
         """ Show what keys do what """
         msg = ''
         for sheep in self.flock:
             if sheep in self.running:
                 msg += repr(sheep) + '\n'
-                lu = sheep.radii.lookup
+                lu = sheep.radii.filters[name]
         
                 for key, value in lu.items():
                     msg += '{} {}\n'.format(
                         key,
                         self.doc_firstline(value.__doc__))
-
+        print(msg)
         self.put(msg, 'help')
 
 
@@ -416,6 +417,7 @@ class Shepherd(Ball):
         for sheep in self.flock:
             if sheep is self:
                 print("skipping starting myself")
+                self.running[self] = True
                 continue
                 
             print('starting', sheep)
@@ -456,6 +458,7 @@ class Shepherd(Ball):
             print('xxx', a, b)
             print(a.radii.qs.keys())
             print(b.radii.qs.keys())
+            
         
     async def next(self):
         """ Move focus to next """
@@ -504,7 +507,7 @@ class Shepherd(Ball):
     async def quit(self):
         """ Cancel all the tasks """
 
-        for task in self.whistles.values():
+        for task in self.whistlers.values():
             await task.cancel()
         for task in self.running.values():
             await task.cancel()
