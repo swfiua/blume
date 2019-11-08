@@ -258,7 +258,7 @@ class RoundAbout:
     async def get(self, name='stdin'):
 
         self.counts.update([('get', name)])
-        await self.select(name).get()
+        return await self.select(name).get()
 
     def status(self):
 
@@ -346,6 +346,7 @@ class Shepherd(Ball):
         self.flock = None
         self.running = {}
         self.whistlers = {}
+        self.relays = {}
 
         self.add_filter('q', self.quit)
         self.add_filter('h', self.help)
@@ -399,7 +400,7 @@ class Shepherd(Ball):
                         key,
                         self.doc_firstline(value.__doc__))
         print(msg)
-        self.put(msg, 'help')
+        await self.put(msg, 'help')
 
 
     def doc_firstline(self, doc):
@@ -458,6 +459,15 @@ class Shepherd(Ball):
             print('xxx', a, b)
             print(a.radii.qs.keys())
             print(b.radii.qs.keys())
+
+            if a not in self.whistlers:
+                bridge = await curio.spawn(relay(a, b))
+                self.relays[(a, b)] = bridge
+
+            if b not in self.whistlers:
+                bridge = await curio.spawn(relay(b, a))
+                self.relays[(b, a)] = bridge
+            
             
         
     async def next(self):
@@ -547,6 +557,15 @@ async def canine(ball):
         await curio.sleep(ball.sleep)
 
 
+async def relay(a, b):
+
+    while True:
+        value = await a.get('stdout')
+        print('got', value, 'from', a)
+        print('relay', value, 'to', b)
+        await b.put(value, 'stdin')
+
+        
 async def run():
 
     farm = GeeFarm()

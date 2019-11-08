@@ -323,7 +323,7 @@ class Carpet(Ball):
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
-        ball = await self.get('image')
+        ball = await self.get()
         
         if ball is None:
             print('carpet got no ball')
@@ -352,7 +352,7 @@ class Carpet(Ball):
                          (offx,  offy, offx + width, offy + height))
 
         # put out in queue for displays
-        await self.outgoing.put(self.image)
+        await self.put(self.image)
         print('displayed ball', ball.width, ball.height)
 
 

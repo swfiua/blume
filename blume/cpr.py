@@ -38,6 +38,7 @@ import argparse
 
 import random
 
+import math
 
 import curio
 
@@ -54,9 +55,12 @@ async def run(**args):
     farm = fm.Farm()
 
     spiral = Spiral()
-
-    farm.add_node(spiral)
-    farm.add_node(fm.GuidoClock())
+    clock = fm.GuidoClock()
+    
+    farm.add_node(spiral, background=True)
+    farm.add_node(clock, background=True)
+    farm.add_edge(farm.carpet, spiral)
+    farm.add_edge(farm.carpet, clock)
 
     await farm.start()
     print('about to run farm')
@@ -94,17 +98,19 @@ class Spiral(magic.Ball):
         K = self.K
         CC = self.CC
 
-        return (2 * A) -2(K * A * math.log(1 + K) / r) + CC / r
+        return (2 * A) - (2 * (K * A * math.log(1 + K) / r)) + CC / r
 
     async def run(self):
 
         ax = plt.subplot(111)
 
-        rr = list(range(1000))
+        rr = list(range(1, 1000))
         vv = [self.v(r) for r in rr]
         ax.plot(rr, vv)
 
-        self.put(plt)
+        print('spiral')
+
+        await self.put(magic.fig2data(plt))
 
 if __name__ == '__main__':
  
