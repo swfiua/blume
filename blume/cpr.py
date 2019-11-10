@@ -100,14 +100,28 @@ class Spiral(magic.Ball):
 
         return (2 * A) - (2 * (K * A * math.log(1 + K) / r)) + CC / r
 
+
+    def vinert(self, r, v):
+
+        return v - (self.A * r) / (self.K + r)
+
     async def run(self):
 
+        plt.clear()
         ax = plt.subplot(111)
 
         rr = list(range(1, 1000))
         vv = [self.v(r) for r in rr]
+        ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
+        
         ax.plot(rr, vv)
-
+        
+        
+        ax.plot(rr, ii)
+        plt.xlabel('r', color='r')
+        plt.ylabel('velocity', color='y')
+        plt.legend(loc=0)
+          
         print('spiral')
 
         await self.put(magic.fig2data(plt))

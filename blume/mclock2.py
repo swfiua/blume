@@ -40,8 +40,8 @@ class GuidoClock(Ball):
         #self.tkcanvas.bind("<ButtonRelease-1>", self.on_release)
 
         self.timewarp = None
-        self.event_map.update(M=self.midnight,
-                              R=self.random_hour)
+        self.add_filter('M', self.midnight)
+        self.add_filter('R', self.random_hour)
 
     credits = ("M Clock 2.0\n"
                "by Guido van Rossum\n"

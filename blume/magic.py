@@ -88,7 +88,7 @@ class Ball:
     def __init__(self):
 
         self.paused = False
-        self.sleep = .1
+        self.sleep = .3
 
         # let roundabouts deal with connections
         self.radii = RoundAbout()
@@ -96,10 +96,9 @@ class Ball:
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
         # let shepherd control things?
-        self.event_map = dict(
-            s=self.sleepy,
-            w=self.wakey)
-        self.event_map[' '] = self.toggle_pause
+        self.radii.add_filter('s', self.sleepy)
+        self.radii.add_filter('w', self.wakey)
+        self.radii.add_filter('', self.toggle_pause)
 
 
     def __getattr__(self, attr):
@@ -521,6 +520,11 @@ class Shepherd(Ball):
             await task.cancel()
         for task in self.running.values():
             await task.cancel()
+
+        # if that doesn't do let's just divide by zero and see
+        # what happens
+        # hmm... 
+        1/0
 
     def __str__(self):
 

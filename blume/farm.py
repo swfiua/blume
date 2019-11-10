@@ -294,8 +294,8 @@ class Carpet(Ball):
 
         self.image = None
 
-        self.radii.add_filter('m', self.more)
-        self.radii.add_filter('l', self.less)
+        self.add_filter('m', self.more)
+        self.add_filter('l', self.less)
 
         
     async def more(self):
