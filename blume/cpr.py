@@ -49,6 +49,7 @@ from . import magic
 from . import farm as fm
 
 from matplotlib import pyplot as plt
+import numpy as np
 
 async def run(**args):
 
@@ -58,9 +59,9 @@ async def run(**args):
     clock = fm.GuidoClock()
     
     farm.add_node(spiral, background=True)
-    farm.add_node(clock, background=True)
+    #farm.add_node(clock, background=True)
     farm.add_edge(farm.carpet, spiral)
-    farm.add_edge(farm.carpet, clock)
+    #farm.add_edge(farm.carpet, clock)
 
     await farm.start()
     print('about to run farm')
@@ -92,6 +93,9 @@ class Spiral(magic.Ball):
         self.EE = -0.00000345
         self.CC = -10
 
+        self.rmin = 5000
+        self.rmax = 50000
+
     def v(self, r):
         """ Velocity at radius r """
         A = self.A
@@ -105,19 +109,30 @@ class Spiral(magic.Ball):
 
         return v - (self.A * r) / (self.K + r)
 
+    def rdoubledot(self, r, vinert):
+
+        rdd = ((vinert ** 2) / r) - (self.Mcent/(r**2))
+        rdd -= self.Mdisc/(self.rmax ** 2)
+        rdd -= self.Mball * r /(self.rmax ** 3)
+
+        return rdd
+
     async def run(self):
 
-        plt.clear()
+        plt.cla()
         ax = plt.subplot(111)
 
-        rr = list(range(1, 1000))
-        vv = [self.v(r) for r in rr]
-        ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
-        
+        rr = np.linspace(self.rmin, self.rmax, 1000)
+        #vv = [self.v(r) for r in rr]
+        vv = self.v(rr)
+        ii = self.vinert(rr, vv)
+        rdd = self.rdoubledot(rr, ii)
+        #ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
+        #rdd = [self.rdoubledot(r, v) for (r, v) in zip(rr, ii)]
         ax.plot(rr, vv)
-        
-        
         ax.plot(rr, ii)
+        ax.plot(rr, rdd)
+        
         plt.xlabel('r', color='r')
         plt.ylabel('velocity', color='y')
         plt.legend(loc=0)

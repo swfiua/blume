@@ -98,7 +98,7 @@ class Ball:
         # let shepherd control things?
         self.radii.add_filter('s', self.sleepy)
         self.radii.add_filter('w', self.wakey)
-        self.radii.add_filter('', self.toggle_pause)
+        self.radii.add_filter(' ', self.toggle_pause)
 
 
     def __getattr__(self, attr):
