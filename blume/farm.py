@@ -28,7 +28,7 @@ import networkx as nx
 
 from .teakhat import Hat, Help
 
-from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd
+from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 
 class Farm(Ball):
@@ -67,58 +67,6 @@ class Farm(Ball):
 
 
 
-    def setup(self):
-        """ Process the trees, set up all the connections 
-
-        If it is here ... maybe it's because not figured out where
-        it really belongs.
-        """
-        for node in self.nodes:
-            data = self.nodes[node]
-            if 'hat' in data:
-                self.hats.append(node)
-
-        # hmm maybe this.. add it to itself...
-        self.add_edge(self.gfarm, self.carpet)
-
-
-        for edge in self.edges:
-            start, end = edge
-            qname = self.edges[edge].get('name')
-            sname = qname or 'outgoing'
-            ename = qname or 'incoming'
-
-            print('joining', start, end, sname, ename)
-            if hasattr(end, ename):
-                setattr(start, sname, getattr(end, ename))
-            elif hasattr(start, sname):
-                # this case is tricky
-                # for now just do the case where a one to many
-                # shares its outputs
-                setattr(end, ename, getattr(start, sname))
-            else:
-                # This is where a magic roundabout
-                # would come in handy .. but then above would be different
-                # start or end might be just strings
-                queue = self.radii.select(name=ename)
-                
-                if isinstance(start, str):
-                    # cross fingers this gets fixed by some later magic
-                    souts = set()
-                    
-                else:
-                    setattr(start, sname, queue)
-                    souts = start.outs
-
-                if isinstance(end, str):
-                    # again, what to do?
-                    # see what outs start has
-                    print(end, souts, end in souts)
-                    
-                    pass
-                else:
-                    setattr(end, ename, queue)
-            
 
     async def start(self):
         """ Start the farm running 
@@ -246,8 +194,8 @@ class Farm(Ball):
             plt.show()
             # how to from farm ?? self.carpet.(plt)
 
-        await self.shepherd.run()
-        return
+        await curio.spawn(canine(self.shepherd))
+        #return
 
         
         print('Farm starting to run')
@@ -420,7 +368,7 @@ async def run():
     farm.add_edge(clock, farm.carpet)
 
     print('set up the farm .. move to start for added thrills? or not?') 
-    farm.setup()
+    #farm.setup()
 
     print()
     print('DUMP')

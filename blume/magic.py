@@ -181,6 +181,8 @@ class GeeFarm(Ball):
 
         await self.shep.start()
 
+        self.superdog = await curio.spawn(canine(self.shep))
+
 
     async def run(self):
         """ Run the farm 
@@ -189,7 +191,7 @@ class GeeFarm(Ball):
         """
         print('MAGIC TREE FARM')
 
-        await self.shep.run()
+        await self.superdog
 
 
 def fig2data(fig):
@@ -346,13 +348,20 @@ class Shepherd(Ball):
         self.running = {}
         self.whistlers = {}
         self.relays = {}
+        self.path = [self]
 
         self.add_filter('q', self.quit)
         self.add_filter('h', self.help)
+        self.add_filter('n', self.next)
+        self.add_filter('p', self.previous)
+        self.add_filter('u', self.up)
+        self.add_filter('d', self.down)
+        self.add_filter('R', self.toggle_run)
 
     def set(self, flock):
         """  Supply the flock to be watched """
         self.flock = flock
+        self.path = []
 
     async def whistler(self, queue, name='keys'):
         """ Send out whistles fromm a queue """
@@ -366,22 +375,21 @@ class Shepherd(Ball):
          
         follow the graph to see who's interested
 
+
         feels like this should be some sort of broadcast
 
         or perhaps directional if there's a name?
 
         or just send it to anything that is running and seems to care?
         """
-        for sheep in self.flock:
-            if sheep in self.running:
-                
-                lu = sheep.radii.filters[name]
-                print('whistle', sheep, lu)
-                if key in lu.keys():
-                    await lu[key]()
+        for sheep in self.path:
+            lu = sheep.radii.filters[name]
+            print('whistle', sheep, lu)
+            if key in lu.keys():
+                await lu[key]()
 
-                    # first one gets it?
-                    return True
+                # first one gets it?
+                return True
 
         # nobody cares :(
         return False
@@ -412,8 +420,7 @@ class Shepherd(Ball):
 
     async def start(self):
         """ Start things going """
-        
-        self.current = None
+
         for sheep in self.flock:
             if sheep is self:
                 print("skipping starting myself")
@@ -431,8 +438,6 @@ class Shepherd(Ball):
                 runner = await curio.spawn(canine(sheep))
                 self.running[sheep] = runner
 
-                self.current = sheep
-            print('current', self.current)
 
             if info.get('hat'):
                 # set task to whistle out output
@@ -444,7 +449,13 @@ class Shepherd(Ball):
         print('whistlers', self.whistlers)
         await self.watch_roundabouts()
 
-
+        # figure out current path
+        current = None
+        for sheep in self.flock:
+            if current is None:
+                current = sheep
+                
+        self.path.append(current)
         # what set up is needed for run?
         # navigate the tree
         # R for run
@@ -485,6 +496,10 @@ class Shepherd(Ball):
         """ Move focus to next node """
         pass
 
+    async def toggle_run(self):
+        """ Toggle run status of current """
+        pass
+
 
     async def run(self):
         """ run the flock 
@@ -501,7 +516,17 @@ class Shepherd(Ball):
 
         # delegated to hub
         fig = plt.figure()
-        nx.draw(self.flock)
+        #nx.draw(self.flock)
+        colours = []
+        for sheep in self.flock:
+            c = 'blue'
+            if sheep in self.running:
+                c = 'red'
+            if sheep is self.path[-1]:
+                c = 'gold'
+            colours.append(c)
+            
+        nx.draw_networkx(self.flock, node_color=colours)
 
         await self.put(fig2data(plt))
         
@@ -509,9 +534,6 @@ class Shepherd(Ball):
 
         print(self.flock)
 
-        while True:
-            await curio.sleep(self.sleep)
-        
 
     async def quit(self):
         """ Cancel all the tasks """
