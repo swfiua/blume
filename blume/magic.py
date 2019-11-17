@@ -275,36 +275,6 @@ class RoundAbout:
 
         self.filters[name][key] = coro
 
-    async def tend(self, queue=None, name=None, coro=None):
-        """ A co-routine to mind a queue and pass stuff on to another """
-
-        queue = queue or self.select(name)
-
-        print('TENDING', name, coro)
-
-        while True:
-            event = await queue.get()
-
-            await coro(event)
-
-    async def dispatch(self, name, maps):
-        """ Assume maps is a dictionary which 
-        
-        maps inputs to coroutines.
-        """
-        queue = queue or self.select(name)
-
-        # nested co-routine to bind queue
-        async def watch():
-
-            event = await queue.get()
-            if event in maps:
-                result = await maps[event]()
-
-                
-        return await self.tend(coro=watch, queue=queue)
-        
-
 
     def add_queue(self, name=None):
 
@@ -313,18 +283,6 @@ class RoundAbout:
 
         return qq
 
-
-    async def tee(self, ink, outs):
-        """ Pass data on  
-
-        Idea for here: relays.
-        """
-        while True:
-            event = await ink.get()
-            #print('hat stand event', event)
-            for out in outs:
-                await out.put(event)
-    
 
     async def start(self):
         """ How do you start a magic round-a-bout? """
@@ -361,13 +319,13 @@ class Shepherd(Ball):
     def set(self, flock):
         """  Supply the flock to be watched """
         self.flock = flock
-        self.path = []
+        self.path = [self]
 
     async def whistler(self, queue, name='keys'):
         """ Send out whistles fromm a queue """
         while True:
             key = await queue.get()
-            print('WOOOHOO whistle time')
+            print('WOOOHOO whistle time', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -382,9 +340,10 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
-        for sheep in self.path:
+        for sheep in reversed(self.path):
+            print('whsitle', sheep, len(self.path))
             lu = sheep.radii.filters[name]
-            print('whistle', sheep, lu)
+            #print('whistle', sheep, lu)
             if key in lu.keys():
                 await lu[key]()
 
@@ -396,8 +355,9 @@ class Shepherd(Ball):
 
     async def help(self, name='keys'):
         """ Show what keys do what """
+        print('HELP', self.path)
         msg = ''
-        for sheep in self.flock:
+        for sheep in self.path:
             if sheep in self.running:
                 msg += repr(sheep) + '\n'
                 lu = sheep.radii.filters[name]
@@ -489,16 +449,37 @@ class Shepherd(Ball):
         pass
 
     async def up(self):
-        """ Move focus to next node """
-        pass
+        """ Move up path """
+        if len(self.path) > 1:
+            del self.path[-1]
 
     async def down(self):
         """ Move focus to next node """
-        pass
+        current = None
+        
+        if self.path:
+            current = self.path[-1]
 
-    async def toggle_run(self):
-        """ Toggle run status of current """
-        pass
+        succ = nx.dfs_successors(self.flock, current, depth_limit=2)
+        print('number of successors', len(succ), succ.keys())
+        if succ:
+            succ = random.choice(list(succ.keys()))
+
+            self.path.append(succ)
+
+
+    async def toggle_run(self, sheep=None):
+        """ Toggle run status of sheep """
+
+        sheep = sheep or self.path[-1]
+        
+        # run it if not already running
+        if sheep not in self.running:
+            self.running[sheep] = await curio.spawn(canine(sheep))
+        else:
+            task = self.running[sheep]
+            await task.cancel()
+            del self.running[sheep]
 
 
     async def run(self):
@@ -512,7 +493,7 @@ class Shepherd(Ball):
         """
         for sheep in self.flock:
             print(f'shepherd running {sheep in self.running}')
-            print(f'   {sheep.status()}')
+            #print(f'   {sheep.status()}')
 
         # delegated to hub
         fig = plt.figure()
@@ -522,17 +503,21 @@ class Shepherd(Ball):
             c = 'blue'
             if sheep in self.running:
                 c = 'red'
+
             if sheep is self.path[-1]:
                 c = 'gold'
+            elif sheep in self.path:
+                c= 'green'
+
             colours.append(c)
             
         nx.draw_networkx(self.flock, node_color=colours)
 
         await self.put(fig2data(plt))
         
-        print(self.radii)
+        #print(self.radii)
 
-        print(self.flock)
+        #print(self.flock)
 
 
     async def quit(self):
@@ -543,6 +528,7 @@ class Shepherd(Ball):
         for task in self.running.values():
             await task.cancel()
 
+        print("QQQQQQQQQQQQQQQQQQQQQQQQQQ")
         # if that doesn't do let's just divide by zero and see
         # what happens
         # hmm... 
@@ -587,8 +573,8 @@ async def relay(a, b):
 
     while True:
         value = await a.get('stdout')
-        print('got', value, 'from', a)
-        print('relay', value, 'to', b)
+        #print('got', value, 'from', a)
+        #print('relay', value, 'to', b)
         await b.put(value, 'stdin')
 
         

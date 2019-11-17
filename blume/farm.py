@@ -42,8 +42,8 @@ class Farm(Ball):
         # start the farm going
         hat = Hat()
         carpet = Carpet()
-
         self.shepherd = Shepherd()
+        clock = GuidoClock()
 
         self.add_node(carpet, background=True)
         self.add_node(hat, background=True, hat=True)
@@ -55,6 +55,10 @@ class Farm(Ball):
         self.carpet = carpet
 
         self.shepherd.set(self.gfarm.hub)
+
+        self.add_edge(clock, carpet)
+        self.add_node(clock, background=True)
+
         
     def __getattr__(self, attr):
 
