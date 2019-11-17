@@ -56,12 +56,9 @@ async def run(**args):
     farm = fm.Farm()
 
     spiral = Spiral()
-    clock = fm.GuidoClock()
-    
+
     farm.add_node(spiral, background=True)
-    #farm.add_node(clock, background=True)
     farm.add_edge(farm.carpet, spiral)
-    #farm.add_edge(farm.carpet, clock)
 
     await farm.start()
     print('about to run farm')
