@@ -126,9 +126,9 @@ class Spiral(magic.Ball):
         rdd = self.rdoubledot(rr, ii)
         #ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
         #rdd = [self.rdoubledot(r, v) for (r, v) in zip(rr, ii)]
-        ax.plot(rr, vv)
-        ax.plot(rr, ii)
-        ax.plot(rr, rdd)
+        ax.plot(rr, vv, label='velocity')
+        ax.plot(rr, ii, label='vinert')
+        ax.plot(rr, rdd, label='rdoubledot')
         
         plt.xlabel('r', color='r')
         plt.ylabel('velocity', color='y')
