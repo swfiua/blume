@@ -14,7 +14,7 @@ Black hole mergers, modelled with a new paradigm.
 Einstein with a twist
 =====================
 
-Many years ago, early 1980's I was fortunate enough to be study
+Many years ago, early 1980's I was fortunate enough to study
 mathematics at Warwick University.
 
 Christopher Zeeman had put together a wonderful department, including
@@ -27,13 +27,13 @@ Real analysis?  Calculus, but done differently.  With nested sets,
 that Colin had introduced through his work at the *Open University*.
 
 I will confess, I was more interested in algebra, group theory, Galois
-and Fermat. 
+and Fermat.
 
 Colin's main interests were in the land of *topology*.
 
 I left Warwick, years passed.   Then I heard someone had a proof of
 the *Poincare Conjecture*.  It was Colin, but alas there was an error.
-
+ 
 A few years passed another proof and this time Colin found the hole.
 
 In 2006 Gregori Perelman, finally completed the proof.
@@ -43,16 +43,16 @@ interest for a topologist.
  
 This led to him publishing *A new paradigm for the universe* in 2017.
 
-The book focusses on galactic rotation curves, how the velocity of
-stars varies with distance from the centre of their galaxy.
+The book also focusses on galactic rotation curves, how the velocity
+of stars varies with distance from the centre of their galaxy.
 
 Typical curves show a straight line through the origin, which
 transitions to a flat asymptote with a constant velocity of around
 300km/s.
 
 Unfortunately, such curves cannot be produce by conventional physics.
-Vera Rubin [2] uncovered this problem and *dark matter* was introduced
-as a potential solution.
+Vera Rubin [2] uncovered this problem and introduced the idea of *dark
+matter* as a potential solution.
 
 Colin takes a different approach.  He modifies Einstein's General
 Relativity by assuming that a rotating body drags inertial frames in
@@ -61,14 +61,16 @@ and angular velocity and dropping off linearly with distance.
 
 There are a number of compelling reasons to support this assumption:
 
-* galactic rotation curves match the observations
+* galactic rotation curves now match the observations
 
 * it provides a mechanism for distant matter to define inertial frames
 
 * it provides a mechanism that slowly redshifts light as it passes
   across the cosmos.
 
-The book uses *de Sitter space* as a model for the universe::
+
+Returning to topology, the book uses *de Sitter space* as a model for
+the universe::
 
   In essence, what is provided here is a totally new paradigm for the
   universe.  In this paradigm, there is no big bang, and the universe
@@ -97,14 +99,17 @@ more distant galaxies appears more red-shifted giving the illusion
 that galaxies are receding faster and faster the more distance they
 are.
 
+In [1] Edward Wright argues that simply stretching light from distant
+galaxies would not give the thermal energy distribution that we
+observe for the cosmic microwave background (CMB), so dismisses this
+theory.
 
 
 Cosmic microwave background
 ===========================
 
-Energy distribution is thermal.
-
-It corresponds to the radiation expected at ~2.73K.
+As noted the energy distribution of the cosmic microwave is very close
+to thermal with a temperature of ~2.73K. 
 
 According to the new paradigm (NP) the CMB originates in the form of light
 from very distant galaxies.
@@ -113,6 +118,10 @@ Over 95% of that energy coming from galaxies that have never yet been
 in our visible universe, beyond the Hubble distance.
 
 So how does this light, in the form of microwaves make its way to us?
+Surely, light from beyond the Hubble distance can never reach us since
+it will be infinitely red shifted by the intervening space.
+
+This is precisely what is required for thermalisation.
 
 Cosmic dust.  Intergalactic space dust.   All at a temperature of
 2.73K.
@@ -142,6 +151,8 @@ intriguing harmonics within the data, with wavelengths of the order of
 Since interstellar cosmic dust is a key part of the thermalisation
 process it is reasonable to assume that what the harmonics reflect
 harmonics in the movements of cosmic dust.
+
+Galaxies driving tides in the inter stellar dust.
 
 
 New Arrivals
