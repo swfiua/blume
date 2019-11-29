@@ -41,7 +41,15 @@ In 2006 Gregori Perelman, finally completed the proof.
 By this time Colin had an increasing interest in cosmology, a natural
 interest for a topologist.
  
-This led to him publishing *A new paradigm for the universe* in 2017.
+By the wonders of modern communication I heard from Professor Ian
+Stewart (paraphrased)::
+
+   Colin Rourke has just published a book outlining a whole new
+   paradigm on the universe.
+
+   A theory that does not require dark matter.
+
+This led to him publishing *A new paradigm for the universe* in 2017. [0]
 
 The book also focusses on galactic rotation curves, how the velocity
 of stars varies with distance from the centre of their galaxy.
@@ -66,8 +74,16 @@ There are a number of compelling reasons to support this assumption:
 * it provides a mechanism for distant matter to define inertial frames
 
 * it provides a mechanism that slowly redshifts light as it passes
-  across the cosmos.
+  across the cosmos, due to drag from giant galactic black holes.
 
+* it does not require dark matter.
+
+* it may throw new insights on motions of binary star systems.
+
+* it helps explain the thermal nature of the cosmic microwave background.
+
+* shows the universe may be very much larger than conventional
+  estimates, both in time and space.
 
 Returning to topology, the book uses *de Sitter space* as a model for
 the universe::
@@ -218,6 +234,9 @@ If EGR is correct then we should over time find that the localisations
 making sense, successfully locate host galaxies for an event and
 improve the chances of observing coincident radiation.
 
+
+[0] http://msp.warwick.ac.uk/~cpr/paradigm
+A new Paradigm for the Universe, Colin Rourke.
 
 
 [1] Can the CMBR be redshifted starlight? NO!
