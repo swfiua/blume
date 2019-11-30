@@ -114,6 +114,26 @@ class Spiral(magic.Ball):
 
         return rdd
 
+    def energy(self, r):
+
+        CC = self.CC
+        Mcent = self.Mcent
+        Mdisc = self.Mdisc
+        Mball = self.Mball
+        rmax = self.rmax
+        EE = self.EE
+        K = self.K
+        A = self.A
+        log = math.log
+
+        energy = (-CC**2)/(2*r*r) + (Mcent - (2*A*CC)/r) - (Mdisc * r/(rmax**2))
+        energy += (Mball * r * r) / (2 * rmax**3)
+        energy += (A*A*K)/(K+r)
+        energy += 2 * A * K * (CC + 2*A*r) * log(1 + r/K) / (r * r)
+        energy -= (2 * A * K * log(1 + r/K)/r) ** 2
+        energy += EE
+        return energy
+
     async def run(self):
 
         plt.cla()
@@ -124,11 +144,13 @@ class Spiral(magic.Ball):
         vv = self.v(rr)
         ii = self.vinert(rr, vv)
         rdd = self.rdoubledot(rr, ii)
+        energy = [self.energy(r) for r in rr]
         #ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
         #rdd = [self.rdoubledot(r, v) for (r, v) in zip(rr, ii)]
         ax.plot(rr, vv, label='velocity')
         ax.plot(rr, ii, label='vinert')
         ax.plot(rr, rdd, label='rdoubledot')
+        ax.plot(rr, energy, label='energy')
         
         plt.xlabel('r', color='r')
         plt.ylabel('velocity', color='y')
