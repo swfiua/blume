@@ -10,7 +10,12 @@ Welcome to blume's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   about.rst
+   cpr.rst
+   universal.rst
+   farm.rst
+   tabledotpy.rst
+   
 
 Indices and tables
 ==================

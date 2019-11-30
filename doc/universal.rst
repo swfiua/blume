@@ -49,7 +49,7 @@ Stewart (paraphrased)::
 
    A theory that does not require dark matter.
 
-This led to him publishing *A new paradigm for the universe* in 2017. [0]
+The book was *A new paradigm for the universe* published in 2017. [0]
 
 The book also focusses on galactic rotation curves, how the velocity
 of stars varies with distance from the centre of their galaxy.
@@ -137,10 +137,8 @@ So how does this light, in the form of microwaves make its way to us?
 Surely, light from beyond the Hubble distance can never reach us since
 it will be infinitely red shifted by the intervening space.
 
-This is precisely what is required for thermalisation.
-
-Cosmic dust.  Intergalactic space dust.   All at a temperature of
-2.73K.
+The answer may be cosmic dust.  Intergalactic space dust.  All at a
+temperature of 2.73K.
 
 Once light from distant galaxies has been redshifted by z = 1000 it
 enters the microwave range.
@@ -149,13 +147,16 @@ Now there are so many distant galaxies contributing to the energy at a
 point in space that it is able to maintain a temperature of 2.73K.
 
 Sooner or later a photon will encounter some dust and be absorbed and
-then readmitted.
+then re-emitted.
 
 This is the perfect scenario for producing thermal radiation.
 
 So whilst there is a tendency for light to be red shifted as it
 travels across the cosmos, once it reaches the microwave level, then
 we reach a point of thermal equilibrium.
+
+Light from distant galaxies can travel arbitrarily long distances
+through this thermalisation process.
 
 Harmonics
 =========
@@ -174,21 +175,41 @@ Galaxies driving tides in the inter stellar dust.
 New Arrivals
 ============
 
-Gamma Ray Bursts.   New galaxies arriving in our visible universe.
+The book also provides an explanation for gamma ray bursts.
+Conventional cosmology assumes these are caused by very distant,
+extremely powerful emitters.
 
-Gravitational Waves.   New galaxies arriving in our inertial field.
+The explanation in the book comes from considering geodesics in de
+Sitter Space.  Specifically, considering how light travels between a
+distant emitter and an observer.
+
+Due to symmetries in de Sitter Space all such geodesics follow
+essentially the same pattern
+
+When a new emitter is first seen by an observer, the observer sees its
+entire history in a very brief period of time.  Hence the intense,
+gamma-ray radiation::
+
+  We propose, however, that many gamma-ray bursts may be optical
+  illusions. If space-time is geodesically complete but an emitting
+  object does not illuminate the whole of space-time, then on our
+  entry into the illuminated region we see the emitter infinitely
+  blue-shifted and infinitely intense. Both the blue-shift and
+  intensity fall off with receiver time. This produces an effect
+  qualitatively similar to the observations of gamma-ray bursts.
+
+
+If this theory is correct then, intriguingly, it might offer an
+alternative explanation for the source of gravitational waves.
+
 
 Black Hole Mergers
 ==================
 
-With and without the Einstein twist.
-
-Bayestar.fits and healpix.
+When a potential signal is detected it is compared to a catalogue of
+waveforms for black hole mergers.
 
 Sky localisation of gravitational wave events.
-
-When a potenttial signal is detected it is compared to a catalogue of
-waveforms for black hole mergers.
 
 Once a good match has been located it is possible to calculate the
 distance of the source based on how the amplitude of the wave we
@@ -199,23 +220,37 @@ Detectors also report the time and phase of the wave.
 With three detectors this can narrow the source to an arc across the sky
 of a few hundred degrees for the 90% confidence region.
 
-In general, tends to be very elongated across the sky.
+In general, tends to be very elongated across the sky.  Earth based
+detectors only have a limited baseline and so even with multiple
+detectors the 90% confidence intervals tend to be large.
 
 It does however provide a guide of which regions to turn telescopes to
-in order to detect any radiation beyond the gravitational wave.
+in order to detect any radiation beyond the gravitational wave, so
+called *multi-messenger* astronomy.
 
-It should be noted that the distance part of this calculation is
-dependent on the model that is used for binary star mergers is a good
-enough approximation to reality.
+There is a system of alerts that puts out lists of potential candidate
+galaxies where the wave might have originated.
 
-One of the aims of this project is to try to explore the mathematics
-of binary systems using the mathematics of the new paradigm.
+One of the aims of this project is to try to explore mergers of binary
+systems using the mathematics of the new paradigm and to investigate
+whether the inertial drag affects the way binary systems merge. 
 
-https://gracedb.ligo.org
+It seems likely there will be significant differences and so in turn,
+given a sample of gravitational wave detections we would get a
+different population of binary collisions.
+
+This in turn could affect sky localisation, in particular, the
+distance part of that calculation.
 
 
 Sky localisation
 ================
+
+Sky localisation data can be obtained from the ligo database:
+https://gracedb.ligo.org
+
+The data comes in the form of *.fits* which use the *healpix* format.
+This gives a full sky map with each pixel representing an equal area.
 
 These work with phase, time and amplitude from the detectors which
 detected the signal.
@@ -227,12 +262,19 @@ enough approximation.
 One goal here is to see how different gravitational waves from a black
 hole merger would be under the new paradigm.
 
-If there are significant differences then this should help resolve
-this issue.
+If there are significant differences then with enough observations
+this should help determine which model is correct.
 
 If EGR is correct then we should over time find that the localisations
 making sense, successfully locate host galaxies for an event and
 improve the chances of observing coincident radiation.
+
+Likewise if the new paradigm is correct, we should have more success
+finding host galaxies using that model.
+
+There is another intriguing possibility.  This is that with the
+physics of the new paradigm, binary system mergers are less violent
+events that do not in fact create significant gravitational waves.
 
 
 [0] http://msp.warwick.ac.uk/~cpr/paradigm
