@@ -222,7 +222,14 @@ class Spiral(magic.Ball):
         self.rmax = 50000
 
     def v(self, r):
-        """ Velocity at radius r """
+        """ Velocity at radius r 
+
+        A = 0.0005
+        K = Mcent
+        CC = -10
+
+        ??
+        """
         A = self.A
         K = self.K
         CC = self.CC
@@ -231,12 +238,22 @@ class Spiral(magic.Ball):
 
 
     def vinert(self, r, v):
+        """ Inertial part of the velocity
 
+        Part of velocity relative to inertial frame.
+
+        Notes
+        -----
+
+        K is central mass.   A = 0.0005
+        """
         return v - (self.A * r) / (self.K + r)
 
     def rdoubledot(self, r, vinert):
 
         rdd = ((vinert ** 2) / r) - (self.Mcent/(r**2))
+
+        # if we have Mdisc of Mball, adjust as appropriate?
         rdd -= self.Mdisc/(self.rmax ** 2)
         rdd -= self.Mball * r /(self.rmax ** 3)
 
