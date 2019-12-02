@@ -51,6 +51,8 @@ from . import farm as fm
 from matplotlib import pyplot as plt
 import numpy as np
 
+from scipy import integrate
+
 async def run(**args):
 
     farm = fm.Farm()
@@ -160,7 +162,81 @@ class Spiral(magic.Ball):
 
         await self.put(magic.fig2data(plt))
 
+
+def pick(x, v, vmin, vmax):
+
+    n = len(v)
+    loc = n * (x - vmin) / vmax
+
+    return v[loc]
+
+
+def cpr():
+
+    Plot = plt.plot
+    Log = np.log
+    Sqrt = np.sqrt
+    NIntegrate = integrate.cumtrapz
+    
+    A = 0.0005; Mcent = .03; EE = -.00000345; CC = -10;
+    B = .00000015; Mball = 0; Mdisc = 0; K = Mcent;
+    rmin = 5000; rmax = 50000; iterate = 1000;
+    
+    step = (rmax - rmin)/(iterate - 1)
+
+    r = np.arange(rmin, rmax)
+
+    ax = plt.subplot(121)
+
+    v = 2*A - 2*K*A*Log(1 + r/K)/r + CC/r
+    inert = v - A*r/(K + r);
+    ax.plot(inert, v)
+
+    ax.plot(inert, r, label='vinert')
+    
+    rdoubledot = inert**2/r - Mcent/r**2 - Mdisc/rmax**2 - Mball*r/rmax**3
+    ax.plot(rdoubledot, r, label='rdoubledot')
+
+    energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
+                  Mdisc*r/rmax**2 +
+                  Mball*r**2/(2*rmax**3) +
+                  A**2*K/(K + r) +
+                  A**2*Log(K + r) +
+                  2 * A*K * (CC + 2*A*r) * Log(1 + r/K)/(r**2)
+                  - (2 * A*K*Log(1 + r/K)/r)**2 + EE);
+    #Plot(energy, r, label='energy')
+    rdot = Sqrt(2*energy)
+    ax.plot(rdot, r, label='rdot')
+
+    ax.legend(loc=0)
+    
+    thetadot = v/r;
+    dthetabydr = thetadot/rdot 
+    dtbydr = 1/rdot
+
+    
+    thetaValues = NIntegrate(dthetabydr, r, initial=0.)
+    print(thetaValues)
+
+    tvalues = NIntegrate(dtbydr, r, initial=0.)
+
+    #thetavalues = Table(
+    #    NIntegrate(dthetabydr, rmin, rmax), ivalue, i, iterate))
+    #tvalues = Table(
+    #    NIntegrate(dtbydr, r, ivalue, i, iterate))
+    
+    #ListPolarPlot[{ Table[{thetavalues[[i]] - B*tvalues[[i]], ivalue},
+    #{i, iterate}] ,
+    #Table[{thetavalues[[i]] - B*tvalues[[i]] + Pi, ivalue},
+    #{i, iterate}] }]
+
+    ax = plt.subplot(122, projection='polar')
+    ax.plot(thetaValues - (B * tvalues), r)
+    ax.plot(thetaValues - (B * tvalues) + math.pi, r)
+
+        
 if __name__ == '__main__':
  
-    
+    cpr()
+    plt.show()
     main()
