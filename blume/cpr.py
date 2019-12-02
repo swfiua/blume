@@ -49,6 +49,8 @@ from . import magic
 from . import farm as fm
 
 from matplotlib import pyplot as plt
+from matplotlib import colors
+
 import numpy as np
 
 from scipy import integrate
@@ -57,10 +59,16 @@ async def run(**args):
 
     farm = fm.Farm()
 
-    spiral = Spiral()
+    if args['galaxy']:
+        gals = [cleanse(gal) for gal in near_galaxies(open(args['galaxy']))]
 
+    skymap = SkyMap(gals)
+    farm.add_node(skymap, background=True)
+    farm.add_edge(skymap, farm.carpet)
+    
+    spiral = Spiral()
     farm.add_node(spiral, background=True)
-    farm.add_edge(farm.carpet, spiral)
+    farm.add_edge(spiral, farm.carpet)
 
     await farm.start()
     print('about to run farm')
@@ -70,9 +78,127 @@ async def run(**args):
 def main(args=None):
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('--galaxy', help="file of local galaxy data")
+
     args = parser.parse_args(args)
 
     curio.run(run(**args.__dict__), with_monitor=True)
+
+class SkyMap(magic.Ball):
+
+    def __init__(self, gals):
+
+        super().__init__()
+
+        print('clean galaxy data')
+        print(gals[0])
+
+        self.balls = gals
+        
+
+    def decra2rad(self, dec, ra):
+
+        ra = (ra - 12) * math.pi / 12.
+
+        while ra > math.pi:
+            ra -= 2 * math.pi
+        
+        return dec * math.pi / 180., ra
+        
+
+    def spinra(self, ra):
+
+        ra += self.offset
+        while ra > math.pi:
+            ra -= 2 * math.pi
+
+        while ra < math.pi * -1:
+            ra += 2 * math.pi
+
+        return ra
+        
+    async def run(self):
+
+        fig = plt.figure()
+
+        fig.clear()
+                
+        #ax = fig.add_axes((0,0,1,1), projection='mollweide')
+        ax = fig.add_subplot(1, 1, 1,
+                             projection='mollweide')
+
+        locs = [self.decra2rad(ball['dec'], ball['ra'])
+                    for ball in self.balls]
+            
+        self.offset = 0
+            
+
+        ball_colours = [x['distance'] for x in self.balls]
+        
+        ax.scatter([self.spinra(xx[1]) for xx in locs],
+                   [xx[0] for xx in locs],
+                   c=ball_colours,
+                   s=[x['major_axis'] or 1 for x in self.balls])
+
+        norm = colors.Normalize(min(ball_colours), max(ball_colours))
+        cm = plt.get_cmap()
+        for ball, loc, colour in zip(self.balls, locs, ball_colours):
+            ma = ball['major_axis'] or 1
+            ngn = ball.get('neighbor_galaxy_name', '')
+            constellation = ''
+            #if (ma or 1) > 20:
+            if 'ilky' in ngn or 'ilky' in constellation:
+            #if 'ilky' in ball.name:
+
+                print()
+                print(constellation)
+                print(ball)
+                
+                ax.text(
+                    self.spinra(loc[1]), loc[0],
+                    '\n'.join((ball.get('name'), constellation)),
+                    color='red',
+                    #color=cm(1.0-norm(colour)),
+                    fontsize=15 * math.log(max(ma, 10)) / 10)
+                                   
+        ax.axis('off')
+
+        await self.put(magic.fig2data(plt))
+
+        fig.clear()
+
+        ax = fig.add_subplot(111)
+        rv = [xx.get('radial_velocity', 0.0) or 0. for xx in self.balls]
+        distance = [xx.get('distance', 0.0) or 0. for xx in self.balls]
+
+        rrv = []
+        dd = []
+        for vel, dist in zip(rv, distance):
+            if dist > 11:
+                continue
+            
+            if vel == 0.0:
+                # use Hubble relationship
+                vel = dist * 70.
+            rrv.append(vel)
+            dd.append(dist)
+
+        ax.scatter(dd, rrv)
+
+        #await curio.sleep(self.sleep)
+        #await self.outgoing.put(magic.fig2data(fig))
+        #await curio.sleep(self.sleep)
+
+        #await self.outgoing.put(magic.fig2data(fig))
+        fig.clear()
+        ax = fig.add_subplot(111)
+        ax.plot(distance)
+        #await self.outgoing.put(magic.fig2data(fig))
+
+        fig.clear()
+        ax = fig.add_subplot(111)
+        ax.plot([xx[1] for xx in locs])
+        #await self.outgoing.put(magic.fig2data(fig))
 
 
 class Spiral(magic.Ball):
@@ -263,8 +389,63 @@ def cpr():
     values = (thetaValues - (B * tvalues))
     print(min(values), max(values))
     return rdot, inert, v, values
+
+
+def near_galaxies(infile):
+    """ parse galaxy.txt from 
+
+    https://heasarc.gsfc.nasa.gov/w3browse/all/neargalcat.html
+
+    """
+    header = tokens(infile.readline())
+    print(header)
+    for row in infile:
+        fields = tokens(row)
+        yield dict(zip(header, fields))
+
+def tokens(line, sep=','):
+    """ Split line into tokens """
+    return [x.strip() for x in line.split(sep)]
+
+
+def parse_radec(value):
+
+    d, m, s = [float(s) for s in value.split()]
+
+    scale = 1
+    if d < 0:
+        d *= -1
+        scale = -1
+
+    d += m / 60.
+    d += s / 3600.
+
+    return d * scale
     
+def cleanse(data):
+
+    clean = {}
+
+    for key, value in data.items():
+
+        try:
+            value = float(value)
+        except:
+            pass
+
+        if key in ('ra', 'dec'):
+            value = parse_radec(value)
+            
+        clean[key] = value
+
+    return clean
+
+
+
+
 if __name__ == '__main__':
+
+    
  
     cpr()
     plt.show()
