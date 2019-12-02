@@ -153,7 +153,7 @@ their values.  I found the black cell borders unpleasing to the eye
 and felt the tables would look better if these edges were painted the
 same colour as the cells, as per the image below.
 
-.. image:: blume.png
+.. image:: images/blume.png
 
 Now in the intervening time *matplotlib* has moved on from a fledgling
 project to a key part of the python data science stack.
