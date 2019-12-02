@@ -77,7 +77,7 @@ class Examples(Ball):
             return
 
         print('publishing', path)
-        await self.outgoing.put(fig2data(plt))
+        await self.put(fig2data(plt))
 
         plt.close()
 
@@ -96,16 +96,12 @@ async def run(args):
     clock = GuidoClock()
 
     # ??? 
-    farm.event_map.update(clock.event_map)
-
     examples = Examples(args)
 
-    carpet = farm.carpet
-    farm.add_edge(examples, carpet)
-    farm.add_edge(clock, carpet)
+    farm.add(examples)
+    farm.add(clock)
 
 
-    farm.setup()
     starter = await curio.spawn(farm.start())
 
     print('farm runnnnnnnnnning')

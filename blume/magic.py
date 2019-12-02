@@ -158,7 +158,6 @@ class GeeFarm(Ball):
         """ Delegate to hub
         """
         return getattr(self.hub, attr)
-        
 
     def dump(self):
 

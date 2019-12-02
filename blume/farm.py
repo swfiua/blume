@@ -70,7 +70,12 @@ class Farm(Ball):
         self.show()
 
 
+    def add(self, item, run=True, with_carpet=True):
 
+        self.add_node(item, background=run)
+        if with_carpet:
+            self.add_edge(item, self.carpet)
+        
 
     async def start(self):
         """ Start the farm running 

@@ -339,6 +339,12 @@ def pick(x, v, vmin, vmax):
 
 
 def cpr():
+    """  Started as Mathematica code from the new paradigm.
+    
+    adapted to python over time.
+
+    See spiral class for more information over time.
+    """
 
     Plot = plt.plot
     Log = np.log
