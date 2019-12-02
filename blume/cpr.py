@@ -82,7 +82,7 @@ class Spiral(magic.Ball):
         super().__init__()
 
         self.A = 0.0005
-        self.B = 0.0000015
+        self.B = 0.00000015
 
         self.Mcent = 0.03
         self.Mball = 0.
@@ -101,7 +101,7 @@ class Spiral(magic.Ball):
         K = self.K
         CC = self.CC
 
-        return (2 * A) - (2 * (K * A * math.log(1 + K) / r)) + CC / r
+        return (2 * A) - (2 * K * A * math.log(1 + K) / r) + CC / r
 
 
     def vinert(self, r, v):
@@ -126,41 +126,65 @@ class Spiral(magic.Ball):
         EE = self.EE
         K = self.K
         A = self.A
-        log = math.log
+        Log = math.log
 
-        energy = (-CC**2)/(2*r*r) + (Mcent - (2*A*CC)/r) - (Mdisc * r/(rmax**2))
-        energy += (Mball * r * r) / (2 * rmax**3)
-        energy += (A*A*K)/(K+r)
-        energy += 2 * A * K * (CC + 2*A*r) * log(1 + r/K) / (r * r)
-        energy -= (2 * A * K * log(1 + r/K)/r) ** 2
-        energy += EE
+        energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
+                    Mdisc*r/rmax**2 +
+                    Mball*r**2/(2*rmax**3) +
+                    A**2*K/(K + r) +
+                    A**2*Log(K + r) +
+                    2 * A*K * (CC + 2*A*r) * Log(1 + r/K)/(r**2)
+                    - (2 * A*K*Log(1 + r/K)/r)**2 + EE);
+        
         return energy
 
     async def run(self):
 
-        plt.cla()
-        ax = plt.subplot(111)
+        xrdot, xvinert, xv, xtheta = cpr()
+        #await self.put(magic.fig2data(plt))
 
-        rr = np.linspace(self.rmin, self.rmax, 1000)
+        plt.clf()
+        ax = plt.subplot(121)
+
+        rr = np.arange(self.rmin, self.rmax)
         #vv = [self.v(r) for r in rr]
         vv = self.v(rr)
         ii = self.vinert(rr, vv)
         rdd = self.rdoubledot(rr, ii)
-        energy = [self.energy(r) for r in rr]
+        energy = np.array([self.energy(r) for r in rr])
         #ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
         #rdd = [self.rdoubledot(r, v) for (r, v) in zip(rr, ii)]
         ax.plot(rr, vv, label='velocity')
         ax.plot(rr, ii, label='vinert')
         ax.plot(rr, rdd, label='rdoubledot')
-        ax.plot(rr, energy, label='energy')
+        #ax.plot(rr, energy, label='energy')
         
         plt.xlabel('r', color='r')
         plt.ylabel('velocity', color='y')
-        plt.legend(loc=0)
+        
+        rdot = np.sqrt(2 * energy)
+        print('spiral', len(rr), len(rdot))
+        ax.plot(rr, rdot, label='rdot')
+        ax.legend(loc=0)
           
-        print('spiral')
+
+        thetadot = vv/rr;
+
+        dthetabydr = thetadot/rdot 
+        dtbydr = 1/rdot
+
+        NIntegrate = integrate.cumtrapz
+
+        thetaValues = NIntegrate(dthetabydr, rr, initial=0.)
+        tvalues = NIntegrate(dtbydr, rr, initial=0.)
+
+        B = self.B
+        ax = plt.subplot(122, projection='polar')
+        ax.plot(thetaValues - (B * tvalues), rr)
+        ax.plot(thetaValues - (B * tvalues) + math.pi, rr)
 
         await self.put(magic.fig2data(plt))
+        plt.close()
 
 
 def pick(x, v, vmin, vmax):
@@ -190,12 +214,11 @@ def cpr():
 
     v = 2*A - 2*K*A*Log(1 + r/K)/r + CC/r
     inert = v - A*r/(K + r);
-    ax.plot(inert, v)
-
-    ax.plot(inert, r, label='vinert')
+    ax.plot(r, v, label='velocity')
+    ax.plot(r, inert, label='vinert')
     
     rdoubledot = inert**2/r - Mcent/r**2 - Mdisc/rmax**2 - Mball*r/rmax**3
-    ax.plot(rdoubledot, r, label='rdoubledot')
+    ax.plot(r, rdoubledot, label='rdoubledot')
 
     energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
                   Mdisc*r/rmax**2 +
@@ -206,7 +229,8 @@ def cpr():
                   - (2 * A*K*Log(1 + r/K)/r)**2 + EE);
     #Plot(energy, r, label='energy')
     rdot = Sqrt(2*energy)
-    ax.plot(rdot, r, label='rdot')
+
+    ax.plot(r, rdot, label='rdot')
 
     ax.legend(loc=0)
     
@@ -217,6 +241,7 @@ def cpr():
     
     thetaValues = NIntegrate(dthetabydr, r, initial=0.)
     print(thetaValues)
+    print(len(thetaValues))
 
     tvalues = NIntegrate(dtbydr, r, initial=0.)
 
@@ -230,11 +255,15 @@ def cpr():
     #Table[{thetavalues[[i]] - B*tvalues[[i]] + Pi, ivalue},
     #{i, iterate}] }]
 
+    print('theta', thetaValues[:5])
     ax = plt.subplot(122, projection='polar')
     ax.plot(thetaValues - (B * tvalues), r)
     ax.plot(thetaValues - (B * tvalues) + math.pi, r)
 
-        
+    values = (thetaValues - (B * tvalues))
+    print(min(values), max(values))
+    return rdot, inert, v, values
+    
 if __name__ == '__main__':
  
     cpr()
