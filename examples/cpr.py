@@ -44,24 +44,14 @@ def cpr():
     # range of r to compute for
     r = np.arange(rmin, rmax, step=1)
 
-    ax = plt.subplot(221)
-
     # Velocity at distance r
     v = 2*A - 2*K*A*Log(1 + r/K)/r + CC/r
 
     # velocity in inertial frame
     inert = v - A*r/(K + r);
-    ax.plot(r, v, label='velocity')
-    ax.plot(r, inert, label='vinert')
 
     # rate of acceleration towards center, at radius r
     rdoubledot = inert**2/r - Mcent/r**2 - Mdisc/rmax**2 - Mball*r/rmax**3
-    ax.plot(r, rdoubledot, label='rdoubledot')
-
-    # inertia and newton????
-    ax = plt.subplot(222)
-    ax.plot(r, inert ** 2/r, label='inertia')
-    ax.plot(r, Mcent / r ** 2, label='newton')
 
     energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
                   Mdisc*r/rmax**2 +
@@ -73,10 +63,6 @@ def cpr():
     #Plot(energy, r, label='energy')
     rdot = Sqrt(2*energy)
 
-    ax.plot(r, rdot, label='rdot')
-
-    ax.legend(loc=0)
-    
     thetadot = v/r;
     dthetabydr = thetadot/rdot 
     dtbydr = 1/rdot
@@ -102,7 +88,22 @@ def cpr():
     #Table[{thetavalues[[i]] - B*tvalues[[i]] + Pi, ivalue}, 
     #{i, iterate}] }]
 
-    print('theta', thetaValues[:5])
+    # Now do some plotting
+    ax = plt.subplot(221)
+    
+    ax.plot(r, v, label='velocity')
+    ax.plot(r, inert, label='vinert')
+    ax.plot(r, rdoubledot, label='rdoubledot')
+    ax.plot(r, rdot, label='rdot')
+    ax.legend(loc=0)
+    
+
+    # inertia and newton????
+    ax = plt.subplot(222)
+    ax.plot(r, inert ** 2/r, label='inertia')
+    ax.plot(r, Mcent / r ** 2, label='newton')
+    ax.legend(loc=0)
+
     ax = plt.subplot(223, projection='polar')
     ax.plot(thetaValues - (B * tvalues), r)
     ax.plot(thetaValues - (B * tvalues) + math.pi, r)
@@ -113,7 +114,7 @@ def cpr():
     cellColours = None
 
     ax.axis('off')
-    ax.text(0, 0, "A new paradigm")
+    ax.text(0, 0, "...........A new paradigm")
 
     #rdot, inert
     #table(cellText=[['a','b','c','d']])
