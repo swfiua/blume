@@ -1,5 +1,7 @@
 """
-Tools to help testing with image comparison.
+A multiline example, see how the table handles multi-line.
+
+Hm... still need tools to help testing with image comparison.
 """
 import sys
 from matplotlib import pyplot as plt
