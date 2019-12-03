@@ -536,7 +536,20 @@ class Shepherd(Ball):
     def __str__(self):
 
         return f'shepherd of flock degree {self.flock.degree()}'
-            
+
+
+class Table(Ball):
+    """ Magic table.
+
+    A list of dictionaries, and ways to explore them?
+    """
+    
+    def __init__self(self, data=None):
+
+        super(self).__init__()
+
+        self.data = data
+    
 
 async def canine(ball):
     """ A sheep dog, something to control when it pauses and sleeps
