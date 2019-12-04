@@ -117,6 +117,8 @@ def cpr():
     ax.text(0, 0, "...........A new paradigm")
 
     #rdot, inert
+    # what I need here is a magic ball that helps you explore a table
+    # need a new name for a table -- taybell?
     #table(cellText=[['a','b','c','d']])
         
     

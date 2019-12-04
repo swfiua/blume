@@ -65,7 +65,8 @@ matter* as a potential solution.
 Colin takes a different approach.  He modifies Einstein's General
 Relativity by assuming that a rotating body drags inertial frames in
 the direction of rotation, with the effect proportional to the mass
-and angular velocity and dropping off linearly with distance.
+and angular velocity and inversely proportional to the distance from
+the body.
 
 There are a number of compelling reasons to support this assumption:
 
@@ -109,11 +110,10 @@ the universe::
 Tired light
 ===========
 
-Rotating masses drag light, causing red shift.  The further light
-travels through space, the more it is red-shifted, hence light from
-more distant galaxies appears more red-shifted giving the illusion
-that galaxies are receding faster and faster the more distance they
-are.
+The further light travels through space, the more it is red-shifted,
+hence light from more distant galaxies appears more red-shifted giving
+the illusion that galaxies are receding faster and faster the more
+distance they are.
 
 In [1] Edward Wright argues that simply stretching light from distant
 galaxies would not give the thermal energy distribution that we
@@ -209,8 +209,6 @@ Black Hole Mergers
 When a potential signal is detected it is compared to a catalogue of
 waveforms for black hole mergers.
 
-Sky localisation of gravitational wave events.
-
 Once a good match has been located it is possible to calculate the
 distance of the source based on how the amplitude of the wave we
 receive compared to what it must have been at source.
@@ -249,7 +247,7 @@ Sky localisation
 Sky localisation data can be obtained from the ligo database:
 https://gracedb.ligo.org
 
-The data comes in the form of *.fits* which use the *healpix* format.
+The data comes in the form of *.fitz* which use the *healpix* format.
 This gives a full sky map with each pixel representing an equal area.
 
 These work with phase, time and amplitude from the detectors which

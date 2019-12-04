@@ -87,67 +87,6 @@ class Farm(Ball):
         await self.shepherd.start()
 
             
-    async def runner(self, node=None):
-        """ runner for node.run and more
-
-        This was an an attempt to factor out some boiler plate from 
-        run methods.
-
-        so run has turned into "do one iteration of what you do"
-
-        and runner here is managing pausing, and has a curious obsession
-        with the incoming queue if you have one.
-
-        I guess it is checking the in-tray if there is one.
-
-        then running anyway and then taking a short nap.
-
-        Now we could loop round doing timeouts on queues and then firing
-        off runs.
-
-        With a bit more work when building things ... self.radii time?
-        """
-
-        node = node or self.current
-
-        print('Farm running node:', str(node))
-        while True:
-            if not node.paused:
-
-                await node.run()
-
-            await curio.sleep(node.sleep)
-
-    async def run_node(self):
-        """ Start the current node running """
-
-        # set current out queue to point at
-        #self.current.out = self.viewer.queue
-
-        self.current_task = await curio.spawn(self.runner())
-
-    async def stop_node(self):
-        """ Stop the current running node """
-
-        await self.current_task.cancel()
-
-    async def help(self):
-        """ Show help """
-        print('Help')
-
-        keys = {}
-        if self.current:
-            keys = self.current.event_map.copy()
-            print('current keys:', keys)
-
-        keys.update(self.event_map)
-        msg = ''
-        for key, value in sorted(keys.items()):
-            msg += '{} {}\n'.format(key,
-                                    self.doc_firstline(value.__doc__))
-
-        Help(msg)
-
     def doc_firstline(self, doc):
         """ Return first line of doc """
         if doc:
