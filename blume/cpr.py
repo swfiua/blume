@@ -63,12 +63,10 @@ async def run(**args):
         gals = [cleanse(gal) for gal in near_galaxies(open(args['galaxy']))]
 
     skymap = SkyMap(gals)
-    farm.add_node(skymap, background=True)
-    farm.add_edge(skymap, farm.carpet)
+    farm.add(skymap)
     
     spiral = Spiral()
-    farm.add_node(spiral, background=True)
-    farm.add_edge(spiral, farm.carpet)
+    #farm.add(spiral)
 
     await farm.start()
     print('about to run farm')
@@ -165,6 +163,8 @@ class SkyMap(magic.Ball):
 
         await self.put(magic.fig2data(plt))
 
+        ax.clf()
+
         fig.clear()
 
         ax = fig.add_subplot(111)
@@ -220,6 +220,10 @@ class Spiral(magic.Ball):
 
         self.rmin = 5000
         self.rmax = 50000
+
+    async def araise(self):
+
+        self.A *= 10
 
     def v(self, r):
         """ Velocity at radius r 
