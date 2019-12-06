@@ -64,6 +64,8 @@ import math
 
 import io
 
+import sys
+
 from pathlib import Path
 
 from collections import deque, defaultdict, Counter
@@ -307,7 +309,6 @@ class Shepherd(Ball):
         self.relays = {}
         self.path = [self]
 
-        self.add_filter('q', self.quit)
         self.add_filter('h', self.help)
         self.add_filter('n', self.next)
         self.add_filter('p', self.previous)
@@ -356,17 +357,23 @@ class Shepherd(Ball):
         """ Show what keys do what """
         print('HELP', self.path)
         msg = ''
+        keys = set()
         for sheep in self.path:
             if sheep in self.running:
                 msg += repr(sheep) + '\n'
                 lu = sheep.radii.filters[name]
         
                 for key, value in lu.items():
+                    if key in keys: continue
+
+                    keys.add(key)
                     msg += '{} {}\n'.format(
                         key,
                         self.doc_firstline(value.__doc__))
         print(msg)
         await self.put(msg, 'help')
+        from blume import teakhat
+        teakhat.Help(msg)
 
 
     def doc_firstline(self, doc):
@@ -379,11 +386,11 @@ class Shepherd(Ball):
 
     async def start(self):
         """ Start things going """
-
+        print('STARTING SHEPHERD')
         for sheep in self.flock:
             if sheep is self:
                 print("skipping starting myself")
-                self.running[self] = True
+                #self.running[self] = True
                 continue
                 
             print('starting', sheep)
@@ -522,16 +529,15 @@ class Shepherd(Ball):
     async def quit(self):
         """ Cancel all the tasks """
 
-        for task in self.whistlers.values():
-            await task.cancel()
+        print('Cancelling runners')
+        print(self.running)
         for task in self.running.values():
             await task.cancel()
 
-        print("QQQQQQQQQQQQQQQQQQQQQQQQQQ")
-        # if that doesn't do let's just divide by zero and see
-        # what happens
-        # hmm... 
-        1/0
+        print('Cancelling whistlers')
+        print(self.whistlers)
+        for task in self.whistlers.values():
+            await task.cancel()
 
     def __str__(self):
 

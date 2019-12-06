@@ -47,6 +47,7 @@ import astropy.coordinates as coord
 
 from . import magic
 from . import farm as fm
+from . import taybell
 
 from matplotlib import pyplot as plt
 from matplotlib import colors
@@ -60,13 +61,13 @@ async def run(**args):
     farm = fm.Farm()
 
     if args['galaxy']:
-        gals = [cleanse(gal) for gal in near_galaxies(open(args['galaxy']))]
+        gals = list(near_galaxies(open(args['galaxy'])))
 
     skymap = SkyMap(gals)
-    farm.add(skymap)
+    #farm.add(skymap)
     
     spiral = Spiral()
-    #farm.add(spiral)
+    farm.add(spiral)
 
     await farm.start()
     print('about to run farm')
@@ -163,7 +164,6 @@ class SkyMap(magic.Ball):
 
         await self.put(magic.fig2data(plt))
 
-        ax.clf()
 
         fig.clear()
 
@@ -207,7 +207,10 @@ class Spiral(magic.Ball):
 
         super().__init__()
 
+        # A = K * \omega_0
         self.A = 0.0005
+
+        # Apparent rate of precession of the roots of the spiral.
         self.B = 0.00000015
 
         self.Mcent = 0.03
@@ -220,6 +223,20 @@ class Spiral(magic.Ball):
 
         self.rmin = 5000
         self.rmax = 50000
+
+    def r_0(self):
+        """The length of the roots of the spirals 
+
+        This can be used to set the B value.
+
+        Assume that the spiral roots end at radius r0
+
+        Then assume their rate of precession will match that of the
+        inertial frame at that radius.
+        
+        This 
+        """
+        return self.A / self.B
 
     async def araise(self):
 
@@ -290,7 +307,7 @@ class Spiral(magic.Ball):
         xrdot, xvinert, xv, xtheta = cpr()
         #await self.put(magic.fig2data(plt))
 
-        plt.clf()
+        plt.cla()
         ax = plt.subplot(121)
 
         rr = np.arange(self.rmin, self.rmax)
@@ -424,16 +441,8 @@ def near_galaxies(infile):
     https://heasarc.gsfc.nasa.gov/w3browse/all/neargalcat.html
 
     """
-    header = tokens(infile.readline())
-    print(header)
-    for row in infile:
-        fields = tokens(row)
-        yield dict(zip(header, fields))
-
-def tokens(line, sep=','):
-    """ Split line into tokens """
-    return [x.strip() for x in line.split(sep)]
-
+    for item in taybell.read(infile):
+        yield cleanse(item)
 
 def parse_radec(value):
 

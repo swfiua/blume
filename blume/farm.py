@@ -42,22 +42,19 @@ class Farm(Ball):
         # start the farm going
         hat = Hat()
         carpet = Carpet()
+        self.carpet = carpet
         self.shepherd = Shepherd()
         clock = GuidoClock()
 
-        self.add_node(carpet, background=True)
-        self.add_node(hat, background=True, hat=True)
+        self.add(carpet, with_carpet=False)
+        self.add(hat, hat=True)
 
-        self.add_edge(carpet, hat)
-
-        self.add_edge(self.shepherd, carpet)
-
-        self.carpet = carpet
+        self.add(self.shepherd, run=False)
 
         self.shepherd.set(self.gfarm.hub)
+        self.shepherd.add_filter('q', self.quit)
 
-        self.add_edge(clock, carpet)
-        self.add_node(clock, background=True)
+        self.add(clock)
 
         
     def __getattr__(self, attr):
@@ -70,9 +67,9 @@ class Farm(Ball):
         self.show()
 
 
-    def add(self, item, run=True, with_carpet=True):
+    def add(self, item, run=True, with_carpet=True, hat=False):
 
-        self.add_node(item, background=run)
+        self.add_node(item, background=run, hat=hat)
         if with_carpet:
             self.add_edge(item, self.carpet)
         
@@ -152,30 +149,10 @@ class Farm(Ball):
         # select next node
         await self.quit_event.wait()
 
+        await self.shepherd.quit()
+
         print('over and out')
 
-        for runner in runners:
-            await runner.cancel()
-
-        print('runner gone')
-
-
-    async def process_event(self, event):
-        """ Dispatch events when they come in """
-
-        coro = None
-        if self.current:
-            if hasattr(self.current, 'event_map'):
-                coro = self.current.event_map.get(event)
-                
-        print('EVENT', event)
-        if coro is None:
-            coro = self.event_map.get(event)
-
-        if coro:
-            await coro()
-        else:
-            print('no callback for event', event, type(event))
 
 
 class Carpet(Ball):
@@ -270,7 +247,7 @@ class MagicPlot(Ball):
 
         super().__init__()
 
-        #self.outs.add('outgoing')
+        self.add_filter('a', self.add)
                
     async def add(self):
         """ Magic Plot key demo  """
@@ -282,26 +259,17 @@ class MagicPlot(Ball):
     async def start(self):
 
         print('magic plot started')
-        self.event_map.update(dict(
-            a=self.add))
-
         self.fig = figure.Figure()
         self.ax = self.fig.add_subplot(111)
 
-        # temp hack
-        #self.incoming = None
-
     async def run(self):
 
-        print('magic plot run')
         ax = self.ax
         ax.clear()
         data = np.random.randint(50, size=100)
-        print(data.mean())
         ax.plot(data)
 
-        await self.outgoing.put(fig2data(self.fig))
-        print('qsize', self.outgoing.qsize())
+        await self.put(fig2data(self.fig))
 
 
             
@@ -312,8 +280,8 @@ async def run():
 
     magic_plotter = MagicPlot()
     clock = GuidoClock()
-    farm.add_edge(magic_plotter, farm.carpet)
-    farm.add_edge(clock, farm.carpet)
+    farm.add(magic_plotter)
+    farm.add(clock)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     #farm.setup()
