@@ -63,8 +63,8 @@ async def run(**args):
     if args['galaxy']:
         gals = list(near_galaxies(open(args['galaxy'])))
 
-    skymap = SkyMap(gals)
-    #farm.add(skymap)
+        skymap = SkyMap(gals)
+        farm.add(skymap)
     
     spiral = Spiral()
     farm.add(spiral)
@@ -93,6 +93,9 @@ class SkyMap(magic.Ball):
         print(gals[0])
 
         self.balls = gals
+        self.sleep=1.0
+
+        self.add
         
 
     def decra2rad(self, dec, ra):
@@ -202,12 +205,16 @@ class SkyMap(magic.Ball):
 
 
 class Spiral(magic.Ball):
+    """  Model a spiral galaxy
+
+    Or any rotating mass?
+    """
 
     def __init__(self):
 
         super().__init__()
 
-        # A = K * \omega_0
+        # A = K * \omega_0.  K = M for Sciama principle
         self.A = 0.0005
 
         # Apparent rate of precession of the roots of the spiral.
@@ -218,28 +225,44 @@ class Spiral(magic.Ball):
         self.Mdisc = 0.
 
         self.K = self.Mcent
+        self.omega0 = self.A / self.K   # angular velocity in radians per year
+
+        # magic constant determined by overall energy in the orbit
         self.EE = -0.00000345
+
+        # constant, can be read from tangential velocity for small r
         self.CC = -10
 
+        # range of radius r to consider, in light years
         self.rmin = 5000
         self.rmax = 50000
 
-    def r_0(self):
-        """The length of the roots of the spirals 
+        # key bindings
+        self.add_filter('a', self.alower)
+        self.add_filter('A', self.araise)
+
+    def rmin_check(self):
+        """ The length of the roots of the spirals 
 
         This can be used to set the B value.
 
         Assume that the spiral roots end at radius r0
 
-        Then assume their rate of precession will match that of the
-        inertial frame at that radius.
-        
-        This 
+        And assume the roots are moving with the inertial frame at that
+        radius.
+
+        The rate of precession will match that of the inertial frame at
+        that radius.
+
         """
         return self.A / self.B
 
     async def araise(self):
+        """ Raise the value of A """
+        self.A *= 10
 
+    async def alower(self):
+        """ Lower the value of A """
         self.A *= 10
 
     def v(self, r):
@@ -310,7 +333,7 @@ class Spiral(magic.Ball):
         plt.cla()
         ax = plt.subplot(121)
 
-        rr = np.arange(self.rmin, self.rmax)
+        rr = np.arange(self.rmin, self.rmax, 10)
         #vv = [self.v(r) for r in rr]
         vv = self.v(rr)
         ii = self.vinert(rr, vv)
