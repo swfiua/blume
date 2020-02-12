@@ -359,17 +359,16 @@ class Shepherd(Ball):
         msg = ''
         keys = set()
         for sheep in self.path:
-            if sheep in self.running:
-                msg += repr(sheep) + '\n'
-                lu = sheep.radii.filters[name]
+            msg += repr(sheep) + '\n'
+            lu = sheep.radii.filters[name]
         
-                for key, value in lu.items():
-                    if key in keys: continue
+            for key, value in lu.items():
+                if key in keys: continue
 
-                    keys.add(key)
-                    msg += '{} {}\n'.format(
-                        key,
-                        self.doc_firstline(value.__doc__))
+                keys.add(key)
+                msg += '{} {}\n'.format(
+                    key,
+                    self.doc_firstline(value.__doc__))
         print(msg)
         await self.put(msg, 'help')
         from blume import teakhat

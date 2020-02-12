@@ -95,7 +95,6 @@ class SkyMap(magic.Ball):
         self.balls = gals
         self.sleep=1.0
 
-        self.add
         
 
     def decra2rad(self, dec, ra):
