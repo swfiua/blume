@@ -356,6 +356,8 @@ class Shepherd(Ball):
     async def help(self, name='keys'):
         """ Show what keys do what """
         print('HELP', self.path)
+
+        # FIXME? 
         msg = ''
         keys = set()
         for sheep in self.path:

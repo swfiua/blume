@@ -86,12 +86,20 @@ concerned with displaying a grid of values.
 Engines
 -------
 
-This list is evolving.  
+This list is evolving.  The aim is if you are just here for the
+`blume.table` that should work without additional dependencies.
 
-Since we have `matplotlib` we also have `numpy`.
+The cost here is modules that require the packages below.  I think of
+them as engines, as in most cases they provide a whole eco-system of
+tools. 
+
+Since we have `matplotlib` we also have `numpy` and `python-dateutil`
+too. 
 
 curio
 '''''
+
+For everything *async* and *await*.
 
 healpy
 ''''''
@@ -115,7 +123,11 @@ on this adventure.
 
 Pandas
 ''''''
+
 For another take on *table* there is `pandas.DataFrame`.
+
+`pandas` itself is a whole ecosystem, with time-series plotting and
+more and once more, `python-dateutil`.
 
 Whichever way *blume* goes, I expect it will have a
 `to_pandas_data_frame` somewhere.
@@ -129,8 +141,8 @@ And low and behold, an `astropy.table`.
 
 `astroquery` too.
 
-Roadblocks
-==========
+Road and rail blocks
+====================
 
 As I write code I go through periods of feeling blocked.  I am not
 happy with some aspect of the code, but I need to change something,
