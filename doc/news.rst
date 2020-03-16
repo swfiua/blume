@@ -4,6 +4,37 @@
 
 What's happening with the `blume.table.Table`?
 
+2020/03/16
+==========
+
+With ski hills closing throughout the land I find myself back in
+*blume* land, sooner than expected.
+
+It looks like I may be back here for a while.
+
+As I expected not much has happened here in the last couple of months.
+
+During that time there has been a steady stream of articles about
+interesting discoveries across the universe.
+
+Black holes colliding, the size of a neutron star, a blazar likely a
+billion solar masses some 12-13 billion light years away?
+
+Often, each new observation creates new puzzles.
+
+Now I am back I plan to focus on the U for universal for a while.
+
+My immediate goal is to try to explain the work of Colin Rourke, and
+his book, "A new paradigm for the universe".
+
+It is a wonderful book that links topics from gamma ray bursts to
+black holes, the centre of our galaxy, the cosmic microwave background
+and Einstein's general theory of relativity.
+
+It suggests that both dark matter and the big bang theory are critical
+mistakes in our understanding of our universe and is able to explain
+galactic rotation curves without the need for dark matter.
+
 2020/02/03
 ==========
 
@@ -60,8 +91,8 @@ Universal
 Something that is, or appears to be everywhere.
 
 I am on a bit of a cosmological diversion thanks to the wonderful work
-of Colin P. Rourke.  In particular, his book, *Another Paradigm for
-the Universe* [1]
+of Colin P. Rourke.  In particular, his book, *A new paradigm for
+the universe* [1]
 
 His book has some *mathematica* code that allows you to simulate
 galactic rotation curves, using the mathematics of the book.
@@ -78,7 +109,7 @@ So a tenuous link with the `blume.table`.
 Matplotlib
 ----------
 
-So tables of data and `blume.table` just one way to display it with `matplotlib`.
+So tables of data and `blume.table` just one way to display it with `matplotlib`?
 
 This is rather different to the `blume.table`, which currently is only
 concerned with displaying a grid of values.
@@ -131,6 +162,10 @@ more and once more, `python-dateutil`.
 
 Whichever way *blume* goes, I expect it will have a
 `to_pandas_data_frame` somewhere.
+
+I like *pandas* very much.  Like *healpy* it uses *matplotlib* to help
+with plotting.
+
 
 astropy
 -------
