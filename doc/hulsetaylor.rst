@@ -76,5 +76,14 @@ equations.
 If I am understanding correctly, electro-magnetism is just a special
 case.
 
+Hulse-Taylor
+============
+
+This is a binary system that has been study closely for a number of
+years and appears to be showing orbital decay and is an excellent fit
+to what is predicted according to general relativity.
+
+It should be noted that the full NP model is also an excellent fit to
+general relativity.
 
 [NP] A new paradigm for the universe, Colin Rourke
