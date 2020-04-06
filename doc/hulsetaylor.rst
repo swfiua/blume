@@ -51,14 +51,31 @@ is just rotations we need to concern ourselves with.
 Further, two rotations with the same angular velocity, differ only by
 a constant velocity.
 
-Consider a body such as a planet, with the peas being the atoms making
-up the planet.
+Imagine the skin of an orange, and fill the insides with roughly equal
+sized, small round peas.
+
+Imagine the peas are covered in some frictionless lubricator and are
+all spinning at the same angular velocity, at least locally.
+
+Now set the whole orange spinning, about some other axis and consider
+the inertial effects of the combination on the surrounding universe.
+
+Now imagine the orange is a planet or star and the peas are the atoms
+of the body, that locally beat to the rhythm of space time.  A smooth
+varying twisting combination of distant inertial effects.
 
 The inertial effect of the atomic rotations is the same as if they are
-all at the centre of the planet.
+all at the centre of the planet.  This effect corresponds to gravity
+as defined by Einstein's general theory of relativity.
 
 Einstein's theory of gravity, captures the primary rotation, that of
-the atoms, but not the secondary rotation.
+the atoms as they follow the background inertial field together.
+
+It ignores the second part, the inertial drag caused by the rotation
+of the body itself.
+
+This is generally an extremely good approximation to any observations
+we have been able to make up until fairly recently.
 
 
 Gravitomagnetism
@@ -79,11 +96,14 @@ case.
 Hulse-Taylor
 ============
 
-This is a binary system that has been study closely for a number of
+This is a binary system that has been studied closely for a number of
 years and appears to be showing orbital decay and is an excellent fit
 to what is predicted according to general relativity.
 
 It should be noted that the full NP model is also an excellent fit to
 general relativity.
+
+The additional effects due to rotation are generally insignificant,
+except when they are not.
 
 [NP] A new paradigm for the universe, Colin Rourke

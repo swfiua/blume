@@ -499,7 +499,7 @@ class Shepherd(Ball):
         Pass messages along.
         """
         for sheep in self.flock:
-            print(f'shepherd running {sheep in self.running}')
+            print(f'shepherd running {sheep in self.running} {sheep}')
             #print(f'   {sheep.status()}')
 
         # delegated to hub
