@@ -45,35 +45,146 @@ Thanks as always for the observations and questions::
 
     How do you see that GR captures this?
 
+I have been struggling for a while now to write it all down.  It is
+like an onion, lots of layers.
+
+What I am trying to provide here is a physical model underlying your
+paradigm.
+
+Noting that the angular velocity of a body has two main components:
+
+   a. the sum of the angular velocities of all the atoms of the body
+
+   b. the actual rotation of the body (eg 27 day rotation of the sun)
+
+I argue that a. is very much bigger than b., since the angular
+velocity of baryons is very much higher than that of the typical
+planet or star.
+
+I also argue that you can treat the rotations of all the atoms of a
+body as if they are at the centre of that body, and they will have the
+same inertial effect.
+
+Further, I have as a hypothesis that they are all *in sync* with each
+other, and so rotations are all additive, they do not cancel out.
+
+I picture things as tiny rotating balls running on invisible tracks of
+a smoothly varying twisted grid.
+
+It is this very twisting that we see as the force of gravity as it
+echoes back and forth between two bodies.
+
+With this model Einstein's corrections for relative motion of source
+and observer as well as for mass curving space time itself.  The
+curving comes in the form of winding the matter a little tighter.
+
+All this nested rotation stuff is a bit strange.
+
+So rather assume that an inertial field is instead a sum of
+oscillations.
+
+Imagine a ball suspended on a string that gets regular, horizontal
+impulses in two orthogonal directions.  It will end up going round in
+circles.
+
+Now imagine a space with high frequency, low amplitude oscillations,
+in each of three orthogonal directions, then I think that is what we
+have as inertial frames.  These oscillations pass through, or rather
+define, space time, as waves.
+
+It is the base carrier wave for everything else.
+
+These oscillations travel as waves through space time, whilst also
+defining the same.
+
+It is the beat of these oscillations that we experience as time.
+
+Now what about b. the actual rotation of the body of atoms?
+
+Mostly we can just ignore it, since a. is so much bigger in magnitude,
+all observations fit the model with just the contribution from a.
+
+With a large central mass and lots of time, the difference can start
+to matter, and that is what we see in galactic rotation curves.
+
+By pretending all the atoms are at the centre of mass we have ignored
+the rotation of the body itself.  It is an extremely good
+approximation, not least because it has a tiny wavelength compared to
+the assumed size of a proton.
+
+Translating things so they all act at the centre of mass is valid only
+assuming they each have a constant velocity relative to the centre.
+
+If we add the rotation of the body itself, per the new paradigm, all
+is good.  The neat thing is that all inertial effects in this model
+are down to rotations.
+
+Adding this back into the picture is the equivalent in general
+relativity of a non-zero Ricci tensor.
+
+The rest of my explanation is all about why the inertial field should be
+like this.  Thinking how the contributions from the myriads of distant
+galaxies combine.  Why are protons the size they are?  Why are
+galaxies the sizes they are?
+
+Incidentally, armed with these ideas, I really do not believe
+colliding binary stars create gravitational waves.  I am more and more
+convinced what we are seeing is the gravitational wave equivalent of
+gamma ray bursts as per the new paradigm.
+
+Johnny
+
 In terms of the *NP* I think I am mainly discussing *omega*, which
 the book notes can be a general function.
 
-In general relativity there is this idea of a tensor.  I think of that
-as specifying the *rotation* of space time, at a point of space-time.
+Make the assumption that matter, in the form of neutrons, has a
+particular angular velocity.  There are a number of good candidates
+for what this angular velocity is, one way to do this is use the
+Compton wavelength.
 
-With this idea, how does this tensor vary through space?
+If we take something like a planet, we can assume the centre of
+rotation of all the atoms of the planet lies at its centre of mass.
 
-One of my hypotheses is that the picture is extraordinarily smooth.  I
-will argue that this is to be expected given the nature of gravity,
-the age of the universe and the nature of the bodies that generate it.
+We can do this because atoms in a body are, to a first approximation,
+moving with uniform velocity relative to the centre.
 
-Now I see any body of matter having two principle rotations, as
-defined by a. and b.
+We might assume that the sum of rotations of all atoms in a body is
+zero, because any sum of a large number of random rotations ought to
+tend to zero.
 
-The key thing is this idea of *nested rotations*.   The book mentions
-*layered transparent layers*, that idea might be helpful here.
+My hypothesis is that in fact the rotations all add up, because they
+are effectively caused by the gravitational field which is
+extraordinarily smooth, so the rotations for nearby matter are all in
+sync, they are not random.
 
-The higher the angular velocity, the smaller the amplitude of the
-signal, and the higher the frequency.
-
-Rotations of atoms, a very high frequency, low amplitude signal.
-
-I imaging these rotations as tiny, invisible, twisting rails along
+I imagine these rotations as tiny, invisible, twisting rails along
 which atoms run.  If an atom follows the twist then it just
 re-enforces it.
 
 If, for some reason, it is unable to follow the rails then it will
 emit some electromagnetic radiation, and lose some mass.
+
+The effect of all this is just to create Newton like gravitational
+forces between bodies.
+
+With special relativity we get the modification needed when there is
+relative motion of an observer and source.
+
+And general relativity says there is curvature caused by mass.
+
+And it turns out that is an extremely good model of everything we
+see.
+
+Now note that atoms in a rotating body are not actually moving with
+uniform linear motion relative to the centre of that body.
+
+There actual motion is a linear motion combined with a rotation about
+the centre of the body. 
+
+This is the correction you apply to GR in the new paradigm.
+
+The relative magnitude of these effects is the ratio of the angular
+velocity of a proton to that of the body.
 
 But we also have to think about what generates this field::
 
@@ -92,27 +203,6 @@ As to the contribution from a black hole being easy to describe, I
 think the full story has a lot of mysteries.   Many of these are less
 mysterious with the perspective of the NP.
 
-There are lots of circular bits in this story, and some of the circles
-are quite long.
-
-Everything in your paradigm works just fine here, and indeed is the
-basis of it all.
-
-I am really just trying to think what the *omega*, the angular
-velocity, in your paradigm.
-
-Considering the different components of *omega* for a large body such
-as a planet or a star.
-
-All the way down to the building blocks of matter, such as protons and
-neutrons.
-
-Thermalisation.  Galactic balance.
-
-Rhythm too.
-
-So I will have a go at an outline here.
-
 We are agreed that as far as inertial fields are concerned, it is the
 giant galactic centres that primarily define that field.
 
@@ -121,8 +211,12 @@ Further, distant matter dominates the contribution.
 Now at this point we have this seeming random contribution of
 rotations, surely the net effect is zero?
 
-But the rotations vary smoothly, almost everywhere, so the add up
-rather than cancel out.  Modulo the rhythm that we see as energy.
+But the hypothesis is that rotations vary smoothly, almost everywhere,
+so they add up rather than cancel out.  Modulo the rhythm that we see
+as energy.
+
+Homogeneity is a feature of the inertial field.  And a feature of
+gravity itself.  
 
 The *Cosmic Microwave Background* has a thermal black body spectrum at
 a temperature of 2.72548±0.00057 K
@@ -274,4 +368,7 @@ relativity.
 Re: b. At any instant time the intertial effect of any atom is
 equivalent to some rotation about the centre of mass of the body
 containing the atom.  
+
+Big Bang v Galactic centrifuges
+===============================
 
