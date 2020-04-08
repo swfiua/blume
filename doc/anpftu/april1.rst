@@ -29,8 +29,8 @@ other contributions.
 
 Cheers, C
 
-Short version
-=============
+Short version?
+==============
 
 Hi Colin,
 
@@ -48,7 +48,7 @@ Thanks as always for the observations and questions::
 I have been struggling for a while now to write it all down.  It is
 like an onion, lots of layers.
 
-What I am trying to provide here is a physical model underlying your
+What I am trying to describe here is a physical model underlying your
 paradigm.
 
 Noting that the angular velocity of a body has two main components:
@@ -75,10 +75,10 @@ It is this very twisting that we see as the force of gravity as it
 echoes back and forth between two bodies.
 
 With this model Einstein's corrections for relative motion of source
-and observer as well as for mass curving space time itself.  The
-curving comes in the form of winding the matter a little tighter.
+and observer as well as for mass curving space time itself make sense.
+The curving comes in the form of winding the matter a little tighter.
 
-All this nested rotation stuff is a bit strange.
+All this nested rotation stuff is a bit difficult to picture.
 
 So rather assume that an inertial field is instead a sum of
 oscillations.
@@ -92,6 +92,9 @@ in each of three orthogonal directions, then I think that is what we
 have as inertial frames.  These oscillations pass through, or rather
 define, space time, as waves.
 
+Most of the energy is in an extremely high frequency oscillation that
+drives the rotations of matter.
+
 It is the base carrier wave for everything else.
 
 These oscillations travel as waves through space time, whilst also
@@ -99,13 +102,16 @@ defining the same.
 
 It is the beat of these oscillations that we experience as time.
 
-Now what about b. the actual rotation of the body of atoms?
+Now what about b. the actual rotation of the body of atoms, the 27 day
+rotation of the sun that we see?  This will induce a 27 day wave in
+the surrounding space time. 
 
 Mostly we can just ignore it, since a. is so much bigger in magnitude,
-all observations fit the model with just the contribution from a.
+(almost) all observations fit the model with just the contribution
+from a.
 
 With a large central mass and lots of time, the difference can start
-to matter, and that is what we see in galactic rotation curves.
+to matter, and that is what we see in galactic rotation curves.  
 
 By pretending all the atoms are at the centre of mass we have ignored
 the rotation of the body itself.  It is an extremely good
@@ -115,12 +121,11 @@ the assumed size of a proton.
 Translating things so they all act at the centre of mass is valid only
 assuming they each have a constant velocity relative to the centre.
 
-If we add the rotation of the body itself, per the new paradigm, all
-is good.  The neat thing is that all inertial effects in this model
-are down to rotations.
+If we add the rotation of the body itself, per the new paradigm, we
+get a closer approximation to reality.
 
-Adding this back into the picture is the equivalent in general
-relativity of a non-zero Ricci tensor.
+Adding this back into the picture is the equivalent, in general
+relativity, of a non-zero Ricci tensor.
 
 The rest of my explanation is all about why the inertial field should be
 like this.  Thinking how the contributions from the myriads of distant
@@ -288,7 +293,7 @@ Now as far as I am concerned, the electrons are not the only
 rotation here, no more than the rotation of the moon around the earth
 is the only rotation pertaining to the earth system.
 
-Now inside all this their quarks and quirks and goodness knows what
+Inside all this there are quarks and quirks and goodness knows what
 and it is surely turtles all the way down.  But that is not a story
 for just now.
 
@@ -359,9 +364,6 @@ which generate waves at the same frequency as the background wobble.
 
 This oscillation is actually showing mixing of distance and time.
 
-
-
-
 When I think about tensors and the whole framework of general
 relativity.
 
@@ -371,4 +373,94 @@ containing the atom.
 
 Big Bang v Galactic centrifuges
 ===============================
+
+All the thinking here is from the perspective of a vast universe that
+has been around for an extraordinarily long time.
+
+What of the physics of the big bang?  An extraordinary amount of
+research has been done in this area.  
+
+Much of this work translates naturally, to the physics of what I like
+to call galactic nuclei.
+
+If we go with the new paradigm, there is a giant rotating mass at the
+centre of each galaxy.
+
+It would be good to build a galactic model that translated a distance,
+R, from the centre of a galaxy to the corresponding time in the big
+bang model.
+
+There is a point surrounding a super massive black hole where
+everything is some sort of quark soup, this is early in the big bang
+story. 
+
+Everything extraordinarily smooth, with harmonics that match the
+surrounding harmonics of the universe.
+
+Now if we look at the big bang physics, but with the lens that all
+this is taking place in inertial frames defined by distant galaxies, I
+think we will see that baryons are inevitable.
+
+I find myself running into questions that I think big bang researhers
+have already asked in different contexts.
+
+
+Observational thoughts
+======================
+
+Where is there observational evidence that allows us to test these
+ideas?
+
+Some of the following I have thought a fair bit about and think there
+is some promise.   Some not so much.
+
+Spherical harmonics in CMxB
+
+G gravitational constant.
+
+Given angular velocity of a proton  *w_p*.
+
+Can calculate magnitude of effect of any large mass with a given
+angular velocity, *w* is / w_p* times whatever general relativity
+gives you.
+
+What is the angular velocity of relevent black hole horizon, the
+region where protons are born, or re-born?
+
+Can also get a better handle on quantum mechanics.  Quantum weirdness
+is a result of things being on the scale of the actual vibrations of
+spacetime. 
+
+Just the right amount of random.
+
+Gravitational waves are new arrivals, or rather messengers telling of
+impending new arrivals.
+
+Binary star collapse does not sent out a noticeable wave.   New
+arrivals do.
+
+Thermalisation.  Cosmic Microwave Background.  Hubble constant.  The
+big bang theory give a Hubble constant of 67km/s/mpc.  Other
+observations say 70km/s.
+  
+I suspect the moon's orbit and the sun's rotation are not unrelated,
+both close to 27 days.  Simulations of planetary formation models?
+
+So given the following::
+
+  G
+
+  distribution of masses of galaxies
+
+  number of galaxies
+
+  Hoyle universe
+
+I think we should be able to build a model   
+
+
+Continuous creation
+===================
+
+What happens when gamma rays cross in the night?
 
