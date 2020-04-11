@@ -62,8 +62,8 @@ velocity of baryons is very much higher than that of the typical
 planet or star.
 
 I also argue that you can treat the rotations of all the atoms of a
-body as if they are at the centre of that body, and they will have the
-same inertial effect.
+body as if they are at the centre of that body, and they will have
+(approximately) the same inertial effect.
 
 Further, I have as a hypothesis that they are all *in sync* with each
 other, and so rotations are all additive, they do not cancel out.
@@ -90,7 +90,7 @@ circles.
 Now imagine a space with high frequency, low amplitude oscillations,
 in each of three orthogonal directions, then I think that is what we
 have as inertial frames.  These oscillations pass through, or rather
-define, space time, as waves.
+define, space time, as waves, at the speed of light.
 
 Most of the energy is in an extremely high frequency oscillation that
 drives the rotations of matter.
@@ -173,9 +173,10 @@ The effect of all this is just to create Newton like gravitational
 forces between bodies.
 
 With special relativity we get the modification needed when there is
-relative motion of an observer and source.
+relative motion of an observer and source.  
 
-And general relativity says there is curvature caused by mass.
+And general relativity says there is curvature caused by mass, which
+in this model turns up as a higher frequency base signal.
 
 And it turns out that is an extremely good model of everything we
 see.
@@ -183,7 +184,7 @@ see.
 Now note that atoms in a rotating body are not actually moving with
 uniform linear motion relative to the centre of that body.
 
-There actual motion is a linear motion combined with a rotation about
+Their actual motion is a linear motion combined with a rotation about
 the centre of the body. 
 
 This is the correction you apply to GR in the new paradigm.
@@ -191,7 +192,7 @@ This is the correction you apply to GR in the new paradigm.
 The relative magnitude of these effects is the ratio of the angular
 velocity of a proton to that of the body.
 
-But we also have to think about what generates this field::
+We also have to think about what generates the inertial field::
 
     I suspect that the only contribution that is easy to describe is
     from a black hole, which you can think of as interacting directly
@@ -456,7 +457,25 @@ So given the following::
 
   Hoyle universe
 
-I think we should be able to build a model   
+I think we should be able to build a model that predicts the cosmic
+microwave background temperature, given the Hubble constant.
+
+
+Hubble Constant
+===============
+
+The estimate of the Hubble constant based on the big bang theory is
+constrained by the fact that it has spherical harmonics that could
+only have arisen before those regions ended up outsided each other's
+light cones.
+
+The theory says this occurred at 380,000 years, when energies dropped
+and recombination of electrons and protons stopped.  jng check this.
+
+In the new paradigm, the primary source of the microwaves is assumed
+to be from stars where hydrogen is being turned into helium.
+
+
 
 
 Continuous creation
