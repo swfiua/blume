@@ -95,35 +95,43 @@ prefer.  Not only that, but the magnitude of the effect is
 proportional to the frequency of the oscillation.
 
 I suggested that \omega_a is an extremely high frequency and hence is
-a very good approximation to the full reality.  Further, that it gives
-rise to general relativity, to a good approximation.
+a very good approximation to the full reality, as it dominates the
+contribution to \omega.
+
+Further, that it gives rise to general relativity, to a good
+approximation.
 
 To get an idea of the frequency, use *E = m c^2 and planck's constant
 to get an idea of the frequency if a proton is turned into a photon.
 
 The idea is that space time is buzzing at this frequency.  A tiny
 oscillation, high in frequency.  Thermal equilibrium in three
-dimensions.
+dimensions.   All matter vibrates at this frequency and helps define
+the oscillation.
 
-I am claimomg, without proof, that this buzz is what we see as
+I am claiming, without proof, that this buzz is what we see as
 gravity, as formulated in general relativity.  I think you mention
 Schiama showed that Newton's gravity falls out to a first
-approximation.[1]
+approximation and that applies here too. 
 
 In short, if we relate this to the paradigm, we again see rotating
 mass dragging space time, contributing to the oscillations that define
-space time.
+space time.  All inertial effects are due to rotations, and that
+includes the effects that we sese as general relativity.
 
 Rather than formulate it as oscillations, Einstein though in terms of
-rotations and of space time twisting in on itself.  He was concerned
-with how observers see objects moving.
+rotations and of space time twisting in on itself.  He was primarily
+concerned with how observers see objects moving and developing at
+theory that could explain observations such as the precession of
+mercury. 
 
 All matter in the visible universe contributes to the oscillation at a
 particular place and time.
 
 A random combination of oscillations, one might expect to sum to zero
 and have no net effect.  However, the claim is that these oscillations
-are, at least locally, in sync to a remarkable degree.
+are, at least locally, in sync to a remarkable degree and so they do
+not cancel out.
 
 Indeed to the extent that matter is not in sync, we see it emitting
 electromagnetic radiation, losing angular momentum in the process,
@@ -137,41 +145,18 @@ General relativity shows how matter, in fact, curves space time and
 shows that when you get close to any mass things go a little strange.
 Plate like rotation, at the speed of light.
 
-The additional rotation of matter, as observed for a galaxy.  Is a low
+The additional rotation of matter, as observed for a galaxy, is a low
 frequency wave on top of the high frequency buzz of its central black
-hole.  I believe it is these rotations that contribute to the
+hole.  I believe it is likely these rotations that contribute to the
 spherical harmonics that we see in the Cosmic Microwave Background.
 
-There is a lot more I have been thinking about here, but so far it all
-holds together, but it does very much require an ancient, Copernican
-Principled universe.
+On the subject of the CMB, I have attached a 1967 letter to the editor
+of Nature that explores the CMB in a steady state universe.
 
-It is necessary to address the Big Bang elephant in the room.  
-
-Light.
-
-I wish we could have a quick word with Fred, Max Planck and Einstein.
-
-On continuous creation, I keep wondering what happens when gamma ray
-bursts cross in the night.
-
-An axiomatic approach to the universe.
-
-Schiama principle.
-
-Space-time metric.
-
-Causality implies Lorentz.
-
-Matter energy equivalence.
-
-Conservation of momentum.
-
-Conservation of angular momentum.
-
-Planck's constant.
-
-Temperature.
+It is necessary to address the Big Bang elephant in the room to fully
+articulate the arguments here and understand that we are observing a
+truly ancient universe that has a great deal of time to settle down
+into a steady state.
 
 Johnny
 
