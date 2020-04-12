@@ -48,9 +48,6 @@ How to progress without getting stuck in details?
 I will start with the new paradigm and take that as a baseline model
 for the universe.
 
-There is a lot in the book, and it has taken me a while to understand
-how things relate.
-
 In chapter 2, you come to an impasse with general relativity and note
 that there are two ways to proceed::
 
@@ -116,17 +113,18 @@ approximation and that applies here too.
 
 In short, if we relate this to the paradigm, we again see rotating
 mass dragging space time, contributing to the oscillations that define
-space time.  All inertial effects are due to rotations, and that
-includes the effects that we sese as general relativity.
+space time.  As per the new paradigm, all inertial effects are due to
+rotations, and that includes the effects that we sese as general
+relativity.
 
 Rather than formulate it as oscillations, Einstein though in terms of
 rotations and of space time twisting in on itself.  He was primarily
-concerned with how observers see objects moving and developing at
+concerned with how observers see objects moving and developing a
 theory that could explain observations such as the precession of
 mercury. 
 
-All matter in the visible universe contributes to the oscillation at a
-particular place and time.
+Following Mach, all matter in the visible universe contributes to the
+oscillation at a particular place and time.
 
 A random combination of oscillations, one might expect to sum to zero
 and have no net effect.  However, the claim is that these oscillations
@@ -151,12 +149,32 @@ hole.  I believe it is likely these rotations that contribute to the
 spherical harmonics that we see in the Cosmic Microwave Background.
 
 On the subject of the CMB, I have attached a 1967 letter to the editor
-of Nature that explores the CMB in a steady state universe.
+of Nature that explores the CMB in a steady state universe.  I think
+this is worth following up with modern observations.  There is growing
+evidence that the estimate of the Hubble constant based on the CMB and
+big bang theory is an underestimate.
+
+I keep thinking about this, trying to figure out why the lamda-CDM
+model to understand why it is underestimates the Hubble constant.
+
+I think the answer is related to the fact that the big bang theory has
+to explain the harmonics we see in the CMB, so assumes it origins must
+date from a time when the universe is small enough so that harmonics
+can emerge.
 
 It is necessary to address the Big Bang elephant in the room to fully
 articulate the arguments here and understand that we are observing a
 truly ancient universe that has a great deal of time to settle down
 into a steady state.
+
+The other part of this story is how the giant black holes at the
+centres of galaxies define the inertial field and how these black
+holes recycle matter.
+
+The good news for the big bang theory exponents is that the conditions
+close to these black holes are very similar to the conditions assumed
+aat the early times after the supposed big bang, so much of this
+physics is still applicable in the new paradigm.
 
 Johnny
 
