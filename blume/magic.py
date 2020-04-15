@@ -158,6 +158,8 @@ class GeeFarm(Ball):
 
     def __getattr__(self, attr):
         """ Delegate to hub
+
+        self.hub is a directed graph, so we're a Ball that is a graph
         """
         return getattr(self.hub, attr)
 
@@ -178,10 +180,13 @@ class GeeFarm(Ball):
 
         Let the shepherd look after the running of everything
         """
+
+        # Tell the shepherd what to look after
         self.shep.flock = self.hub
 
         await self.shep.start()
 
+        # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
 
 
@@ -192,6 +197,7 @@ class GeeFarm(Ball):
         """
         print('MAGIC TREE FARM')
 
+        # wait for the super dog
         await self.superdog
 
 
@@ -201,9 +207,10 @@ def fig2data(fig):
     fig: a matplotlib figure
     return: PIL image
 
-    FIXME? return numpy array of image pixels?
-    """
+    There has to be an easier way to do this.
 
+    FIXME -- turning matplotlib figures into PIL or numpy
+    """
     facecolor = 'black'
     #facecolor = 'white'
     if hasattr(fig, 'get_facecolor'):
@@ -316,10 +323,14 @@ class Shepherd(Ball):
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
 
-    def set(self, flock):
+    def set_flock(self, flock):
         """  Supply the flock to be watched """
         self.flock = flock
-        self.path = [self]
+
+
+    def set_path(self, path=None):
+        
+        self.path = path or [self]
 
     async def whistler(self, queue, name='keys'):
         """ Send out whistles fromm a queue """

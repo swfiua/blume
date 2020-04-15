@@ -262,7 +262,7 @@ class Spiral(magic.Ball):
 
     async def alower(self):
         """ Lower the value of A """
-        self.A *= 10
+        self.A /= 10
 
     def v(self, r):
         """ Velocity at radius r 
@@ -314,6 +314,7 @@ class Spiral(magic.Ball):
         A = self.A
         Log = math.log
 
+        # ok this deserves an explanation!
         energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
                     Mdisc*r/rmax**2 +
                     Mball*r**2/(2*rmax**3) +

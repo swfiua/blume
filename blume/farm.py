@@ -51,7 +51,9 @@ class Farm(Ball):
 
         self.add(self.shepherd, run=False)
 
-        self.shepherd.set(self.gfarm.hub)
+        # sheperd looking after gfarm.hub, which it is itself part of.
+        self.shepherd.set_flock(self.gfarm.hub)
+        self.shepherd.set_path([shepherd])
         self.shepherd.add_filter('q', self.quit)
 
         self.add(clock)

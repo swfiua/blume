@@ -98,7 +98,7 @@ contribution to \omega.
 Further, that it gives rise to general relativity, to a good
 approximation.
 
-To get an idea of the frequency, use *E = m c^2 and planck's constant
+To get an idea of the frequency, use *E = m c^2* and planck's constant
 to get an idea of the frequency if a proton is turned into a photon.
 
 The idea is that space time is buzzing at this frequency.  A tiny
@@ -108,7 +108,7 @@ the oscillation.
 
 I am claiming, without proof, that this buzz is what we see as
 gravity, as formulated in general relativity.  I think you mention
-Schiama showed that Newton's gravity falls out to a first
+Sciama showed that Newton's gravity falls out to a first
 approximation and that applies here too. 
 
 In short, if we relate this to the paradigm, we again see rotating
@@ -117,7 +117,7 @@ space time.  As per the new paradigm, all inertial effects are due to
 rotations, and that includes the effects that we sese as general
 relativity.
 
-Rather than formulate it as oscillations, Einstein though in terms of
+Rather than formulate it as oscillations, Einstein thought in terms of
 rotations and of space time twisting in on itself.  He was primarily
 concerned with how observers see objects moving and developing a
 theory that could explain observations such as the precession of
@@ -165,16 +165,23 @@ can emerge.
 It is necessary to address the Big Bang elephant in the room to fully
 articulate the arguments here and understand that we are observing a
 truly ancient universe that has a great deal of time to settle down
-into a steady state.
+into a steady state.  
+
+I share your view that the big bang theory is a colossal mistake,
+which ignores the effect that the giant masses in the universe have on
+the propogation of light and is primarily the result of a lack of
+understanding of de Sitter space and a naive interpretation of red
+shift. 
 
 The other part of this story is how the giant black holes at the
 centres of galaxies define the inertial field and how these black
-holes recycle matter.
+holes recycle matter, noting that everything takes place in the
+presence of the inertial field, defined by the galaxies themselves.
 
 The good news for the big bang theory exponents is that the conditions
 close to these black holes are very similar to the conditions assumed
-aat the early times after the supposed big bang, so much of this
-physics is still applicable in the new paradigm.
+at the early times after the supposed big bang, so much of this
+physics is still applicable in the new paradigm and can be rescued.
 
 Johnny
 
