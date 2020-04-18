@@ -56,6 +56,8 @@ class Farm(Ball):
 
         # initial path this needs more thought
         self.shepherd.set_path([self.shepherd])
+
+        # register quit event with shepherd
         self.shepherd.add_filter('q', self.quit)
 
         self.add(clock)
@@ -88,50 +90,10 @@ class Farm(Ball):
         await self.shepherd.start()
 
             
-    def doc_firstline(self, doc):
-        """ Return first line of doc """
-        if doc:
-            return doc.split('\n')[0]
-        else:
-            return "????"
-        
-
     async def quit(self):
         """ quit the farm """
 
         await self.quit_event.set()
-
-    async def next(self):
-        """ Show next
-
-        Connect to next node, whatever that may be
-        """
-        if len(self.balls) == 0 and not self.current: return
-        print('current', self.current)
-        if self.current:
-            self.balls.append(self.current)
-
-            await self.stop_node()
-
-        self.current = self.balls.popleft()
-        await self.run_node()
-
-
-    async def previous(self):
-        """ Show previous
-        Connect to previous node, whatever that may be.
-        """
-        if len(self.balls) == 0 and not self.current: return
-        print('going to previous', self.current)
-        if self.current:
-
-            self.balls.appendleft(self.current)
-
-            await self.stop_node()
-
-        self.current = self.balls.pop()
-        await self.run_node()
-
 
 
     async def run(self):
