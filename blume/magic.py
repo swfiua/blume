@@ -358,6 +358,7 @@ class Shepherd(Ball):
             lu = sheep.radii.filters[name]
             #print('whistle', sheep, lu)
             if key in lu.keys():
+                print('sending message', key, name)
                 await lu[key]()
 
                 # first one gets it?

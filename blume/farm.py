@@ -233,7 +233,8 @@ class Carpet(Ball):
 
         # put out in queue for displays
         await self.put(self.image)
-        print('displayed ball', ball.width, ball.height)
+
+        #print('displayed ball', ball.width, ball.height)
 
 
     def _update_pos(self):
