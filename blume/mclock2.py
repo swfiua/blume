@@ -137,14 +137,11 @@ class GuidoClock(Ball):
 
     async def run(self):
 
-        print('GUIDOCLOCK run')
+        #print('GUIDOCLOCK run')
         self.redraw()
 
         # blit the image to the canvas
         await self.put(fig2data(plt))
-
-        return True
-        await curio.sleep(1)
 
             
     def redraw(self):
@@ -177,7 +174,7 @@ class GuidoClock(Ball):
         self.drawbg(bigd, litd, secd, colors)
 
         # Draw the hands
-        print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
+        #print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
 
         self.draw_hand(bigr, bigsize, width=5, color='yellow')
 

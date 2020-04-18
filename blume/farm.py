@@ -53,7 +53,9 @@ class Farm(Ball):
 
         # sheperd looking after gfarm.hub, which it is itself part of.
         self.shepherd.set_flock(self.gfarm.hub)
-        self.shepherd.set_path([shepherd])
+
+        # initial path this needs more thought
+        self.shepherd.set_path([self.shepherd])
         self.shepherd.add_filter('q', self.quit)
 
         self.add(clock)
@@ -141,6 +143,9 @@ class Farm(Ball):
             plt.show()
             # how to from farm ?? self.carpet.(plt)
 
+        # using a dog to run the shepherd, this makes no  sense
+        # let's wait and see what happens
+        print('Waiting for shepherd dog watching shepherd ')
         await curio.spawn(canine(self.shepherd))
         #return
 
@@ -213,8 +218,8 @@ class Carpet(Ball):
         width = int(self.image.width / sz)
         height = int(self.image.height / sz)
 
-        print('WWW', width, ball.width)
-        print('HHH', height, ball.height)
+        #print('WWW', width, ball.width)
+        #print('HHH', height, ball.height)
 
         # now paste current image in according to self.pos and size
         ps = self.pos

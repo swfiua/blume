@@ -215,7 +215,7 @@ def fig2data(fig):
     #facecolor = 'white'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
-        print('facecolor', facecolor)
+        #print('facecolor', facecolor)
 
     # no renderer without this
     image = io.BytesIO()
@@ -323,10 +323,11 @@ class Shepherd(Ball):
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
 
+        self.add_filter('S', self.status)
+
     def set_flock(self, flock):
         """  Supply the flock to be watched """
         self.flock = flock
-
 
     def set_path(self, path=None):
         
@@ -351,8 +352,9 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
+        print('whsitle', key, name)
+        
         for sheep in reversed(self.path):
-            print('whsitle', sheep, len(self.path))
             lu = sheep.radii.filters[name]
             #print('whistle', sheep, lu)
             if key in lu.keys():
@@ -509,8 +511,8 @@ class Shepherd(Ball):
 
         Pass messages along.
         """
-        for sheep in self.flock:
-            print(f'shepherd running {sheep in self.running} {sheep}')
+        #for sheep in self.flock:
+            #print(f'shepherd running {sheep in self.running} {sheep}')
             #print(f'   {sheep.status()}')
 
         # delegated to hub

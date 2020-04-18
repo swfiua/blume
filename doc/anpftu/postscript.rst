@@ -43,15 +43,13 @@ I will take it as a hypothesis that the universe is big enough and has
 been around long enough for it to settle down to some sort of steady
 state on a very large scale.
 
-Now we are back to inertial frames.
-
 I think there is a lot of good evidence for this, in particular the
 remarkable uniformity throughout the universe, something the big bang
 attributes to periods of super rapid expansion.
 
 Now imagine that all matter is following a very high frequency
 vibration, at the typical period of rotation of baryons.  Further,
-that each atoms rotation, or oscillation, adds to the inertial field,
+that each atom's rotation, or oscillation, adds to the inertial field,
 by adding to the oscillation of the same frequency.
 
 So a smooth, tiny, oscillation, propogating at the speed of light.
@@ -109,7 +107,11 @@ Which reminds me I need to write about thermal equilibrium.
 
 Johnny
 
-[Fred] I'm still thinking about relativity and continuous creation.
+[Fred]
+
+I'm still thinking about relativity and continuous creation.
+
+I have read Fred's "Nature of the Universe" a few times now.
 
 What happens when two gamma ray bursts cross in night?
 
@@ -119,12 +121,35 @@ baryons.
 Would this mean the distinction between matter and energy is
 relativistic?
 
+Sciama Principle
+================
+
+A body of mass m, rotating with angular velocity \omega emits a wave
+of length 1 / \omega to the surrounding space.
+
+The law of Nested rotations
+===========================
+
+The rotation of a body: it is fractals all the way down, but certain
+frequencies dominate.
+
+Nested rotations and the harmonics.  
+
+
 Tests of the theory
 ===================
 
 Cosmic Microwave background model.
 
-Binary black hole merger v pan-galactic tidal waves
+Binary black hole merger v pan-galactic tidal waves.
+
+Natural relationship between magnitude of gravity and magnitude of
+inertial effects due to rotation: if we know the size of the effect
+for a particular angular velocity, we simply scale by the ratio of
+angular velocities to find the magnitude of that effect.
+
+Relation between Hubble constant, CMB temperature, mass in the
+universe.
 
 .. image:: warwick.png
 
