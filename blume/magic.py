@@ -198,7 +198,7 @@ class GeeFarm(Ball):
         print('MAGIC TREE FARM')
 
         # wait for the super dog
-        await self.superdog
+        await self.superdog.wait()
 
 
 def fig2data(fig):
@@ -221,6 +221,8 @@ def fig2data(fig):
     image = io.BytesIO()
        
     fig.savefig(image, facecolor=facecolor, dpi=200)
+    if hasattr(fig, 'close'):
+         fig.close()
 
     return Image.open(image)
 
@@ -473,6 +475,7 @@ class Shepherd(Ball):
         """ Move up path """
         if len(self.path) > 1:
             del self.path[-1]
+        print(f'up new path: {self.path}')
 
     async def down(self):
         """ Move focus to next node """
@@ -482,12 +485,14 @@ class Shepherd(Ball):
             current = self.path[-1]
 
         succ = nx.dfs_successors(self.flock, current, depth_limit=2)
-        print('number of successors', len(succ), succ.keys())
+        
+        print('current : number of successors', current, len(succ), succ.keys())
         if succ:
             succ = random.choice(list(succ.keys()))
 
             self.path.append(succ)
 
+        print(f'down new path: {self.path}')
 
     async def toggle_run(self, sheep=None):
         """ Toggle run status of sheep """

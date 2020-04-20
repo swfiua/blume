@@ -31,43 +31,36 @@ from .teakhat import Hat, Help
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 
-class Farm(Ball):
+class Farm(GeeFarm):
     """ Connections to the outside world """
 
     def __init__(self):
 
-        # mapping of events to co-routines
-        self.gfarm = GeeFarm()
+        super().__init__()
 
         # start the farm going
         hat = Hat()
         carpet = Carpet()
         self.carpet = carpet
-        self.shepherd = Shepherd()
         clock = GuidoClock()
 
         self.add(carpet, with_carpet=False)
         self.add(hat, hat=True)
 
-        self.add(self.shepherd, run=False)
-
         # sheperd looking after gfarm.hub, which it is itself part of.
-        self.shepherd.set_flock(self.gfarm.hub)
+        self.shep.set_flock(self.hub)
 
         # initial path this needs more thought
-        self.shepherd.set_path([self.shepherd])
+        self.shep.set_path([self.shep])
+
+        # mapping of events to co-routines
 
         # register quit event with shepherd
-        self.shepherd.add_filter('q', self.quit)
+        self.shep.add_filter('q', self.quit)
 
         self.add(clock)
 
         
-    def __getattr__(self, attr):
-
-        return getattr(self.gfarm, attr)
-
-
     def status(self):
 
         self.show()
@@ -87,7 +80,7 @@ class Farm(Ball):
         wait for async land.
         """
         print('starting shepherd')
-        await self.shepherd.start()
+        await self.shep.start()
 
             
     async def quit(self):
@@ -108,7 +101,7 @@ class Farm(Ball):
         # using a dog to run the shepherd, this makes no  sense
         # let's wait and see what happens
         print('Waiting for shepherd dog watching shepherd ')
-        await curio.spawn(canine(self.shepherd))
+        await curio.spawn(canine(self.shep))
         #return
 
         
@@ -118,7 +111,7 @@ class Farm(Ball):
         # select next node
         await self.quit_event.wait()
 
-        await self.shepherd.quit()
+        await self.shep.quit()
 
         print('over and out')
 
@@ -271,4 +264,4 @@ async def run():
 if __name__ == '__main__':
     
     
-    curio.run(run())
+    curio.run(run(), with_monitor=True)
