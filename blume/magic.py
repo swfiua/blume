@@ -465,11 +465,12 @@ class Shepherd(Ball):
         
     async def next(self):
         """ Move focus to next """
-        pass
+        print(f'what is next?: {self.path}')
+        
 
     async def previous(self):
         """ Move focus to previous """
-        pass
+        print(f'what is previous?: {self.path}')
 
     async def up(self):
         """ Move up path """
@@ -520,7 +521,7 @@ class Shepherd(Ball):
         #for sheep in self.flock:
             #print(f'shepherd running {sheep in self.running} {sheep}')
             #print(f'   {sheep.status()}')
-
+        print('SHEPHERD RUN')
         # delegated to hub
         fig = plt.figure()
         #nx.draw(self.flock)
@@ -540,6 +541,8 @@ class Shepherd(Ball):
         nx.draw_networkx(self.flock, node_color=colours)
 
         await self.put(fig2data(plt))
+
+        print(self.radii.counts)
         
         #print(self.radii)
 
@@ -598,7 +601,7 @@ async def canine(ball):
     
     """
 
-    print('Farm running ball:', ball)
+    print('dog chasing ball:', ball)
     while True:
         if not ball.paused:
 

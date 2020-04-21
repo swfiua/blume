@@ -45,6 +45,8 @@ class Farm(GeeFarm):
         clock = GuidoClock()
 
         self.add(carpet, with_carpet=False)
+
+        self.add(self.shep)
         self.add(hat, hat=True)
 
         # sheperd looking after gfarm.hub, which it is itself part of.
@@ -90,13 +92,6 @@ class Farm(GeeFarm):
 
 
     async def run(self):
-
-        if False:
-            nx.draw_networkx_nodes(self.hub, pos)
-            nx.draw_networkx_edges(self.hub, pos, edgelist=self.hub.edges)
-            nx.draw_networkx_labels(self.hub, pos, font_color='blue')
-            plt.show()
-            # how to from farm ?? self.carpet.(plt)
 
         # using a dog to run the shepherd, this makes no  sense
         # let's wait and see what happens
@@ -154,6 +149,14 @@ class Carpet(Ball):
         pass
 
     async def run(self):
+        """ Run the farm forever """
+
+        # loop forever, calling self.arun()
+        while True:
+
+            await self.arun()
+
+    async def arun(self):
 
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
