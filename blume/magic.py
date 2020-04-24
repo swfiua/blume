@@ -155,6 +155,9 @@ class GeeFarm(Ball):
 
         self.shep = Shepherd()
 
+        # register quit event with shepherd
+        self.shep.add_filter('q', self.quit)
+
 
     def __getattr__(self, attr):
         """ Delegate to hub
@@ -184,10 +187,12 @@ class GeeFarm(Ball):
         # Tell the shepherd what to look after
         self.shep.flock = self.hub
 
+        print('starting shep')
         await self.shep.start()
 
         # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
+        print('start superdog', self.superdog)
 
 
     async def run(self):
@@ -199,6 +204,12 @@ class GeeFarm(Ball):
 
         # wait for the super dog
         await self.superdog.wait()
+
+    async def quit(self):
+        """ quit the farm """
+
+        await self.superdog.cancel()
+
 
 
 def fig2data(fig):

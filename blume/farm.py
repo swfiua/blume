@@ -57,9 +57,6 @@ class Farm(GeeFarm):
 
         # mapping of events to co-routines
 
-        # register quit event with shepherd
-        self.shep.add_filter('q', self.quit)
-
         self.add(clock)
 
         
@@ -74,43 +71,6 @@ class Farm(GeeFarm):
         if with_carpet:
             self.add_edge(item, self.carpet)
         
-
-    async def start(self):
-        """ Start the farm running 
-        
-        This should do any initialisation that has to
-        wait for async land.
-        """
-        print('starting shepherd')
-        await self.shep.start()
-
-            
-    async def quit(self):
-        """ quit the farm """
-
-        await self.quit_event.set()
-
-
-    async def run(self):
-
-        # using a dog to run the shepherd, this makes no  sense
-        # let's wait and see what happens
-        print('Waiting for shepherd dog watching shepherd ')
-        await curio.spawn(canine(self.shep))
-        #return
-
-        
-        print('Farm starting to run')
-        self.quit_event = curio.Event()
-
-        # select next node
-        await self.quit_event.wait()
-
-        await self.shep.quit()
-
-        print('over and out')
-
-
 
 class Carpet(Ball):
 
@@ -245,9 +205,7 @@ async def run():
     farm = Farm()
 
     magic_plotter = MagicPlot()
-    clock = GuidoClock()
     farm.add(magic_plotter)
-    farm.add(clock)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     #farm.setup()
@@ -257,9 +215,14 @@ async def run():
     farm.dump()
 
 
-    fstart = await curio.spawn(farm.start())
+    print('starting farm')
+    await farm.start()
 
-    print('farm running')
+    for x in farm.__dict__.keys():
+        print('kkk', x)
+    print('ssss', farm.superdog)
+
+    print('running farm')
     runner = await farm.run()
 
     
