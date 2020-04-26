@@ -477,7 +477,8 @@ class Shepherd(Ball):
     async def next(self):
         """ Move focus to next """
         print(f'what is next?: {self.path}')
-        
+        print(self.flock.nodes)
+        print(self.flock.edges)
 
     async def previous(self):
         """ Move focus to previous """

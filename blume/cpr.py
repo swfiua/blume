@@ -330,7 +330,8 @@ class Spiral(magic.Ball):
         xrdot, xvinert, xv, xtheta = cpr()
         #await self.put(magic.fig2data(plt))
 
-        plt.cla()
+        # close previous plot if there is one
+        plt.close()
         ax = plt.subplot(121)
 
         rr = np.arange(self.rmin, self.rmax, 10)

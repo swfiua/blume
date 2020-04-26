@@ -3,6 +3,7 @@ from PIL import ImageTk, Image
 
 from .magic import Ball
 
+from curio import TaskGroup
 import curio
 
 class Hat(Ball):
@@ -14,7 +15,7 @@ class Hat(Ball):
 
     It runs a Tk event loop, asynchronously (see below).
 
-    It puts keyboard events into *self.events*
+    It outputs keyboard events.
 
     display(ball) will do that.
 
@@ -26,7 +27,6 @@ class Hat(Ball):
 
         self.top = Tk()
         self.frame = ttk.Frame(self.top)
-
 
         self.width = 480
         self.height = 640
@@ -43,7 +43,6 @@ class Hat(Ball):
         #button.pack()
         
         # Keyboard handling
-        self.events = curio.UniversalQueue()
         self.top.bind('<Key>', self.keypress)
 
     def keypress(self, event):
@@ -70,12 +69,6 @@ class Hat(Ball):
 
             await curio.sleep(self.sleep)
 
-    #async def put(self, event):
-    #    """ Push gui events into a queue """
-    #    if type(event) is int:
-    #        print('incoming int', event)
-    #        
-    #    await self.incoming.put(event)
 
     async def watch(self):
         """ Get stuff and display it """
@@ -101,11 +94,11 @@ class Hat(Ball):
         watch_task = await curio.spawn(self.watch())
         poll_task = await curio.spawn(self.poll())
 
-        self.tasks = [watch_task, poll_task]
+        self.tasks = TaskGroup([watch_task, poll_task])
 
     async def run(self):
 
-        await curio.gather(self.tasks)
+        await self.tasks.join()
 
         print("Event loop over and out")
 
