@@ -31,45 +31,41 @@ from .teakhat import Hat, Help
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 
+
 class Farm(GeeFarm):
-    """ Connections to the outside world """
 
     def __init__(self):
 
         super().__init__()
 
-        # start the farm going
+        # start a farm going
         hat = Hat()
         carpet = Carpet()
         self.carpet = carpet
+
         clock = GuidoClock()
 
-        self.add(carpet, with_carpet=False)
+        self.add_node(carpet, background=True)
+
+        self.add_node(hat, hat=True)
 
         self.add(self.shep)
-        self.add(hat, hat=True)
 
+        self.add(clock)
+
+        # connections
+        self.add_edge(carpet, hat)
+        
         # sheperd looking after gfarm.hub, which it is itself part of.
         self.shep.set_flock(self.hub)
 
         # initial path this needs more thought
-        self.shep.set_path([self.shep])
-
-        # mapping of events to co-routines
-
-        self.add(clock)
-
-        
-    def status(self):
-
-        self.show()
+        self.shep.set_path([self.shep, self.carpet])
 
 
-    def add(self, item, run=True, with_carpet=True, hat=False):
+    def add(self, item):
 
-        self.add_node(item, background=run, hat=hat)
-        if with_carpet:
-            self.add_edge(item, self.carpet)
+        self.add_edge(item, self.carpet)
         
 
 class Carpet(Ball):
@@ -86,6 +82,7 @@ class Carpet(Ball):
 
         self.add_filter('m', self.more)
         self.add_filter('l', self.less)
+        self.add_filter('X', self.toggle_pause)
 
         
     async def more(self):
@@ -108,7 +105,7 @@ class Carpet(Ball):
         
         pass
 
-    async def run(self):
+    async def erun(self):
         """ Run the farm forever """
 
         # loop forever, calling self.arun()
@@ -116,7 +113,7 @@ class Carpet(Ball):
 
             await self.arun()
 
-    async def arun(self):
+    async def run(self):
 
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
@@ -217,10 +214,6 @@ async def run():
 
     print('starting farm')
     await farm.start()
-
-    for x in farm.__dict__.keys():
-        print('kkk', x)
-    print('ssss', farm.superdog)
 
     print('running farm')
     runner = await farm.run()

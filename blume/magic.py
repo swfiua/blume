@@ -367,11 +367,11 @@ class Shepherd(Ball):
         """
         print('whsitle', key, name)
         
-        for sheep in reversed(self.path):
+        for sheep in self.path:
             lu = sheep.radii.filters[name]
             #print('whistle', sheep, lu)
             if key in lu.keys():
-                print('sending message', key, name)
+                print('sending message', key, name, sheep)
                 await lu[key]()
 
                 # first one gets it?
@@ -381,7 +381,10 @@ class Shepherd(Ball):
         return False
 
     async def help(self, name='keys'):
-        """ Show what keys do what """
+        """ Show what keys do what 
+
+        whistle help: these two need to be kept in sync.
+        """
         print('HELP', self.path)
 
         # FIXME? 
@@ -479,6 +482,7 @@ class Shepherd(Ball):
         print(f'what is next?: {self.path}')
         print(self.flock.nodes)
         print(self.flock.edges)
+        print(self.path[-1])
 
     async def previous(self):
         """ Move focus to previous """
@@ -497,13 +501,16 @@ class Shepherd(Ball):
         if self.path:
             current = self.path[-1]
 
-        succ = nx.dfs_successors(self.flock, current, depth_limit=2)
+        succ = list(self.flock.predecessors(current))
         
-        print('current : number of successors', current, len(succ), succ.keys())
+        print('current : number of successors', current)
         if succ:
-            succ = random.choice(list(succ.keys()))
+            succ = random.choice(succ)
 
             self.path.append(succ)
+
+        else:
+            print(nx.dfs_predecessors(self.flock, current)) 
 
         print(f'down new path: {self.path}')
 
@@ -533,7 +540,7 @@ class Shepherd(Ball):
         #for sheep in self.flock:
             #print(f'shepherd running {sheep in self.running} {sheep}')
             #print(f'   {sheep.status()}')
-        print('SHEPHERD RUN')
+        #print('SHEPHERD RUN')
         # delegated to hub
         fig = plt.figure()
         #nx.draw(self.flock)
@@ -554,7 +561,7 @@ class Shepherd(Ball):
 
         await self.put(fig2data(plt))
 
-        print(self.radii.counts)
+        #print(self.radii.counts)
         
         #print(self.radii)
 
