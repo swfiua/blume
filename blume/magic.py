@@ -350,7 +350,7 @@ class Shepherd(Ball):
         """ Send out whistles fromm a queue """
         while True:
             key = await queue.get()
-            print('WOOOHOO whistle time', key)
+            #print('WOOOHOO whistle time', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -378,6 +378,7 @@ class Shepherd(Ball):
                 return True
 
         # nobody cares :(
+        print('nobody cares :(')
         return False
 
     async def help(self, name='keys'):
@@ -510,7 +511,7 @@ class Shepherd(Ball):
             self.path.append(succ)
 
         else:
-            print(nx.dfs_predecessors(self.flock, current)) 
+            print(self.flock.successors(current)) 
 
         print(f'down new path: {self.path}')
 
@@ -583,7 +584,7 @@ class Shepherd(Ball):
 
     def __str__(self):
 
-        return f'shepherd of flock degree {self.flock.degree()}'
+        return f'shepherd of flock degree {len(self.flock)}'
 
 
 class Table(Ball):

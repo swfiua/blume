@@ -239,6 +239,10 @@ class Spiral(magic.Ball):
         # key bindings
         self.add_filter('a', self.alower)
         self.add_filter('A', self.araise)
+        self.add_filter('b', self.blower)
+        self.add_filter('B', self.braise)
+        self.add_filter('m', self.mlower)
+        self.add_filter('M', self.mraise)
 
     def rmin_check(self):
         """ The length of the roots of the spirals 
@@ -263,6 +267,22 @@ class Spiral(magic.Ball):
     async def alower(self):
         """ Lower the value of A """
         self.A /= 10
+
+    async def braise(self):
+        """ Raise the value of B """
+        self.B *= 10
+
+    async def blower(self):
+        """ Lower the value of B """
+        self.B /= 10
+
+    async def mraise(self):
+        """ Raise the value of M """
+        self.M *= 10
+
+    async def mlower(self):
+        """ Lower the value of A """
+        self.M /= 10
 
     def v(self, r):
         """ Velocity at radius r 
@@ -327,7 +347,7 @@ class Spiral(magic.Ball):
 
     async def run(self):
 
-        xrdot, xvinert, xv, xtheta = cpr()
+        #xrdot, xvinert, xv, xtheta = cpr()
         #await self.put(magic.fig2data(plt))
 
         # close previous plot if there is one
@@ -351,7 +371,7 @@ class Spiral(magic.Ball):
         plt.ylabel('velocity', color='y')
         
         rdot = np.sqrt(2 * energy)
-        print('spiral', len(rr), len(rdot))
+        #print('spiral', len(rr), len(rdot))
         ax.plot(rr, rdot, label='rdot')
         ax.legend(loc=0)
           
@@ -507,6 +527,6 @@ if __name__ == '__main__':
 
     
  
-    cpr()
-    plt.show()
+    #cpr()
+    #plt.show()
     main()
