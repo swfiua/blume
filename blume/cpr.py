@@ -241,7 +241,7 @@ class Spiral(magic.Ball):
         self.add_filter('A', self.araise)
         self.add_filter('b', self.blower)
         self.add_filter('B', self.braise)
-        self.add_filter('m', self.mlower)
+        self.add_filter('N', self.mlower)
         self.add_filter('M', self.mraise)
 
     def rmin_check(self):
@@ -278,11 +278,11 @@ class Spiral(magic.Ball):
 
     async def mraise(self):
         """ Raise the value of M """
-        self.M *= 10
+        self.Mcent *= 10
 
     async def mlower(self):
         """ Lower the value of A """
-        self.M /= 10
+        self.Mcent /= 10
 
     def v(self, r):
         """ Velocity at radius r 
@@ -352,7 +352,6 @@ class Spiral(magic.Ball):
 
         # close previous plot if there is one
         plt.close()
-        ax = plt.subplot(121)
 
         rr = np.arange(self.rmin, self.rmax, 10)
         #vv = [self.v(r) for r in rr]
@@ -362,18 +361,22 @@ class Spiral(magic.Ball):
         energy = np.array([self.energy(r) for r in rr])
         #ii = [self.vinert(r, v) for (r, v) in zip(rr, vv)]
         #rdd = [self.rdoubledot(r, v) for (r, v) in zip(rr, ii)]
-        ax.plot(rr, vv, label='velocity')
-        ax.plot(rr, ii, label='vinert')
-        ax.plot(rr, rdd, label='rdoubledot')
-        #ax.plot(rr, energy, label='energy')
-        
-        plt.xlabel('r', color='r')
-        plt.ylabel('velocity', color='y')
-        
         rdot = np.sqrt(2 * energy)
         #print('spiral', len(rr), len(rdot))
-        ax.plot(rr, rdot, label='rdot')
-        ax.legend(loc=0)
+
+        if False:
+            ax = plt.subplot(121)
+            ax.plot(rr, vv, label='velocity')
+            ax.plot(rr, ii, label='vinert')
+            ax.plot(rr, rdd, label='rdoubledot')
+            #ax.plot(rr, energy, label='energy')
+        
+            plt.xlabel('r', color='r')
+            plt.ylabel('velocity', color='y')
+        
+
+            ax.plot(rr, rdot, label='rdot')
+            ax.legend(loc=0)
           
 
         thetadot = vv/rr;
@@ -386,12 +389,14 @@ class Spiral(magic.Ball):
         thetaValues = NIntegrate(dthetabydr, rr, initial=0.)
         tvalues = NIntegrate(dtbydr, rr, initial=0.)
 
+
         B = self.B
-        ax = plt.subplot(122, projection='polar')
+        ax = plt.subplot(111, projection='polar')
         ax.plot(thetaValues - (B * tvalues), rr)
         ax.plot(thetaValues - (B * tvalues) + math.pi, rr)
 
         await self.put(magic.fig2data(plt))
+            
         plt.close()
 
 

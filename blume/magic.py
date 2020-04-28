@@ -282,7 +282,7 @@ class RoundAbout:
         self.counts.update([('get', name)])
         return await self.select(name).get()
 
-    def status(self):
+    async def status(self):
 
         result = {}
         result['counts'] = self.counts
@@ -290,6 +290,8 @@ class RoundAbout:
         for qname, qq in self.qs.items():
             result[qname] = qq.qsize()
 
+        from pprint import pprint
+        pprint(result)
         return result
 
     def add_filter(self, key, coro, name='keys'):
