@@ -151,9 +151,9 @@ class SkyMap(magic.Ball):
             if 'ilky' in ngn or 'ilky' in constellation:
             #if 'ilky' in ball.name:
 
-                print()
-                print(constellation)
-                print(ball)
+                #print()
+                #print(constellation)
+                #print(ball)
                 
                 ax.text(
                     self.spinra(loc[1]), loc[0],
