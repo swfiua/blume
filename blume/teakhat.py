@@ -73,9 +73,7 @@ class Hat(Ball):
     async def watch(self):
         """ Get stuff and display it """
         while True:
-
             ball = await self.get()
-
             if type(ball) is int:
                 print('wtf', ball)
                 continue

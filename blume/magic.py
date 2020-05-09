@@ -166,14 +166,14 @@ class GeeFarm(Ball):
         """
         return getattr(self.hub, attr)
 
-    def dump(self):
+    def status(self):
 
         print(f' nodes: {self.hub.number_of_nodes()}')
         print(f' edges: {self.hub.number_of_edges()}')
 
         hub = self.hub
         for item in hub.nodes:
-            print('degree', hub.degree[item], hub[item])
+            print(hub[item])
 
         for edge in hub.edges:
             print(edge, hub.edges[edge])
@@ -334,11 +334,25 @@ class Shepherd(Ball):
         self.add_filter('h', self.help)
         self.add_filter('n', self.next)
         self.add_filter('p', self.previous)
+        
         self.add_filter('u', self.up)
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
 
         self.add_filter('S', self.status)
+
+
+    async def status(self):
+
+        print('PATH')
+        for item in self.path:
+            print(item)
+
+        for item in self.flock.nodes:
+            print(item)
+            if item is not self:
+                await item.status()
+            print()
 
     def set_flock(self, flock):
         """  Supply the flock to be watched """
@@ -478,7 +492,6 @@ class Shepherd(Ball):
                 bridge = await curio.spawn(relay(b, a))
                 self.relays[(b, a)] = bridge
             
-            
         
     async def next(self):
         """ Move focus to next """
@@ -502,16 +515,12 @@ class Shepherd(Ball):
         if self.path:
             current = self.path[-1]
 
+        succ = nx.dfs_successors(self.flock, current, 1)
+
         succ = list(self.flock.predecessors(current))
-        
-        print('current : number of successors', current)
+
         if succ:
-            succ = random.choice(succ)
-
-            self.path.append(succ)
-
-        else:
-            print(self.flock.successors(current)) 
+            self.path.append(random.choice(succ))
 
         print(f'down new path: {self.path}')
 
@@ -543,6 +552,7 @@ class Shepherd(Ball):
             #print(f'   {sheep.status()}')
         #print('SHEPHERD RUN')
         # delegated to hub
+        print('shepstart')
         fig = plt.figure()
         #nx.draw(self.flock)
         colours = []
@@ -560,8 +570,9 @@ class Shepherd(Ball):
             
         nx.draw_networkx(self.flock, node_color=colours)
 
+        print('sheput')
         await self.put(fig2data(plt))
-
+        print('shepend')
         #print(self.radii.counts)
         
         #print(self.radii)
@@ -622,10 +633,15 @@ async def canine(ball):
     """
 
     print('dog chasing ball:', ball)
+    runs = 0
     while True:
         if not ball.paused:
 
             await ball.run()
+            runs += 1
+
+            if False:
+                print(f'run {runs} for {ball}')
 
         await curio.sleep(ball.sleep)
 

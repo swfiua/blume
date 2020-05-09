@@ -219,6 +219,8 @@ class Spiral(magic.Ball):
         # Apparent rate of precession of the roots of the spiral.
         self.B = 0.00000015
 
+        # Central mass.  Mass converted to Schwartzschild radius (in light years)
+        # Mass of 1 is approximately 3e12 solar masses.
         self.Mcent = 0.03
         self.Mball = 0.
         self.Mdisc = 0.
@@ -243,6 +245,7 @@ class Spiral(magic.Ball):
         self.add_filter('B', self.braise)
         self.add_filter('N', self.mlower)
         self.add_filter('M', self.mraise)
+
 
     def rmin_check(self):
         """ The length of the roots of the spirals 
