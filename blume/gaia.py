@@ -81,18 +81,24 @@ class Milky(Ball):
 
 
         hpxmap = np.zeros(npix, dtype=np.float)
+        radvel = np.zeros(npix, dtype=np.float)
 
         for row, index in zip([item for item in table], indices):
 
             ix = row['source_id'] >> 35
+            ix //= 4**(12 - level)
             #ix = row['source_id'] >> 35
 
             #assert(index == ix)
-            hpxmap[ix // 4**(12 - level)] += 1
-            #hpxmap[index] += 1
-
+            rv = row['radial_velocity']
+            if rv != 1e20:
+                
+                radvel[ix] += rv
+                
+                hpxmap[index] += 1
+            
         #print(hpxmap)
-        hp.mollview(hpxmap, coord=('C', 'G'), nest=True)
+        hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
 
         plt.scatter([0.0], [0.0])
         
