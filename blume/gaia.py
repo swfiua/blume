@@ -92,8 +92,10 @@ class Milky(Ball):
             #hpxmap[index] += 1
 
         #print(hpxmap)
-        hp.mollview(hpxmap, coord=('E', 'G'), nest=True)
+        hp.mollview(hpxmap, coord=('C', 'G'), nest=True)
 
+        plt.scatter([0.0], [0.0])
+        
         await self.put(magic.fig2data(plt))
 
     async def zoom(self):
