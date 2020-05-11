@@ -74,6 +74,8 @@ class Carpet(Ball):
 
         super().__init__()
 
+        self.sleep = 0
+
         # grid related
         self.size = 1
         self.pos = 0
@@ -118,8 +120,8 @@ class Carpet(Ball):
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
+
         ball = await self.get()
-        
         if ball is None:
             print('carpet got no ball')
             return

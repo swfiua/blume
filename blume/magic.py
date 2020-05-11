@@ -223,7 +223,7 @@ def fig2data(fig):
     FIXME -- turning matplotlib figures into PIL or numpy
     """
     facecolor = 'black'
-    #facecolor = 'white'
+    facecolor = 'white'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
         #print('facecolor', facecolor)

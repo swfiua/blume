@@ -10,6 +10,8 @@ This module uses the `astroquery.gaia` submodule to query the Gaia database.
 
 """
 from astropy.table import Table
+from astropy import coordinates
+from astropy import units as u
 from astroquery.gaia import Gaia
 from .magic import Ball
 
@@ -32,16 +34,18 @@ COLUMNS = ('source_id', 'random_index', 'ra', 'dec', 'parallax', 'radial_velocit
 
 
 
-def get_sample(self):
+def get_sample():
 
     columns = (', ').join(COLUMNS)
     table = TABLE
     sample = tuple(range(1,100001))
     squeal = f'select {columns} from {table} where random_index in {sample}'
-    #squeal = f'select top 1000 {columns} from {table} where mod(random_index, 1000000) = 0'
+
+    squeal = f'select top 100 {columns} from {table} where radial_velocity IS NOT NULL'
+    #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
 
 
-    #print(f'squeal: {squeal}')
+    print(f'squeal: {squeal}')
         
     job = Gaia.launch_job_async(squeal)
 
@@ -57,7 +61,7 @@ class Milky(Ball):
         super().__init__()
 
         self.table = table
-        self.level = 1
+        self.level = 6
         
         self.add_filter('z', self.zoom)
         self.add_filter('x', self.xzoom)
@@ -80,25 +84,37 @@ class Milky(Ball):
         print('npix, nside, level', npix, nside, level)
 
 
-        hpxmap = np.zeros(npix, dtype=np.float)
+        hpxmap = np.ones(npix, dtype=np.float)
         radvel = np.zeros(npix, dtype=np.float)
 
+        key = 'radial_velocity'
+        badval = 1e20
         for row, index in zip([item for item in table], indices):
 
             ix = row['source_id'] >> 35
             ix //= 4**(12 - level)
             #ix = row['source_id'] >> 35
 
-            #assert(index == ix)
-            rv = row['radial_velocity']
-            if rv != 1e20:
-                
-                radvel[ix] += rv
-                
-                hpxmap[index] += 1
+            rv = row[key]
             
+            radvel[ix] = rv
+                
         #print(hpxmap)
-        hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
+        coord = ('C', 'G')
+        #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
+        ma = hp.ma(radvel, badval)
+        print(ma)
+        hp.mollview(ma, coord=coord, nest=True)
+
+        # Sag A*
+        sagra = coordinates.Angle('17h45m20.0409s')
+        sagdec = coordinates.Angle('-29d0m28.118s')
+        print(f'sag A* {sagra.deg} {sagdec}')
+
+        hp.projplot(sagra.deg, sagdec.deg,
+                    'ro',
+                    lonlat=True,
+                    coord=coord)
 
         plt.scatter([0.0], [0.0])
         
@@ -120,6 +136,8 @@ async def run(table):
 
     farm = fm.Farm()
     farm.add(milky)
+
+    farm.shep.path.append(milky)
 
     await farm.start()
 
