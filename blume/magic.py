@@ -232,8 +232,11 @@ def fig2data(fig):
     image = io.BytesIO()
        
     fig.savefig(image, facecolor=facecolor, dpi=200)
-    if hasattr(fig, 'close'):
-         fig.close()
+    try:
+        fig.close()
+    except AttributeError:
+        print('cannot close figure')
+
 
     return Image.open(image)
 
@@ -464,12 +467,13 @@ class Shepherd(Ball):
         await self.watch_roundabouts()
 
         # figure out current path
-        current = None
-        for sheep in self.flock:
-            if current is None:
-                current = sheep
-                
-        self.path.append(current)
+        #current = None
+        #for sheep in self.flock:
+        #    if current is None:
+        #        current = sheep
+        #        
+        #self.path.append(current)
+
         # what set up is needed for run?
         # navigate the tree
         # R for run

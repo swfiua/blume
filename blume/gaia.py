@@ -9,6 +9,8 @@ This module uses the `astroquery.gaia` submodule to query the Gaia database.
 
 
 """
+import argparse
+
 from astropy.table import Table
 from astropy import coordinates
 from astropy import units as u
@@ -32,7 +34,7 @@ TABLE = 'gaiadr2.gaia_source'
 
 COLUMNS = ('source_id', 'random_index', 'ra', 'dec', 'parallax', 'radial_velocity')
 
-
+FILENAME = 'radial_velocity2.fits'
 
 def get_sample():
 
@@ -41,7 +43,7 @@ def get_sample():
     sample = tuple(range(1,100001))
     squeal = f'select {columns} from {table} where random_index in {sample}'
 
-    squeal = f'select top 100 {columns} from {table} where radial_velocity IS NOT NULL'
+    squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
     #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
 
 
@@ -62,9 +64,12 @@ class Milky(Ball):
 
         self.table = table
         self.level = 6
+
+        self.coord = ('C', 'G')
         
         self.add_filter('z', self.zoom)
         self.add_filter('x', self.xzoom)
+        self.add_filter('c', self.rotate_view)
 
     async def run(self):
 
@@ -84,11 +89,13 @@ class Milky(Ball):
         print('npix, nside, level', npix, nside, level)
 
 
-        hpxmap = np.ones(npix, dtype=np.float)
+        hpxmap = np.zeros(npix, dtype=np.float)
         radvel = np.zeros(npix, dtype=np.float)
 
         key = 'radial_velocity'
+        key = 'parallax'
         badval = 1e20
+        count = 0
         for row, index in zip([item for item in table], indices):
 
             ix = row['source_id'] >> 35
@@ -96,15 +103,29 @@ class Milky(Ball):
             #ix = row['source_id'] >> 35
 
             rv = row[key]
-            
-            radvel[ix] = rv
+
+            hpxmap[ix] += 1
+
+            if rv != badval:
+                radvel[ix] = rv
+                count += 1
+
+        print('number of observations:', count)
                 
         #print(hpxmap)
-        coord = ('C', 'G')
+        coord = self.coord
         #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
-        ma = hp.ma(radvel, badval)
-        print(ma)
-        hp.mollview(ma, coord=coord, nest=True)
+        #ma = hp.ma(radvel, badval)
+        #from collections import Counter
+        #ma.mask = np.logical_not(ma.mask)
+
+        #mask = radvel != 1e20
+        #print(Counter(mask).most_common(4))
+
+        #radvel = np.where(mask, radvel, np.zeros(npix))
+
+        hp.mollview(radvel, coord=coord, nest=True, cmap='rainbow')
+        hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
 
         # Sag A*
         sagra = coordinates.Angle('17h45m20.0409s')
@@ -116,9 +137,23 @@ class Milky(Ball):
                     lonlat=True,
                     coord=coord)
 
+        hp.graticule()
+
         plt.scatter([0.0], [0.0])
         
         await self.put(magic.fig2data(plt))
+
+
+    async def rotate_view(self):
+
+        if self.coord == ('C', 'G'):
+            self.coord = 'C'
+
+        elif self.coord == 'C':
+            self.coord = 'E'
+        else:
+            self.coord = ('C', 'G')
+            
 
     async def zoom(self):
 
@@ -146,7 +181,10 @@ async def run(table):
 
 if __name__ == '__main__':
 
-    path = Path('tab.fits')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-data', default=FILENAME)
+
+    path = Path(FILENAME)
     if path.exists():
         table = Table.read(path, 'fits')
 
