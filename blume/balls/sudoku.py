@@ -141,7 +141,8 @@ async def run(args):
 
     farm.add(examples)
 
-    print('farm runnnnnnnnnning')
+    await farm.start()
+    print('farm runnnnnnnnnning') 
     runner = await farm.run()
     
         
