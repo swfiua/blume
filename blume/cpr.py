@@ -56,32 +56,6 @@ import numpy as np
 
 from scipy import integrate
 
-async def run(**args):
-
-    farm = fm.Farm()
-
-    if args['galaxy']:
-        gals = list(near_galaxies(open(args['galaxy'])))
-
-        skymap = SkyMap(gals)
-        farm.add(skymap)
-    
-    spiral = Spiral()
-    farm.add(spiral)
-
-    await farm.start()
-    print('about to run farm')
-    await farm.run()
-
-
-def main(args=None):
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--galaxy', help="file of local galaxy data")
-
-    args = parser.parse_args(args)
-
-    curio.run(run(**args.__dict__), with_monitor=True)
 
 class SkyMap(magic.Ball):
 
@@ -528,6 +502,32 @@ def cleanse(data):
 
     return clean
 
+async def run(**args):
+
+    farm = fm.Farm()
+
+    if args['galaxy']:
+        gals = list(near_galaxies(open(args['galaxy'])))
+
+        skymap = SkyMap(gals)
+        farm.add(skymap)
+    
+    spiral = Spiral()
+    farm.add(spiral)
+
+    await farm.start()
+    print('about to run farm')
+    await farm.run()
+
+
+def main(args=None):
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--galaxy', help="file of local galaxy data")
+
+    args = parser.parse_args(args)
+
+    curio.run(run(**args.__dict__), with_monitor=True)
 
 
 

@@ -19,6 +19,7 @@ import random
 from blume.table import table
 
 from blume import magic
+from blume import farm as fm
 
 N = 9
 
@@ -126,42 +127,19 @@ class Sudoku(magic.Ball):
             bbox=(0, 0, 1, 1))
 
         print('showing sudoku board')
-        await self.outgoing.put(magic.fig2data(plt))
+        await self.put(magic.fig2data(plt))
 
 
 # From here down boiler plate magic code -- or should be
         
 async def run(args):
-    """ Don't do things this way until things settle down ..."""
+    """ Run a sudoku """
+    farm = fm.Farm()
 
-    farm = magic.Farm()
-    from blume import mclock2
-    
-    clock = mclock2.GuidoClock()
-
-    carpet = magic.Carpet()
-
-    iq = curio.UniversalQueue()
-    await carpet.set_incoming(iq)
-    await carpet.set_outgoing(farm.hatq)
-
-
-    farm.event_map.update(clock.event_map)
-    farm.event_map.update(carpet.event_map)
 
     examples = Sudoku()
-    await examples.set_outgoing(iq)
-    await clock.set_outgoing(iq)
 
-    examples.incoming = None
-    clock.incoming = None
-
-    farm.add(carpet, background=True)
     farm.add(examples)
-    farm.add(clock)
-
-
-    starter = await curio.spawn(farm.start())
 
     print('farm runnnnnnnnnning')
     runner = await farm.run()
