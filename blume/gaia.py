@@ -7,6 +7,34 @@ https://gea.esac.esa.int/archive/documentation/GDR2/large/cu9/cu9gat_skydensity_
 
 This module uses the `astroquery.gaia` submodule to query the Gaia database.
 
+I am still finding my way around the data (almost June 2020).
+
+It is a record of over a billion observations.
+
+Many variables, along with error estimates too.
+
+The plan for now is to download a bunch of random samples, asynchronously.
+
+Save each sample in `fits` format.
+
+And then explore the data.
+
+Data downloaded is cached in the current directory.
+
+The same is checked for data from a previous run and that will be read in
+before loading any further data.
+
+Would be good to be able to be able to share bunches of data, that is part of
+the more general problem of distributed data.
+
+See `-bunch` and `-topn` command line options for how to control how many
+bunches are downloaded and how big each bunch is.
+
+The idea here is to look into the question, of just where is the sun?
+
+Specifically, where is it relative to the galactic centre?
+
+Recognising that the galactic centre is a bit of a puzzle itself.
 
 """
 import argparse
@@ -14,7 +42,6 @@ import argparse
 from astropy.table import Table
 from astropy import coordinates
 from astropy import units as u
-from astroquery.gaia import Gaia
 from .magic import Ball
 
 import curio
@@ -36,19 +63,18 @@ COLUMNS = ('source_id', 'random_index', 'ra', 'dec', 'parallax', 'radial_velocit
 
 FILENAME = 'radial_velocity2.fits'
 
-def get_sample():
+def get_sample(bunch=20, topn=10000):
 
     columns = (', ').join(COLUMNS)
+    columns = ('*')
     table = TABLE
-    sample = tuple(range(1,100001))
+    sample = tuple(range(1, topn))
     squeal = f'select {columns} from {table} where random_index in {sample}'
 
-    squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
+    #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
     #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
 
-
-    print(f'squeal: {squeal}')
-        
+    
     job = Gaia.launch_job_async(squeal)
 
     return job.get_results()
@@ -58,11 +84,13 @@ def get_sample():
 
 class Milky(Ball):
 
-    def __init__(self, table):
+    def __init__(self, bunch=1, topn=1):
 
         super().__init__()
 
-        self.table = table
+        self.bunches = []
+        self.nbunch = bunch
+        self.topn = topn
         self.level = 6
 
         self.coord = ('C', 'G')
@@ -71,11 +99,65 @@ class Milky(Ball):
         self.add_filter('x', self.xzoom)
         self.add_filter('c', self.rotate_view)
 
+    async def start(self):
+        """ start async task to read/download data """
+        self.bunchq = curio.PriorityQueue()
+
+        self.bunches = []
+
+        # load any bunches there are
+        # for now, keep them separate
+        path = Path()
+        for bunch in path.glob('*.fits'):
+            if bunch.exists():
+                table = Table.read(bunch, 'fits')
+                self.bunches.append(table)
+
+        # launch a task to get more bunches, if needed
+        await curio.spawn(self.get_samples())
+
+    async def get_samples(self):
+
+        while len(self.bunches) < self.nbunch:
+            bunch = await self.get_sample()
+
+            # take sample
+            bid = len(self.bunches)
+            path = Path(f'bunch_{bid}.fits')
+            bunch.write(path, 'fits')
+            self.bunches.append(bunch)
+
+    async def get_sample(self):
+
+
+        columns = (', ').join(COLUMNS)
+        #columns = ('*')
+        table = TABLE
+        sample = tuple(range(1, self.topn))
+        squeal = f'select {columns} from {table} where random_index in {sample}'
+
+        #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
+        #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
+
+        if len(squeal) > 1000:
+            print(f'squeal: {squeal[:360]} .. {squeal[-180:]}')
+        else:
+            print(squeal)
+        
+        from astroquery.gaia import Gaia
+        job = Gaia.launch_job_async(squeal)
+
+        return job.get_results()
+
+
     async def run(self):
 
-
+        if not self.bunches:
+            return
+        
         level = self.level
-        table = self.table
+
+        table = self.bunches[0]
         
         nside = 2 ** level
 
@@ -165,13 +247,15 @@ class Milky(Ball):
         if self.level > 0:
             self.level -= 1
 
-async def run(table):
+async def run(args):
 
-    milky = Milky(table)
+    milky = Milky(args.bunch, args.topn)
 
     farm = fm.Farm()
     farm.add(milky)
 
+    # farm strageness, whilst I figure out how it should work
+    # add to path to get key events at start 
     farm.shep.path.append(milky)
 
     await farm.start()
@@ -182,19 +266,12 @@ async def run(table):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-data', default=FILENAME)
 
-    path = Path(FILENAME)
-    if path.exists():
-        table = Table.read(path, 'fits')
+    parser.add_argument('-bunch', type=int, default=1)
+    parser.add_argument('-topn', type=int, default=10)
 
-    else:
-        table = get_sample()
 
-        # be nice, cache data
-        table.write(path, 'fits')
-
-    curio.run(run(table))
+    curio.run(run(parser.parse_args()))
     
 
     

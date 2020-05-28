@@ -33,12 +33,12 @@ relativity.
 Often there is a lot of work to do to explain why something in
 mathematics is interesting.  And sometimes that work throws some
 insight along the way that proves to be essential to the
-deeper understanding. 
+deeper understanding.  Accounts which shy away from mathematical
+details struggle to convey such insights.
 
 And then those somethings where examples are abundant, but the fear is
-that their may be a counter example.  Like the zeroes of Dr Riemann.
+that there may be a counter example.  Like the zeroes of Dr Riemann.
 
-[editor: fill this in later...]
 
 Kaluza-Klein
 ============
@@ -49,7 +49,8 @@ This was an Everest sized peak.
 
 It began with Kaluza.
 
-I will try to summarise here, but best to go and read the *Wikipedia* page.
+I will try to summarise here, but best to go and read the *Wikipedia*
+page. [1]
 
 A five dimensional space.
 
@@ -149,7 +150,7 @@ string theory situation arose was to generalise this theory, when it
 became apparent that the Kaluza-Klein theory could not quite do
 fermions and barions.
 
-I believe this is a case where we need to take acount of oscillations
+I suspect this is a case where we need to take acount of oscillations
 in all three dimensions.
 
 
@@ -184,15 +185,25 @@ Defining the peaks and troughs of space time.
 
 If you do not care about rotation, you can ignore this dimension.
 
+But that would be a shame, as all the interesting stuff seems to
+happen in this dimension.
+
+For example electric charge is identified with motion in the fifth
+dimension.
+
+
 Another paradigm
 ================
 
 Rotating masses affect the fifth dimension in ways not captured by
 general relativity.
 
-In fact, they define it, since it is the delta, not the base signal
-that defines space time.
+The fifth dimension is essentially a phase angle.  Any rotating mass
+modulates this angle.
 
+Hence, it is important to take this into account in any model of
+reality. 
+ 
 Fantasy
 =======
 
@@ -203,7 +214,29 @@ I have yet to read this one.
 What I enjoy about reading these books are the accounts of the
 problems that gave rise to the mathematical models.
 
-The history is always fascinating.
+Observations that raise questions about current theories.   Or
+consequences of models that seem out of step with reality.
+
+The history of how ideas have evolved is always fascinating.
+
+Update
+------
+
+I have now started reading chapter 3.
+
+The fantasy is the inflationary phase.
+
+The chapter has me thinking again about the harmonics of the Cosmic
+Microwave Background.
+
+And the Hubble constant too.
+
+Fred Hoyle gets a mention for his static universe and continuous
+creation.
+
+I have also been back to the *New Paradigm*.
+
+
       
 
 References
