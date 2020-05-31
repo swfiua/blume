@@ -110,34 +110,64 @@ class Milky(Ball):
         path = Path()
         for bunch in path.glob('*.fits'):
             if bunch.exists():
-                table = Table.read(bunch, 'fits')
+                table = Table.read(bunch)
                 self.bunches.append(table)
 
         # launch a task to get more bunches, if needed
-        await curio.spawn(self.get_samples())
+        self.sampler = await curio.spawn(self.get_samples())
 
     async def get_samples(self):
 
         while len(self.bunches) < self.nbunch:
-            bunch = await self.get_sample()
+
+            squeal = self.get_squeal()
+
 
             # take sample
             bid = len(self.bunches)
             path = Path(f'bunch_{bid}.fits')
-            bunch.write(path, 'fits')
+            bunch = await self.get_sample(squeal, path)
+            bunch = await self.get_sample(squeal)
+
             self.bunches.append(bunch)
 
-    async def get_sample(self):
-
+            
+    def get_squeal(self):
 
         columns = (', ').join(COLUMNS)
-        #columns = ('*')
+        columns = '*'
         table = TABLE
-        sample = tuple(range(1, self.topn))
-        squeal = f'select {columns} from {table} where random_index in {sample}'
+        sample = tuple(range(self.topn))
+        squeal = f'select top {self.topn} {columns} from {table} where random_index in {sample}'
+        squeal = f'select top {self.topn} gaia_healpix_index(6, source_id) as healpix_6 count(*) from {table} where random_index in {sample}'
+        squeal = f'select top {self.topn} count(*) from {table} where random_index in {sample}'
+
+        example_squeal = "SELECT TOP 10"
+        "gaia_healpix_index(6, source_id) AS healpix_6,"
+        "count(*) / 0.83929 as sources_per_sq_deg,"
+        "avg(astrometric_n_good_obs_al) AS avg_n_good_al,"
+        "avg(astrometric_n_good_obs_ac) AS avg_n_good_ac,"
+        "avg(astrometric_n_good_obs_al + astrometric_n_good_obs_ac) AS avg_n_good,"
+        "avg(astrometric_excess_noise) as avg_excess_noise"
+        "FROM gaiadr1.tgas_source"
+        "GROUP BY healpix_6"
+
+
+        columns = 'source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val, random_index'
+        squeal = (
+            f'SELECT top {self.topn} {columns} ' +
+            'FROM external.gaiadr2_geometric_distance ' +
+            'JOIN gaiadr2.gaia_source USING (source_id) ' +
+            'WHERE r_est < 1000 AND teff_val > 7000 ' +
+            'AND MOD(random_index, 757) = 0')
+
 
         #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
         #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
+
+        return squeal
+
+    async def get_sample(self, squeal, filename=None):
 
         if len(squeal) > 1000:
             print(f'squeal: {squeal[:360]} .. {squeal[-180:]}')
@@ -145,7 +175,10 @@ class Milky(Ball):
             print(squeal)
         
         from astroquery.gaia import Gaia
-        job = Gaia.launch_job_async(squeal)
+        job = Gaia.launch_job_async(
+            squeal,
+            output_file=str(filename),
+            dump_to_file=filename)
 
         return job.get_results()
 
@@ -153,6 +186,7 @@ class Milky(Ball):
     async def run(self):
 
         if not self.bunches:
+            print(self.sampler.where())
             return
         
         level = self.level
@@ -175,7 +209,7 @@ class Milky(Ball):
         radvel = np.zeros(npix, dtype=np.float)
 
         key = 'radial_velocity'
-        key = 'parallax'
+        key = 'r_est'
         badval = 1e20
         count = 0
         for row, index in zip([item for item in table], indices):
@@ -207,7 +241,7 @@ class Milky(Ball):
         #radvel = np.where(mask, radvel, np.zeros(npix))
 
         hp.mollview(radvel, coord=coord, nest=True, cmap='rainbow')
-        hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
+        #hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
 
         # Sag A*
         sagra = coordinates.Angle('17h45m20.0409s')

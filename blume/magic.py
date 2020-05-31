@@ -304,7 +304,7 @@ class RoundAbout:
 
     def add_queue(self, name=None):
 
-        qq = curio.UniversalQueue()
+        qq = curio.UniversalQueue(maxsize=10)
         self.qs[name] = qq
 
         return qq
@@ -343,6 +343,9 @@ class Shepherd(Ball):
         self.add_filter('R', self.toggle_run)
 
         self.add_filter('S', self.status)
+
+        # make a little sleepy
+        self.sleep *= 10
 
 
     async def status(self):
