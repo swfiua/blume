@@ -39,7 +39,7 @@ Recognising that the galactic centre is a bit of a puzzle itself.
 """
 import argparse
 
-from astropy.table import Table
+from astropy.table import Table, vstack
 from astropy import coordinates
 from astropy import units as u
 from .magic import Ball
@@ -51,6 +51,7 @@ import healpy as hp
 import numpy as np
 from matplotlib import pyplot as plt
 import math
+import random
 from pathlib import Path
 
 from . import magic
@@ -58,28 +59,33 @@ from . import magic
 from . import farm as fm
 
 TABLE = 'gaiadr2.gaia_source'
+TABLE_SIZE=1692919134
 
 COLUMNS = ('source_id', 'random_index', 'ra', 'dec', 'parallax', 'radial_velocity')
 
 FILENAME = 'radial_velocity2.fits'
 
-def get_sample(bunch=20, topn=10000):
 
-    columns = (', ').join(COLUMNS)
-    columns = ('*')
-    table = TABLE
-    sample = tuple(range(1, topn))
-    squeal = f'select {columns} from {table} where random_index in {sample}'
+def get_sample(squeal, filename=None):
 
-    #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
-    #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
+    if len(squeal) > 1000:
+        print(f'squeal: {squeal[:360]} .. {squeal[-180:]}')
+    else:
+        print(squeal)
 
+
+    from astroquery.gaia import Gaia
+    job = Gaia.launch_job_async(
+        squeal,
+        output_file=str(filename),
+        dump_to_file=filename)
+
+    print('*' * 49)
+    print(job)
+    job.wait_for_job_end()
+    print(job)
     
-    job = Gaia.launch_job_async(squeal)
-
     return job.get_results()
-
-
 
 
 class Milky(Ball):
@@ -108,7 +114,7 @@ class Milky(Ball):
         # load any bunches there are
         # for now, keep them separate
         path = Path()
-        for bunch in path.glob('*.fits'):
+        for bunch in path.glob('bunch*.fits'):
             if bunch.exists():
                 table = Table.read(bunch)
                 self.bunches.append(table)
@@ -126,11 +132,9 @@ class Milky(Ball):
             # take sample
             bid = len(self.bunches)
             path = Path(f'bunch_{bid}.fits')
-            bunch = await self.get_sample(squeal, path)
-            bunch = await self.get_sample(squeal)
+            bunch = await curio.run_in_process(get_sample, squeal, str(path))
 
             self.bunches.append(bunch)
-
             
     def get_squeal(self):
 
@@ -154,12 +158,16 @@ class Milky(Ball):
 
 
         columns = 'source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val, random_index'
+
+        sample = tuple(random.randint(0, TABLE_SIZE) for x in range(self.topn))
         squeal = (
             f'SELECT top {self.topn} {columns} ' +
             'FROM external.gaiadr2_geometric_distance ' +
             'JOIN gaiadr2.gaia_source USING (source_id) ' +
-            'WHERE r_est < 1000 AND teff_val > 7000 ' +
-            'AND MOD(random_index, 757) = 0')
+            #'WHERE r_est < 1000 AND teff_val > 7000 ')
+            #f'AND MOD(random_index, {modulus}) = 0')
+            #f'WHERE MOD(random_index, {modulus}) = 0')
+            f'WHERE random_index in {sample}')
 
 
         #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
@@ -167,20 +175,7 @@ class Milky(Ball):
 
         return squeal
 
-    async def get_sample(self, squeal, filename=None):
 
-        if len(squeal) > 1000:
-            print(f'squeal: {squeal[:360]} .. {squeal[-180:]}')
-        else:
-            print(squeal)
-        
-        from astroquery.gaia import Gaia
-        job = Gaia.launch_job_async(
-            squeal,
-            output_file=str(filename),
-            dump_to_file=filename)
-
-        return job.get_results()
 
 
     async def run(self):
@@ -191,7 +186,8 @@ class Milky(Ball):
         
         level = self.level
 
-        table = self.bunches[0]
+        # join up the bunches
+        table = vstack(self.bunches)
         
         nside = 2 ** level
 

@@ -389,7 +389,7 @@ class Shepherd(Ball):
         """
         print('whsitle', key, name)
         
-        for sheep in self.path:
+        for sheep in reversed(self.path):
             lu = sheep.radii.filters[name]
             #print('whistle', sheep, lu)
             if key in lu.keys():
@@ -413,7 +413,7 @@ class Shepherd(Ball):
         # FIXME? 
         msg = ''
         keys = set()
-        for sheep in self.path:
+        for sheep in reversed(self.path):
             msg += repr(sheep) + '\n'
             lu = sheep.radii.filters[name]
         
