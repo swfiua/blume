@@ -98,12 +98,14 @@ class Milky(Ball):
         self.nbunch = bunch
         self.topn = topn
         self.level = 6
+        self.plots = True
 
         self.coord = ('C', 'G')
         
         self.add_filter('z', self.zoom)
         self.add_filter('x', self.xzoom)
         self.add_filter('c', self.rotate_view)
+        self.add_filter('P', self.toggle_plots)
 
     async def start(self):
         """ start async task to read/download data """
@@ -157,7 +159,7 @@ class Milky(Ball):
         "GROUP BY healpix_6"
 
 
-        columns = 'source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val, random_index'
+        columns = 'source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val, radial_velocity, random_index'
 
         sample = tuple(random.randint(0, TABLE_SIZE) for x in range(self.topn))
         squeal = (
@@ -174,7 +176,6 @@ class Milky(Ball):
         #squeal = f'select top 1000 {coumns} from {table} where mod(random_index, 1000000) = 0'
 
         return squeal
-
 
 
 
@@ -236,7 +237,7 @@ class Milky(Ball):
 
         #radvel = np.where(mask, radvel, np.zeros(npix))
 
-        hp.mollview(radvel, coord=coord, nest=True, cmap='rainbow')
+        hp.mollview(radvel, coord=coord, nest=True, cmap='rainbow', max=5000)
         #hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
 
         # Sag A*
@@ -255,9 +256,18 @@ class Milky(Ball):
         
         await self.put(magic.fig2data(plt))
 
+        plt.close()
+
+        if self.plots:
+            plt.scatter(table['ra'], table['r_est'])
+            await self.put(magic.fig2data(plt))
+        
+            plt.scatter(table['dec'], table['r_est'])
+            await self.put(magic.fig2data(plt))
+
 
     async def rotate_view(self):
-
+        """ Galactic or Equator? """
         if self.coord == ('C', 'G'):
             self.coord = 'C'
 
@@ -268,14 +278,21 @@ class Milky(Ball):
             
 
     async def zoom(self):
+        """ zoom out the healpix """
 
         if self.level < 12:
             self.level += 1
 
     async def xzoom(self):
+        """ Zoom in the healpix """
 
         if self.level > 0:
             self.level -= 1
+
+    async def toggle_plots(self):
+        """ Toggle showing of scatter plots """
+        self.plots = not self.plots
+        
 
 async def run(args):
 
