@@ -30,7 +30,7 @@ class Hat(Ball):
 
         self.width = 480
         self.height = 640
-        self.sleep = 0.05
+        self.sleep = 0.01
         self.ball = Image.new('RGB', (10, 10))
         
         self.frame.pack(side=TOP, expand=1, fill=BOTH)

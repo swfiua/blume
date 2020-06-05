@@ -148,6 +148,7 @@ class GeeFarm(Ball):
     def __init__(self, hub=None, nodes=None, edges=None):
         """ Turn graph into a running farm """
         super().__init__()
+        self.pause = True
         self.hub = hub or nx.DiGraph()
 
         self.hub.add_nodes_from(nodes or set())
@@ -193,6 +194,7 @@ class GeeFarm(Ball):
         # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
         print('start superdog', self.superdog)
+        await self.shep.toggle_pause()
 
 
     async def run(self):
@@ -304,7 +306,7 @@ class RoundAbout:
 
     def add_queue(self, name=None):
 
-        qq = curio.UniversalQueue(maxsize=10)
+        qq = curio.UniversalQueue(maxsize=2)
         self.qs[name] = qq
 
         return qq

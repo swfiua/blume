@@ -98,7 +98,8 @@ class Milky(Ball):
         self.nbunch = bunch
         self.topn = topn
         self.level = 6
-        self.plots = True
+        self.plots = False
+        self.sagastar = False
 
         self.coord = ('C', 'G')
         
@@ -120,6 +121,11 @@ class Milky(Ball):
             if bunch.exists():
                 table = Table.read(bunch)
                 self.bunches.append(table)
+
+            if len(self.bunches) == self.nbunch:
+                break
+
+            await curio.sleep(0)
 
         # launch a task to get more bunches, if needed
         self.sampler = await curio.spawn(self.get_samples())
@@ -178,7 +184,6 @@ class Milky(Ball):
         return squeal
 
 
-
     async def run(self):
 
         if not self.bunches:
@@ -188,82 +193,133 @@ class Milky(Ball):
         level = self.level
 
         # join up the bunches
-        table = vstack(self.bunches)
+        #table = vstack(self.bunches)
         
         nside = 2 ** level
 
-        indices = hp.ang2pix(
-            nside,
-            [x['ra'] for x in table],
-            [x['dec'] for x in table],
-            lonlat=True)
-    
-        npix = hp.nside2npix(nside)
-        print('npix, nside, level', npix, nside, level)
-
-
-        hpxmap = np.zeros(npix, dtype=np.float)
-        radvel = np.zeros(npix, dtype=np.float)
-
-        key = 'radial_velocity'
-        key = 'r_est'
-        badval = 1e20
-        count = 0
-        for row, index in zip([item for item in table], indices):
-
-            ix = row['source_id'] >> 35
-            ix //= 4**(12 - level)
-            #ix = row['source_id'] >> 35
-
-            rv = row[key]
-
-            hpxmap[ix] += 1
-
-            if rv != badval:
-                radvel[ix] = rv
-                count += 1
-
-        print('number of observations:', count)
-                
         #print(hpxmap)
-        coord = self.coord
-        #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
-        #ma = hp.ma(radvel, badval)
-        #from collections import Counter
-        #ma.mask = np.logical_not(ma.mask)
-
-        #mask = radvel != 1e20
-        #print(Counter(mask).most_common(4))
-
-        #radvel = np.where(mask, radvel, np.zeros(npix))
-
-        hp.mollview(radvel, coord=coord, nest=True, cmap='rainbow', max=5000)
-        #hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
-
         # Sag A*
         sagra = coordinates.Angle('17h45m20.0409s')
         sagdec = coordinates.Angle('-29d0m28.118s')
         print(f'sag A* {sagra.deg} {sagdec}')
 
-        hp.projplot(sagra.deg, sagdec.deg,
-                    'ro',
-                    lonlat=True,
-                    coord=coord)
+        npix = hp.nside2npix(nside)
+        hpxmap = np.zeros(npix, dtype=np.float)
+        radvel = np.zeros(npix, dtype=np.float)
+        #radvel += 2000
 
-        hp.graticule()
-
-        plt.scatter([0.0], [0.0])
+        ra = np.zeros(0)
+        dec = np.zeros(0)
+        dist = np.zeros(0)
+        cdata = np.zeros(0)
         
-        await self.put(magic.fig2data(plt))
+        key = 'r_est'
+        key = 'radial_velocity'
 
-        plt.close()
+        for bix, table in enumerate(self.bunches):
 
-        if self.plots:
-            plt.scatter(table['ra'], table['r_est'])
-            await self.put(magic.fig2data(plt))
+            if self.level != level:
+                print('LEVEL CHANGE', level, self.level)
+                level = self.level
+                nside = 2 ** level
+
+                npix = hp.nside2npix(nside)
+                hpxmap = np.zeros(npix, dtype=np.float)
+                radvel = np.zeros(npix, dtype=np.float)
+
+            # Rotate the view
+            rot = hp.rotator.Rotator(coord=self.coord, deg=False)
+
+            rra, ddec = rot(
+                [x['ra'] for x in table],
+                [x['dec'] for x in table])
+
+            ra = np.concatenate((ra, rra))
+            dec = np.concatenate((dec, ddec))
+            dist = np.concatenate((dist, [x['r_est'] for x in table]))
+            
+            badval = 1e20
+            count = 0
+
+            # set up healpix array view
+            for row in table:
+
+                ix = row['source_id'] >> 35
+                ix //= 4**(12 - level)
+                #ix = row['source_id'] >> 35
+
+                rv = row[key]
+
+                hpxmap[ix] += 1
+
+                if rv != badval:
+                    radvel[ix] = rv
+                    count += 1
+
+            print(f'observations: {count} bunch: {bix} mean: {radvel.mean()}')
+
+            dkey = table[key]
+            print(dkey.mean())
+            
+            dkey.fill_value = dkey.mean()
+            dkey.fill_value = dkey.min()
+            print(dkey.mean())
+            cdata = np.concatenate((
+                cdata,
+                dkey.filled()))
+                
+            #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
+            #ma = hp.ma(radvel, badval)
+            #from collections import Counter
+            #ma.mask = np.logical_not(ma.mask)
+
+            #mask = radvel != 1e20
+            #print(Counter(mask).most_common(4))
+
+            #radvel = np.where(mask, radvel, np.zeros(npix))
+
+            hp.mollview(radvel,
+                        coord=self.coord,
+                        nest=True,
+                        cmap='rainbow',
+                        max=6000)
+            #hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
+
+
+            if self.sagastar:
+                # show a point at the origin
+                plt.scatter([0.0], [0.0])
+
+                hp.projplot(sagra.deg, sagdec.deg,
+                            'ro',
+                            lonlat=True,
+                            coord=coord)
         
-            plt.scatter(table['dec'], table['r_est'])
+            #hp.graticule()
             await self.put(magic.fig2data(plt))
+            #await curio.sleep(self.sleep)
+
+
+            if self.plots:
+                plt.close()
+
+                plt.scatter(table['ra'], table['r_est'])
+                await self.put(magic.fig2data(plt))
+        
+                plt.scatter(table['dec'], table['r_est'])
+                await self.put(magic.fig2data(plt))
+
+            plt.close()
+            fig = plt.figure()
+            fig.add_subplot(111, projection='polar')
+
+            dist = dist.clip(max=5000)
+            plt.scatter(dec,
+                        dist,
+                        s=0.01,
+                        c=cdata)
+            await self.put(magic.fig2data(plt))
+            
 
 
     async def rotate_view(self):
