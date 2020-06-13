@@ -90,7 +90,7 @@ def get_sample(squeal, filename=None):
 
 class Milky(Ball):
 
-    def __init__(self, bunch=1, topn=1):
+    def __init__(self, bunch=1, topn=1): 
 
         super().__init__()
 
@@ -101,12 +101,22 @@ class Milky(Ball):
         self.plots = False
         self.sagastar = False
 
+        self.key = 'r_est'
+
         self.coord = ('C', 'G')
         
         self.add_filter('z', self.zoom)
         self.add_filter('x', self.xzoom)
         self.add_filter('c', self.rotate_view)
+        self.add_filter('k', self.nextkey)
         self.add_filter('P', self.toggle_plots)
+
+    async def nextkey(self):
+
+        if self.key == 'r_est':
+            self.key = 'radial_velocity'
+        else:
+            self.key == 'r_est'
 
     async def start(self):
         """ start async task to read/download data """
@@ -167,15 +177,21 @@ class Milky(Ball):
 
         columns = 'source_id, ra, dec, phot_g_mean_mag, r_est, r_lo, r_hi, teff_val, radial_velocity, random_index'
 
-        sample = tuple(random.randint(0, TABLE_SIZE) for x in range(self.topn))
+        #inflate = 1
+        #sample = tuple(random.randint(0, TABLE_SIZE)
+        #               for x in range(self.topn * inflate))
+        modulus = 997
+        
         squeal = (
             f'SELECT top {self.topn} {columns} ' +
+            #f'SELECT {columns} ' +
             'FROM external.gaiadr2_geometric_distance ' +
             'JOIN gaiadr2.gaia_source USING (source_id) ' +
             #'WHERE r_est < 1000 AND teff_val > 7000 ')
-            #f'AND MOD(random_index, {modulus}) = 0')
             #f'WHERE MOD(random_index, {modulus}) = 0')
-            f'WHERE random_index in {sample}')
+            #f'WHERE random_index in {sample} ' +
+            f'WHERE radial_velocity is not null ' +
+            f'AND MOD(random_index, {modulus}) = {len(self.bunches)}')
 
 
         #squeal = f'select top 100000 {columns} from {table} where radial_velocity IS NOT NULL'
@@ -213,8 +229,7 @@ class Milky(Ball):
         dist = np.zeros(0)
         cdata = np.zeros(0)
         
-        key = 'r_est'
-        key = 'radial_velocity'
+        key = self.key
 
         for bix, table in enumerate(self.bunches):
 
@@ -262,8 +277,10 @@ class Milky(Ball):
             print(dkey.mean())
             
             dkey.fill_value = dkey.mean()
-            dkey.fill_value = dkey.min()
-            print(dkey.mean())
+
+            
+            dkey.fill_value = -400
+            print(dkey.min())
             cdata = np.concatenate((
                 cdata,
                 dkey.filled()))
@@ -278,13 +295,15 @@ class Milky(Ball):
 
             #radvel = np.where(mask, radvel, np.zeros(npix))
 
+            coord = self.coord
             hp.mollview(radvel,
-                        coord=self.coord,
+                        coord=coord,
                         nest=True,
                         cmap='rainbow',
-                        max=6000)
-            #hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
+                        max=200,
+                        min=0)
 
+            
 
             if self.sagastar:
                 # show a point at the origin
@@ -297,7 +316,10 @@ class Milky(Ball):
         
             #hp.graticule()
             await self.put(magic.fig2data(plt))
-            #await curio.sleep(self.sleep)
+
+            hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
+
+            await self.put(magic.fig2data(plt))
 
 
             if self.plots:
@@ -311,13 +333,19 @@ class Milky(Ball):
 
             plt.close()
             fig = plt.figure()
-            fig.add_subplot(111, projection='polar')
+            fig.add_subplot(111, projection='polar',
+                            facecolor='grey')
 
-            dist = dist.clip(max=5000)
+            dist = dist.clip(max=6000)
+
+
+            vmin, vmax = np.percentile(cdata, [25, 75])
             plt.scatter(dec,
                         dist,
-                        s=0.01,
-                        c=cdata)
+                        s=0.1,
+                        c=cdata.clip(vmin, vmax),
+                        cmap='rainbow')
+            plt.colorbar()
             await self.put(magic.fig2data(plt))
             
 

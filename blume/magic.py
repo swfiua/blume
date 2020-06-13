@@ -226,6 +226,7 @@ def fig2data(fig):
     """
     facecolor = 'white'
     facecolor = 'black'
+    facecolor = 'grey'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
         #print('facecolor', facecolor)
@@ -416,7 +417,7 @@ class Shepherd(Ball):
         msg = ''
         keys = set()
         for sheep in reversed(self.path):
-            msg += repr(sheep) + '\n'
+            #msg += repr(sheep) + '\n'
             lu = sheep.radii.filters[name]
         
             for key, value in lu.items():
