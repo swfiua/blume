@@ -295,13 +295,14 @@ class Milky(Ball):
 
             #radvel = np.where(mask, radvel, np.zeros(npix))
 
+            vmin, vmax = np.percentile(radvel, [25, 75])
             coord = self.coord
             hp.mollview(radvel,
                         coord=coord,
                         nest=True,
                         cmap='rainbow',
-                        max=200,
-                        min=0)
+                        max=vmax,
+                        min=vmin)
 
             
 
@@ -347,7 +348,7 @@ class Milky(Ball):
                         cmap='rainbow')
             plt.colorbar()
             await self.put(magic.fig2data(plt))
-            
+            await curio.sleep(self.sleep)
 
 
     async def rotate_view(self):
