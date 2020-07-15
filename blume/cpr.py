@@ -313,8 +313,11 @@ class Spiral(magic.Ball):
 
         # ok this deserves an explanation!
         energy = (-CC**2/(2*r**2) + (Mcent - 2*A*CC)/r -
+                    # adjustment for a uniform disk radius rmax, mass Mdisc
                     Mdisc*r/rmax**2 +
+                    # adjustment for a spherical mass
                     Mball*r**2/(2*rmax**3) +
+                    # 
                     A**2*K/(K + r) +
                     A**2*Log(K + r) +
                     2 * A*K * (CC + 2*A*r) * Log(1 + r/K)/(r**2)

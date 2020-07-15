@@ -100,6 +100,7 @@ class Milky(Ball):
         self.level = 6
         self.plots = False
         self.sagastar = False
+        self.clip = (25, 75)
 
         self.key = 'r_est'
 
@@ -109,7 +110,28 @@ class Milky(Ball):
         self.add_filter('x', self.xzoom)
         self.add_filter('c', self.rotate_view)
         self.add_filter('k', self.nextkey)
+        self.add_filter('I', self.clip_less)
+        self.add_filter('i', self.clip_more)
         self.add_filter('P', self.toggle_plots)
+
+    async def clip_less(self):
+
+        zmin, zmax = self.clip
+
+        zmin = zmin / 2
+        zmax = zmax + ((100-zmax)/2)
+
+        self.clip = zmin, zmax
+
+    async def clip_more(self):
+        
+        zmin, zmax = self.clip
+
+        zmin = zmin + (zmin / 2)
+        zmax = zmax - ((100-zmax)/2)
+
+        self.clip = zmin, zmax
+
 
     async def nextkey(self):
 
@@ -295,7 +317,7 @@ class Milky(Ball):
 
             #radvel = np.where(mask, radvel, np.zeros(npix))
 
-            vmin, vmax = np.percentile(radvel, [25, 75])
+            vmin, vmax = np.percentile(radvel, self.clip)
             coord = self.coord
             hp.mollview(radvel,
                         coord=coord,
@@ -340,7 +362,7 @@ class Milky(Ball):
             dist = dist.clip(max=6000)
 
 
-            vmin, vmax = np.percentile(cdata, [25, 75])
+            vmin, vmax = np.percentile(cdata, self.clip)
             plt.scatter(dec,
                         dist,
                         s=0.1,
