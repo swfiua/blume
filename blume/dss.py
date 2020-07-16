@@ -1,15 +1,25 @@
 """ de Sitter Space
+
+Are gamma-ray bursts optical illusions?
+
+Robert S Mackay, Colin Rourke.
 """
 
+# we are going to need this
+import math
 
-class Dss():
+from blume import magic
+from blume import magic
+from blume import farm as fm
+
+class Dss(magic.ball):
 
     def __init__(self):
         """ initialise """
         self.alpha = 1
         self.beta = 1
         self.gamma = 1
-        self.delta = 1
+        self.delta = -1
 
     def set_abcd(self):
 
@@ -30,7 +40,18 @@ class Dss():
         assert((a * b - c * d) <= (a*a - c*c - 1) * (b*b - d*d -1))
 
         assert((a*d - b*c) <= (a*a - c*c - b*b + d*d -1))
-            
+
+    def blue_shift_time(self, alpha, delta):
+        """ """
+        sqrt = math.sqrt
+
+        a = sqrt(alpha)
+        d = sqrt(delta)
+
+        etb = sqrt((1+a+d)/d)) + sqrt((1+a-d)/d)
+        
+        return math.log(math.sqrt(etb))
+        
 
 
 if __name__ == '__main__':
