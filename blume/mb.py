@@ -1,4 +1,5 @@
 
+import math
 import random
 import numpy as np
 from PIL import Image
@@ -7,7 +8,7 @@ from matplotlib import pyplot as plt
 from blume import magic
 from blume import farm as fm
 
-def mand(c, n=30):
+def mand(c, n=500):
 
     z = 0
 
@@ -19,44 +20,7 @@ def mand(c, n=30):
     return i
     
     
-def foo(c=0, zoom=1):
-    x = random.random() / zoom
-    y = 1j * random.random() / zoom
-
-    z = mand(c+x+y)
-    return x * zoom, y * zoom, z
-
-def foobar(x, y, c, zoom=1):
-
-    z = mand(c+x+(y * 1j))
-    return z
-
-SIZE = 500
-
-c = random.random() + 1j 
-xwidth = 2.25
-c = (random.random() * xwidth) - 2.0
-c += 1j * ((random.random() * 2) -1)
-c = 1. + 0.5j
-c = -0.909 -0.275j
-c = -0.563020876489049 + -0.4636170351705708j
-
-print(c)
-zoom = SIZE
-# while True:
-#     ii = np.zeros((SIZE, SIZE))
-# 
-#     for xx in range(SIZE):
-#         for yy in range(SIZE):
-#             xxx = xx - SIZE/2
-#             yyy = yy - SIZE/2
-#             ii[xx][yy] = foobar(xxx/zoom, yyy/zoom, c)
-#     zoom *= 2
-# 
-# 
-#     plt.imshow(ii.T, cmap='rainbow')
-#     plt.show()
-# 
+SIZE = 200
 
 class Mandy(magic.Ball):
 
@@ -64,21 +28,44 @@ class Mandy(magic.Ball):
 
         super().__init__()
 
-        self.zoom = SIZE
+        self.zoom = 1
+        #qself.zoom = 6.3202439021e+12
+        #self.zoom = 1.
         self.c = -0.563020876489049-0.4636170351705708j
-        self.n = 10
+        self.c = -0.6455095986649674-0.3594044503742747j
 
+        self.c = math.sin(random.random()*math.pi*2)
+        self.c += math.sin(random.random()*math.pi*2) * 1j
+        self.n = 30
 
-    async def capture():
-
-        ii = np.zeros((2*SIZE, 2*SIZE))
-
-        grid = np.linspace(-1/zoom, 1/zoom, 2*SIZE)
+    def xfory(self, y):
         
-        for ix, xx in enumerate(grid):
-            for iy,yy in enumerate(grid):
-                value = mand(xx + yy * 1j, self.n)
 
+        x2 = ((.75 * .75) - y*y)**0.5
+        return -x2
+            
+            
+
+    async def capture(self):
+
+        ii = np.zeros((SIZE, SIZE))
+
+        zoom = self.zoom
+
+        yy = 0.2
+        self.c = self.xfory(yy) + yy * 1j
+
+        #grid1 = np.linspace(c-1/zoom, c, SIZE)
+        #grid2 = np.linspace(c, c+1/zoom, SIZE)
+
+        #grid = np.concatenate((grid1, grid2[1:]))
+
+        gridx = np.linspace(-1, 1, SIZE) / zoom
+        gridy = np.linspace(-1, 1, SIZE) / zoom
+        #print(grid)
+        for ix, xx in enumerate(gridx):
+            for iy, yy in enumerate(gridy):
+                value = mand(self.c + xx + yy * 1j, self.n)
                 ii[ix][iy] = value
         return ii
 
@@ -87,12 +74,35 @@ class Mandy(magic.Ball):
         img = await self.capture()
 
         plt.imshow(img.T, cmap='rainbow')
+
+        
         await self.put(magic.fig2data(plt))
 
+        #self.zoomer(img)
+        self.zoom *= 2
+
+    def zoomer(self, img):
+
+        val = img[0][0]
+        print(img.shape)
+
+        mmax = 0
+        for ix, row1 in enumerate(img[:-1]):
+            for row2 in img[1:]:
+                delta = abs(row1 - row2)
+                dmax = delta.max()
+                if dmax > mmax:
+                    hitcol = np.argwhere(dmax == delta).min()
+                    hitrow = ix
+        print('HHH', hitcol, hitrow)
+
+        
+
+        
+        
 
 async def run():
 
-    from .gaia import Milky
     mandy = Mandy()
     #milky = Milky()
     farm = fm.Farm()
