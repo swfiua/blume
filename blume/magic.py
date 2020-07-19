@@ -101,12 +101,18 @@ class Ball:
         self.radii.add_filter('s', self.sleepy)
         self.radii.add_filter('w', self.wakey)
         self.radii.add_filter(' ', self.toggle_pause)
+        self.radii.add_filter('i', self.interact)
 
 
     def __getattr__(self, attr):
         """ Delegate to roundabout
         """
         return getattr(self.radii, attr)
+
+    async def interact(self):
+
+        from pprint import pprint
+        pprint(vars(self))
         
 
     async def sleepy(self):

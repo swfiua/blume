@@ -25,6 +25,7 @@ class Binary(magic.Ball):
         super().__init__()
 
         self.sample()
+        self.skip = 0.5
 
     def sample(self):
 
@@ -45,11 +46,13 @@ class Binary(magic.Ball):
 
         wf = self.generate_wave()
 
-        nn = len(wf[0])
         ts = waveform.fd_to_td(wf[0])
-        
-        #plt.plot(ts[int(nn/10):])
-        plt.plot(ts)
+        nn = len(ts)
+
+        skip = int(self.skip * nn)
+        print(f'skip {skip}')
+        plt.plot(ts[skip:])
+        #plt.plot(ts)
 
         plt.title(f"{self.m1} {self.m2}")
 
