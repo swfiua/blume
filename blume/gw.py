@@ -26,6 +26,7 @@ class Binary(magic.Ball):
 
         self.sample()
         self.skip = 0.5
+        self.random = True
 
     def sample(self):
 
@@ -58,7 +59,8 @@ class Binary(magic.Ball):
 
         await self.put(magic.fig2data(plt))
 
-        self.sample()
+        if self.random:
+            self.sample()
 
 
 
@@ -68,6 +70,13 @@ async def run(args):
 
     farm = fm.Farm()
     farm.add(bino)
+
+    #bino.m1 = args.m1
+    #bino.m2 = args.m2
+    #bino.random = args.random
+
+    #  ????
+    bino.__dict__.update(vars(args))
 
     # farm strageness, whilst I figure out how it should work
     # add to path to get key events at start 
@@ -82,8 +91,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-m1', type=int, default=1)
-    parser.add_argument('-m2', type=int, default=10)
+    parser.add_argument('-m1', type=int, default=23)
+    parser.add_argument('-m2', type=int, default=2.6)
+    parser.add_argument('-random', action='store_true')
 
 
     curio.run(run(parser.parse_args()))
