@@ -12,6 +12,8 @@ from pathlib import Path
 
 from collections import deque, defaultdict
 
+import datetime
+
 import curio
 
 import numpy as np
@@ -85,7 +87,15 @@ class Carpet(Ball):
         self.add_filter('m', self.more)
         self.add_filter('l', self.less)
         self.add_filter('X', self.toggle_pause)
+        self.add_filter('S', self.save)
 
+    async def save(self):
+        """ Save current image
+
+        This one saves the current data, not the PIL file
+        so can be used to make transforms along the way.
+        """
+        self.image.save(f'carpet{datetime.datetime.now()}.png')
         
     async def more(self):
         """ Show more pictures """

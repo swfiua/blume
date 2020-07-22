@@ -35,6 +35,23 @@ class Binary(magic.Ball):
 
 
     def generate_wave(self):
+        """Generate the wave for the current object
+
+        There is much more of pycbc to explore.
+
+        For starters, there is the ring-down phase too.
+
+        For now, this is just the start of the signal, as the frequency
+        rises to a peak.
+
+        As the frequency rises to a peak.
+
+        At this point, it is probably worth a look at the actual detection data.
+
+        But for now, it is good to have something that shows the range
+        of waves we might expect to see.
+        
+        """
 
         wf = waveform.get_fd_waveform(
             mass1=self.m1,
@@ -51,11 +68,10 @@ class Binary(magic.Ball):
         nn = len(ts)
 
         skip = int(self.skip * nn)
-        print(f'skip {skip}')
         plt.plot(ts[skip:])
         #plt.plot(ts)
 
-        plt.title(f"{self.m1} {self.m2}")
+        plt.title(f"{self.m1} {self.m2:.1f}")
 
         await self.put(magic.fig2data(plt))
 
