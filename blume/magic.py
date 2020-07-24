@@ -231,8 +231,8 @@ def fig2data(fig):
     FIXME -- turning matplotlib figures into PIL or numpy
     """
     facecolor = 'white'
-    facecolor = 'black'
     facecolor = 'grey'
+    facecolor = 'black'
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
         #print('facecolor', facecolor)
@@ -351,7 +351,7 @@ class Shepherd(Ball):
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
 
-        self.add_filter('S', self.status)
+        self.add_filter('T', self.status)
 
         # make a little sleepy
         self.sleep *= 10

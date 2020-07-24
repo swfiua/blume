@@ -9,6 +9,8 @@ from matplotlib import pyplot as plt
 import requests
 import json
 
+import numpy as np
+
 
 URL = "https://opendata.arcgis.com/datasets/de83f9e01278463e916f14121d5980d1_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
 
@@ -59,8 +61,13 @@ if __name__ == '__main__':
     pprint(results[-1])
 
     for key in keys:
-        plt.plot([x[key] for x in results], label=key)
+        data = [x[key] for x in results]
+        plt.plot(data, label=key)
 
+        if args.cumulative:
+            data = np.array(data[1:]) - np.array(data[:-1]) 
+            plt.plot(data, label='delta' + key)
+            
         plt.legend(loc=0)
         plt.grid(True)
     plt.show()
