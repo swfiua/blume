@@ -26,7 +26,7 @@ class Mandy(magic.Ball):
         super().__init__()
 
         self.zoom = 1
-        self.size = 250
+        self.size = 300
         #qself.zoom = 6.3202439021e+12
         #self.zoom = 1.
         self.c = -0.6455095986649674-0.3594044503742747j
@@ -97,8 +97,10 @@ class Mandy(magic.Ball):
 
         img = await self.capture()
 
-
-        plt.imshow(img.T, cmap='rainbow')
+        cmaps = plt.colormaps()
+        cmap = cmaps[random.randint(0, len(cmaps)-1)]
+        print(cmap)
+        plt.imshow(img.T, cmap=cmap)
         
         await self.put(magic.fig2data(plt))
 
