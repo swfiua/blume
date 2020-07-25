@@ -264,6 +264,7 @@ class RoundAbout:
     """
     def __init__(self):
 
+        self.qsize = 10
         self.qs = {}
         self.infos = defaultdict(set)
         self.add_queue()
@@ -313,7 +314,7 @@ class RoundAbout:
 
     def add_queue(self, name=None):
 
-        qq = curio.UniversalQueue(maxsize=2)
+        qq = curio.UniversalQueue(maxsize=self.qsize)
         self.qs[name] = qq
 
         return qq
@@ -666,8 +667,8 @@ async def relay(a, b):
 
     while True:
         value = await a.get('stdout')
-        #print('got', value, 'from', a)
-        #print('relay', value, 'to', b)
+        print('relay', type(value), 'from', type(a), 'to', type(b))
+        
         await b.put(value, 'stdin')
 
         

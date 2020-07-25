@@ -71,7 +71,12 @@ class Farm(GeeFarm):
         
 
 class Carpet(Ball):
+    """ FIXME This should of course be in the magic module.
+        I Can't remember why it needed to be here - probably worth
+        moving it back there, but that requires making it magic!
 
+        Current status: history just added, wormholes opened.
+    """
     def __init__(self):
 
         super().__init__()
@@ -82,11 +87,12 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
 
+        self.history = deque(maxlen=10)
+
         self.image = None
 
         self.add_filter('m', self.more)
         self.add_filter('l', self.less)
-        self.add_filter('X', self.toggle_pause)
         self.add_filter('S', self.save)
 
     async def save(self):
@@ -135,12 +141,19 @@ class Carpet(Ball):
         if ball is None:
             print('carpet got no ball')
             return
-        
+
         sz = self.size
 
         if self.image is None:
+            while len(self.history):
+                print('history replay', len(self.history))
+                await self.put(self.history.popleft(), 'stdin')
+
             width, height = ball.width, ball.height
             self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
+            await self.put(ball, 'stdin')
+            return
+
 
         width = int(self.image.width / sz)
         height = int(self.image.height / sz)
@@ -161,8 +174,8 @@ class Carpet(Ball):
         # put out in queue for displays
         await self.put(self.image)
 
-        #print('displayed ball', ball.width, ball.height)
-
+        self.history.append(ball)
+        
 
     def _update_pos(self):
 
