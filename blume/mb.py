@@ -1,6 +1,7 @@
 
 import math
 import random
+import argparse
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
@@ -97,9 +98,13 @@ class Mandy(magic.Ball):
 
         img = await self.capture()
 
-        cmaps = plt.colormaps()
-        cmap = cmaps[random.randint(0, len(cmaps)-1)]
-        print(cmap)
+        cmap = self.cmap
+        if cmap == 'random':
+            cmaps = plt.colormaps()
+            cmap = cmaps[random.randint(0, len(cmaps)-1)]
+            print(cmap)
+
+
         plt.imshow(img.T, cmap=cmap)
         
         await self.put(magic.fig2data(plt))
@@ -115,22 +120,6 @@ class Mandy(magic.Ball):
 
 
         
-
-async def run():
-
-    mandy = Mandy()
-    #milky = Milky()
-    farm = fm.Farm()
-    farm.add(mandy)
-    #farm.add(milky)
-
-    # farm strageness, whilst I figure out how it should work
-    # add to path to get key events at start 
-    farm.shep.path.append(mandy)
-
-    await farm.start()
-
-    await farm.run()
 
 def seed():
 
@@ -161,9 +150,43 @@ def seed():
 
         last = real + imag
 
-    return last
+    if trial > 4:
+        return last
+    
+    return seed()
+
+    
+
+
+async def run(args):
+
+    mandy = Mandy()
+
+    if args.random:
+        mandy.cmap = 'random'
+    else:
+        mandy.cmap = args.cmap
+    #milky = Milky()
+    farm = fm.Farm()
+    farm.add(mandy)
+    #farm.add(milky)
+
+    # farm strageness, whilst I figure out how it should work
+    # add to path to get key events at start 
+    farm.shep.path.append(mandy)
+
+    await farm.start()
+
+    await farm.run()
+
+
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-random', action='store_true')
+    parser.add_argument('-cmap', default='rainbow')
+
+    args = parser.parse_args()
     import curio
-    curio.run(run())
+    curio.run(run(args))
