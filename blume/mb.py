@@ -28,22 +28,11 @@ class Mandy(magic.Ball):
 
         self.zoom = 1
         self.size = 300
-        #qself.zoom = 6.3202439021e+12
-        #self.zoom = 1.
-        self.c = -0.6455095986649674-0.3594044503742747j
-        
-        self.c = -0.5670461646108229 + 0.4654258477789597j
-        self.c = -0.563020876489049-0.4636170351705708j
-
-        self.c = -0.8970362544726358 + 0.2308369508463713j
 
         self.seed()
         
         self.add_filter('c', self.reseed)
-            
 
-        #self.c = math.sin(random.random()*math.pi*2)
-        #self.c += math.sin(random.random()*math.pi*2) * 1j
         self.n = 300
 
     async def reseed(self):
@@ -59,14 +48,6 @@ class Mandy(magic.Ball):
         self.zoom = 1
 
 
-    def xfory(self, y):
-        
-
-        x2 = ((.75 * .75) - y*y)**0.5
-        return -x2
-            
-            
-
     async def capture(self):
 
         size = self.size
@@ -75,9 +56,7 @@ class Mandy(magic.Ball):
         zoom = self.zoom
 
         yy = 0.2
-        #self.c = self.xfory(yy) + yy * 1j
 
-        #c = -0.569999 -.46361179351j
         c = self.c
         r = c.real
         i = c.imag
@@ -122,37 +101,48 @@ class Mandy(magic.Ball):
         
 
 def seed():
+    """ Try and find an interesting poing to zoom in on """
 
     n = 300
-    
-    imag = math.sin(random.random()*math.pi*2) * 1j
 
+    # pick a random point 
+    imag = math.sin(random.random()*math.pi*2) * 1j
     real = math.sin(random.random()*math.pi*2)
 
     epsilon = 1
     last = 0
+
+    mintrials = 4
     for trial in range(100):
         data = []
+
+        # create a 2*epsilon wide window, centred on the real value
         points = np.linspace(real-epsilon, real+epsilon, 100)
         for x in points:
             data.append(mand(x + imag))
-        
+
+        # find the maximum difference between adjacent points
         data = np.array(data)
         data = data[1:] - data[1]
 
         hit = data.argmax()
+
+        # centre for next trial at point of maximum delta
         real = (points[hit+1] + points[hit]) / 2
-        epsilon = (points[hit+1] - points[hit]) / 10
-        print(hit, real, epsilon, data[hit])
+
+        # shrink the window to one tenth of distance between adjacent points
+        epsilon = (points[1] - points[0]) / 10
 
         if hit == 0:
             break
 
         last = real + imag
 
-    if trial > 4:
+    if trial > mintrials:
         return last
-    
+
+    # I don't normally use recursion, but for Mandlebrot
+    # it seems an appropriate paradigm.
     return seed()
 
     
