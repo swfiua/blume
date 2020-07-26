@@ -496,18 +496,15 @@ class Shepherd(Ball):
     async def watch_roundabouts(self):
 
         print('watching roundabouts')
+
         for a, b in self.flock.edges:
             print('xxx', a, b)
             print(a.radii.qs.keys())
             print(b.radii.qs.keys())
 
-            if a not in self.whistlers:
-                bridge = await curio.spawn(relay(a, b))
-                self.relays[(a, b)] = bridge
+            bridge = await curio.spawn(relay(a, b))
+            self.relays[(a, b)] = bridge
 
-            if b not in self.whistlers:
-                bridge = await curio.spawn(relay(b, a))
-                self.relays[(b, a)] = bridge
             
         
     async def next(self):

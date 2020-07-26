@@ -87,7 +87,7 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
 
-        self.history = deque(maxlen=10)
+        self.history = deque(maxlen=50)
 
         self.image = None
 
@@ -145,14 +145,20 @@ class Carpet(Ball):
         sz = self.size
 
         if self.image is None:
+            qq = self.select('stdin')
+
+            ix = 0
             while len(self.history):
-                print('history replay', len(self.history))
+                print('history replay', len(self.history), qq.full(), qq.qsize())
                 await self.put(self.history.popleft(), 'stdin')
+                ix +=1
+
+                if ix == sz * sz:
+                    break
 
             width, height = ball.width, ball.height
             self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
-            await self.put(ball, 'stdin')
-            return
+
 
 
         width = int(self.image.width / sz)

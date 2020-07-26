@@ -41,7 +41,7 @@ class GuidoClock(Ball):
 
         self.timewarp = None
         self.add_filter('M', self.midnight)
-        self.add_filter('R', self.random_hour)
+        self.add_filter('r', self.random_hour)
 
     credits = ("M Clock 2.0\n"
                "by Guido van Rossum\n"
