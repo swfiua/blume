@@ -79,8 +79,7 @@ class Mandy(magic.Ball):
 
         cmap = self.cmap
         if cmap == 'random':
-            cmaps = plt.colormaps()
-            cmap = cmaps[random.randint(0, len(cmaps)-1)]
+            cmap = magic.random_colour()
             print(cmap)
 
 

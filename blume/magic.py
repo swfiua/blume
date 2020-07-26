@@ -264,7 +264,7 @@ class RoundAbout:
     """
     def __init__(self):
 
-        self.qsize = 20
+        self.qsize = random.randint(10,30)
         self.qs = {}
         self.infos = defaultdict(set)
         self.add_queue()
@@ -668,7 +668,6 @@ async def relay(a, b):
         
         await b.put(value, 'stdin')
 
-        
 async def run():
 
     farm = GeeFarm()
@@ -684,6 +683,11 @@ async def run():
     print('running farm')
     await farm.run()
 
+    
+def random_colour():
+
+    return random.choice(plt.colormaps())
+    
 
 if __name__ == '__main__':
     

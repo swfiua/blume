@@ -38,6 +38,7 @@ Recognising that the galactic centre is a bit of a puzzle itself.
 
 """
 import argparse
+from collections import deque
 
 from astropy.table import Table, vstack
 from astropy import coordinates
@@ -94,8 +95,9 @@ class Milky(Ball):
 
         super().__init__()
 
-        self.bunches = []
+        self.bunches = deque()
         self.nbunch = bunch
+        self.bix = 0
         self.topn = topn
         self.level = 6
         self.plots = False
@@ -110,8 +112,8 @@ class Milky(Ball):
         self.add_filter('x', self.xzoom)
         self.add_filter('c', self.rotate_view)
         self.add_filter('k', self.nextkey)
-        self.add_filter('I', self.clip_less)
-        self.add_filter('i', self.clip_more)
+        self.add_filter('l', self.clip_less)
+        self.add_filter('L', self.clip_more)
         self.add_filter('P', self.toggle_plots)
 
     async def clip_less(self):
@@ -143,8 +145,6 @@ class Milky(Ball):
     async def start(self):
         """ start async task to read/download data """
         self.bunchq = curio.PriorityQueue()
-
-        self.bunches = []
 
         # load any bunches there are
         # for now, keep them separate
@@ -221,6 +221,10 @@ class Milky(Ball):
 
         return squeal
 
+    async def next_bunch(self):
+
+        self.bix
+
 
     async def run(self):
 
@@ -253,7 +257,11 @@ class Milky(Ball):
         
         key = self.key
 
-        for bix, table in enumerate(self.bunches):
+        # get a table
+        table = self.bunches.popleft()
+        self.bunches.append(table)
+
+        if True:
 
             if self.level != level:
                 print('LEVEL CHANGE', level, self.level)
@@ -293,7 +301,7 @@ class Milky(Ball):
                     radvel[ix] = rv
                     count += 1
 
-            print(f'observations: {count} bunch: {bix} mean: {radvel.mean()}')
+            print(f'observations: {count}  mean: {radvel.mean()}')
 
             dkey = table[key]
             print(dkey.mean())
@@ -322,7 +330,7 @@ class Milky(Ball):
             hp.mollview(radvel,
                         coord=coord,
                         nest=True,
-                        cmap='rainbow',
+                        cmap=magic.random_colour(),
                         max=vmax,
                         min=vmin)
 
@@ -340,7 +348,8 @@ class Milky(Ball):
             #hp.graticule()
             await self.put(magic.fig2data(plt))
 
-            hp.mollview(hpxmap, coord=coord, nest=True, cmap='rainbow')
+            hp.mollview(hpxmap, coord=coord, nest=True,
+                        cmap=magic.random_colour())
 
             await self.put(magic.fig2data(plt))
 
@@ -367,9 +376,9 @@ class Milky(Ball):
                         dist,
                         s=0.1,
                         c=cdata.clip(vmin, vmax),
-                        cmap='rainbow')
+                        cmap=magic.random_colour())
             plt.colorbar()
-            await self.put(magic.fig2data(plt))
+            #await self.put(magic.fig2data(plt))
             await curio.sleep(self.sleep)
 
 

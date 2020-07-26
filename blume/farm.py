@@ -87,12 +87,13 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
 
-        self.history = deque(maxlen=15)
+        self.history = deque(maxlen=random.randint(10,50))
 
         self.image = None
 
-        self.add_filter('m', self.more)
-        self.add_filter('l', self.less)
+        self.add_filter('+', self.more)
+        self.add_filter('=', self.more)
+        self.add_filter('-', self.less)
         self.add_filter('S', self.save)
 
     async def save(self):
