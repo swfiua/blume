@@ -264,7 +264,7 @@ class RoundAbout:
     """
     def __init__(self):
 
-        self.qsize = 10
+        self.qsize = 20
         self.qs = {}
         self.infos = defaultdict(set)
         self.add_queue()

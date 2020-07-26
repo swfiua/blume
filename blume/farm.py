@@ -87,7 +87,7 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
 
-        self.history = deque(maxlen=50)
+        self.history = deque(maxlen=15)
 
         self.image = None
 
