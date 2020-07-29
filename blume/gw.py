@@ -107,8 +107,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-m1', type=int, default=23)
-    parser.add_argument('-m2', type=int, default=2.6)
+    parser.add_argument('-m1', type=float, default=23)
+    parser.add_argument('-m2', type=float, default=2.6)
     parser.add_argument('-random', action='store_true')
 
 

@@ -8,18 +8,19 @@ Robert S Mackay, Colin Rourke.
 # we are going to need this
 import math
 
+# hmm, sympy is a whole universe of stuff
+from sympy import *
+
 from blume import magic
 from blume import magic
 from blume import farm as fm
 
-class Dss(magic.ball):
+class Dss(magic.Ball):
 
     def __init__(self):
         """ initialise """
-        self.alpha = 1
-        self.beta = 1
-        self.gamma = 1
-        self.delta = -1
+        self.alpha, self.beta, self.gamma, self.delta = symbols(
+            'alpha beta gamma delta')
 
     def set_abcd(self):
 
@@ -48,7 +49,7 @@ class Dss(magic.ball):
         a = sqrt(alpha)
         d = sqrt(delta)
 
-        etb = sqrt((1+a+d)/d)) + sqrt((1+a-d)/d)
+        etb = sqrt((1+a+d)/d) + sqrt((1+a-d)/d)
         
         return math.log(math.sqrt(etb))
         

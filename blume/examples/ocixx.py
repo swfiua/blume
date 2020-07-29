@@ -60,6 +60,7 @@ if __name__ == '__main__':
     pprint(results[0])
     pprint(results[-1])
 
+
     for key in keys:
         data = [x[key] for x in results]
         plt.plot(data, label=key)

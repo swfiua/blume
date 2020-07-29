@@ -264,7 +264,7 @@ class RoundAbout:
     """
     def __init__(self):
 
-        self.qsize = random.randint(10,30)
+        self.qsize = random.randint(30, 50)
         self.qs = {}
         self.infos = defaultdict(set)
         self.add_queue()

@@ -4,6 +4,41 @@
 
 What's happening with the `blume.table.Table`?
 
+2020/07/28
+==========
+
+So what's happening with this table thing?
+
+The project has evolved into an exploration of all things table.
+
+It turns out everyone has a table, so the project is looking for
+common themes.
+
+How to build tools that make it easy to explore tables of data?
+
+For now there are a few examples here.
+
+Once you have `blume` installed you can run most modules from the
+command line::
+
+
+  python3 -m blume.mb -h
+
+The `-h` option gives you help, showing options for the module
+
+Most modules are using the `blume.magic` to display `matplotlib`
+hplots.
+
+The magic is allowing everything to run asynchronously.  It is partly
+an opportunity for me to explore asynchronous programming.
+
+Recent work has been on the `blume.gaia`, `blume.gw` and `blume.mb`
+modules.
+
+Gaia is a module to download and display data from the Gaia mission
+surveying our galaxy.
+
+
 2020/03/16
 ==========
 

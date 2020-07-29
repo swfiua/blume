@@ -27,7 +27,7 @@ class Mandy(magic.Ball):
         super().__init__()
 
         self.zoom = 1
-        self.size = 300
+        self.size = 450
 
         self.seed()
         
@@ -101,8 +101,6 @@ class Mandy(magic.Ball):
 
 def seed():
     """ Try and find an interesting poing to zoom in on """
-
-    n = 300
 
     # pick a random point 
     imag = math.sin(random.random()*math.pi*2) * 1j
