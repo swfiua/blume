@@ -87,7 +87,7 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
 
-        self.history = deque(maxlen=random.randint(10,50))
+        self.history = deque(maxlen=random.randint(10, 25))
 
         self.image = None
 
@@ -109,6 +109,7 @@ class Carpet(Ball):
         self.size += 1
         self._update_pos()
         self.image = None
+        await self.rewind_history()
         print(f'more {self.size}')
 
     async def less(self):
@@ -117,8 +118,14 @@ class Carpet(Ball):
             self.size -= 1
         self._update_pos()
         self.image = None
+        await self.rewind_history()
         print(f'less {self.size}', id(self))
 
+
+    async def rewind_history(self):
+        
+        while len(self.history):
+            await self.put(self.history.popleft(), 'stdin')
 
     async def start(self):
         
@@ -138,29 +145,22 @@ class Carpet(Ball):
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
 
+
+        print('carpet waiting on ball')
         ball = await self.get()
         if ball is None:
             print('carpet got no ball')
             return
+
+        print('carpet got ball')
 
         sz = self.size
 
         if self.image is None:
             qq = self.select('stdin')
 
-            ix = 0
-            while len(self.history):
-                print('history replay', len(self.history), qq.full(), qq.qsize())
-                await self.put(self.history.popleft(), 'stdin')
-                ix +=1
-
-                if ix == sz * sz:
-                    break
-
             width, height = ball.width, ball.height
             self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
-
-
 
         width = int(self.image.width / sz)
         height = int(self.image.height / sz)
