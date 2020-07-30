@@ -43,6 +43,12 @@ mergers.
 
 *mb* is the obligatory random Mandelbrot generator.
 
+In other news, I just discovered the *einsteinpy* project.  This looks
+like it will be a great help as I continue to explore *U is for
+universe*.  See https://docs.einsteinpy.org for more on Einstein.
+
+
+
 
 2020/03/16
 ==========
