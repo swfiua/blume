@@ -60,7 +60,6 @@ if __name__ == '__main__':
     pprint(results[0])
     pprint(results[-1])
 
-
     for key in keys:
         data = [x[key] for x in results]
         plt.plot(data, label=key)
@@ -68,6 +67,8 @@ if __name__ == '__main__':
         if args.cumulative:
             data = np.array(data[1:]) - np.array(data[:-1]) 
             plt.plot(data, label='delta' + key)
+            print(key)
+            print(data[-14:])
             
         plt.legend(loc=0)
         plt.grid(True)

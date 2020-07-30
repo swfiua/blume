@@ -74,7 +74,7 @@ class Hat(Ball):
         """ Get stuff and display it """
         while True:
             ball = await self.get()
-            print('teakhat got ball')
+            #print('teakhat got ball')
             self.display(ball)
 
 

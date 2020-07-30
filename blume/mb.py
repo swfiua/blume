@@ -82,6 +82,10 @@ class Mandy(magic.Ball):
             cmap = magic.random_colour()
             print(cmap)
 
+            # half the time, flip direction of colour map
+            if random.random() > 0.5:
+                img = -1 * img
+
 
         plt.imshow(img.T, cmap=cmap)
         

@@ -38,6 +38,11 @@ modules.
 Gaia is a module to download and display data from the Gaia mission
 surveying our galaxy.
 
+The *gw* module plots gravitational waves for random sized black hole
+mergers.
+
+*mb* is the obligatory random Mandelbrot generator.
+
 
 2020/03/16
 ==========

@@ -102,7 +102,7 @@ async def run(args):
     farm.add(clock)
 
 
-    starter = await curio.spawn(farm.start())
+    starter = await farm.start()
 
     print('farm runnnnnnnnnning')
     runner = await farm.run()
