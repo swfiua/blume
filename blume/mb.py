@@ -2,6 +2,8 @@
 import math
 import random
 import argparse
+from collections import Counter
+
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
@@ -94,12 +96,12 @@ class Mandy(magic.Ball):
         #self.zoomer(img)
         self.zoom *= 2
 
-        maxi = img.flatten().max()
-        mini = img.flatten().min()
-
-        if maxi == mini:
+        # re-seed if image is 2 values or less
+        counts = Counter(img.flatten())
+        print('number of values:', len(counts))
+        if len(counts) <= 2:
             self.seed()
-
+        
 
         
 
@@ -157,6 +159,8 @@ async def run(args):
         mandy.cmap = 'random'
     else:
         mandy.cmap = args.cmap
+
+    mandy.size = args.size
     #milky = Milky()
     farm = fm.Farm()
     farm.add(mandy)
@@ -176,6 +180,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-random', action='store_true')
+    parser.add_argument('-size', type=int, default=400)
     parser.add_argument('-cmap', default='rainbow')
 
     args = parser.parse_args()
