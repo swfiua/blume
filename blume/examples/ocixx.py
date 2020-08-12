@@ -8,9 +8,11 @@ https://open.ottawa.ca/datasets/covid-19-source-of-infection/geoservice
 from matplotlib import pyplot as plt
 import requests
 import json
+import datetime
 
 import numpy as np
 
+import traceback
 
 URL = "https://opendata.arcgis.com/datasets/de83f9e01278463e916f14121d5980d1_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
 
@@ -26,6 +28,24 @@ keys2 = ["Cumulative_Cases", "Cumulative_Deaths"]
            
 URL2 = 'https://opendata.arcgis.com/datasets/cf9abb0165b34220be8f26790576a5e7_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
 
+def find_date_key(record):
+
+    for key, value in record.items():
+        try:
+
+            date = to_date(value)
+            return key
+        except:
+            traceback.print_exc()
+
+
+def to_date(value):
+
+    fields = value.split()[0].split('-')
+    y, m, d = (int(x) for x in fields)
+
+    return datetime.date(y, m, d)
+    
 
 if __name__ == '__main__':
 
@@ -60,13 +80,18 @@ if __name__ == '__main__':
     pprint(results[0])
     pprint(results[-1])
 
+    datekey = find_date_key(results[0])
+    print(datekey)
+
+    index = [to_date(x[datekey]) for x in results]
+
     for key in keys:
         data = [x[key] for x in results]
-        plt.plot(data, label=key)
+        plt.plot(index, data, label=key)
 
         if args.cumulative:
             data = np.array(data[1:]) - np.array(data[:-1]) 
-            plt.plot(data, label='delta' + key)
+            plt.plot(index[1:], data, label='delta' + key)
             print(key)
             print(data[-14:])
             
