@@ -94,6 +94,10 @@ class Carpet(Ball):
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
         self.add_filter('-', self.less)
+
+        self.add_filter('[', self.history_back)
+        self.add_filter(']', self.history_forward)
+        
         self.add_filter('S', self.save)
 
     async def save(self):
@@ -121,6 +125,23 @@ class Carpet(Ball):
         await self.rewind_history()
         print(f'less {self.size}', id(self))
 
+    async def history_back(self):
+
+        await self.history_rotate(-1)
+
+    async def history_forward(self):
+
+        await self.history_rotate(1)
+
+    async def history_rotate(self, n=1):
+
+        if len(self.history) == 0:
+            return
+        
+        self.history.rotate(n)
+        
+        await self.put(self.history.pop(), 'stdin')
+
 
     async def rewind_history(self):
         
@@ -146,13 +167,9 @@ class Carpet(Ball):
         # the inner loop?
 
 
-        print('carpet waiting on ball')
         ball = await self.get()
         if ball is None:
-            print('carpet got no ball')
             return
-
-        print('carpet got ball')
 
         sz = self.size
 
