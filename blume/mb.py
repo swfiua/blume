@@ -12,14 +12,35 @@ from blume import magic
 from blume import farm as fm
 
 def mand(c, n=300):
+    """ Test to see if a point is in the Mandlebrot set """
     z = 0
 
     for i in range(n):
         z = (z * z) + c
-        #print(z)
+
         if abs(z) > 2:
             return i
     return i
+    
+def npmand(c, n=300):
+    """ Mandelbrot numpy version 
+
+    This trades doing a bit of pointless computation for the
+    speed up of working on whole numpy arrays.
+    """
+    z = 0
+
+    results = np.zeros(len(c))
+    results = n
+
+    diverged = np.zeros(len(c))
+    for i in range(n):
+
+        z = (z * z) + c
+        diverged = np.where(abs(z) > 2, i, n)
+        results = np.minimum(results, diverged)
+
+    return results
     
     
 class Mandy(magic.Ball):
@@ -53,6 +74,11 @@ class Mandy(magic.Ball):
     async def capture(self):
 
         size = self.size
+
+        if size == 0:
+            size = random.randint(2, 12) * 100
+            self.thissize = size
+        
         ii = np.zeros((size, size))
 
         zoom = self.zoom
@@ -66,9 +92,11 @@ class Mandy(magic.Ball):
         gridy = np.linspace(i-1/zoom, i+1/zoom, size)
 
         for ix, xx in enumerate(gridx):
-            for iy, yy in enumerate(gridy):
-                value = mand(xx + yy * 1j, self.n)
-                ii[ix][iy] = value
+
+            ii[ix] = npmand(xx + (gridy * 1j))
+            #for iy, yy in enumerate(gridy):
+            #    value = mand(xx + yy * 1j, self.n)
+            #    ii[ix][iy] = value
 
             # keep things responsive
             self.ix = ix
@@ -161,6 +189,8 @@ async def run(args):
         mandy.cmap = args.cmap
 
     mandy.size = args.size
+    mandy.n = args.n
+
     #milky = Milky()
     farm = fm.Farm()
     farm.add(mandy)
@@ -181,6 +211,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-random', action='store_true')
     parser.add_argument('-size', type=int, default=400)
+    parser.add_argument('-n', type=int, default=300)
     parser.add_argument('-cmap', default='rainbow')
 
     args = parser.parse_args()
