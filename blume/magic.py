@@ -147,6 +147,7 @@ class Interact(Ball):
         self.add_filter('x', self.tenx)
         self.add_filter('c', self.tenth)
         self.add_filter(' ', self.next_attr)
+        self.add_filter('\b', self.prev_attr)
 
         self.add_filter('i', self.interact)
 
@@ -177,6 +178,12 @@ class Interact(Ball):
 
         self.attrs.rotate()
         print(self.attrs[0])
+
+    async def prev_attr(self):
+
+        self.attrs.rotate(-1)
+        attr = self.attrs[0]
+        print(attr, getattr(self.ball, attr))
 
     def operate(self, op=operator.add, factor=2):
         
@@ -510,7 +517,7 @@ class Shepherd(Ball):
                 return True
 
         # nobody cares :(
-        print('nobody cares :(')
+        print('nobody cares :(', key)
         return False
 
     async def help(self, name='keys'):
@@ -761,7 +768,7 @@ async def relay(a, b):
 
     while True:
         value = await a.get('stdout')
-        print('relay', type(value), 'from', type(a), 'to', type(b))
+        #print('relay', type(value), 'from', type(a), 'to', type(b))
         
         await b.put(value, 'stdin')
 
