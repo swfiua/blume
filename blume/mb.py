@@ -73,7 +73,7 @@ class Mandy(magic.Ball):
 
     async def capture(self):
 
-        size = self.size
+        size = int(self.size)
 
         if size == 0:
             size = random.randint(2, 12) * 100

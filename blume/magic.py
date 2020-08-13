@@ -70,6 +70,10 @@ from pathlib import Path
 
 from collections import deque, defaultdict, Counter
 
+import operator
+
+from traceback import print_exc
+
 import curio
 
 import numpy as np
@@ -101,19 +105,12 @@ class Ball:
         self.radii.add_filter('s', self.sleepy)
         self.radii.add_filter('w', self.wakey)
         self.radii.add_filter(' ', self.toggle_pause)
-        self.radii.add_filter('i', self.interact)
 
 
     def __getattr__(self, attr):
         """ Delegate to roundabout
         """
         return getattr(self.radii, attr)
-
-    async def interact(self):
-
-        from pprint import pprint
-        pprint(vars(self))
-        
 
     async def sleepy(self):
         """ Sleep more between updates """
@@ -136,6 +133,80 @@ class Ball:
     async def run(self):
         pass
 
+class Interact(Ball):
+
+    def __init__(self, ball):
+
+        super().__init__()
+        
+        self.ball = ball
+
+        self.add_filter('1', self.add_one)
+        self.add_filter('2', self.double)
+        self.add_filter('3', self.half)
+        self.add_filter('x', self.tenx)
+        self.add_filter('c', self.tenth)
+        self.add_filter(' ', self.next_attr)
+
+        self.add_filter('i', self.interact)
+
+
+    def set_ball(self, ball):
+
+        self.ball = ball
+        self.attrs = deque(vars(ball).keys())
+
+        
+    async def interact(self):
+        """ Go into interactive mode 
+        
+        hmm.... worm can time
+        """
+
+        from pprint import pprint
+        pprint(vars(self.ball))
+
+        print(self.current())
+
+
+    def current(self):
+        """ Return current attr """
+        return self.attrs[0]
+
+    async def next_attr(self):
+
+        self.attrs.rotate()
+        print(self.attrs[0])
+
+    def operate(self, op=operator.add, factor=2):
+        
+        key = self.current()
+        value = getattr(self.ball, key)
+        value = op(value, factor)
+        setattr(self.ball, key, value)
+
+        print(f'{key}: {value}')
+
+    async def double(self):
+
+        self.operate(operator.mul, 2) 
+        
+    async def half(self):
+
+        self.operate(operator.mul, 1/2)
+
+    async def tenx(self):
+
+        self.operate(operator.mul, 10)
+        
+    async def tenth(self):
+
+        self.operate(operator.mul, 1/10)
+        
+    async def add_one(self):
+
+        self.operate(operator.add, 1)
+        
 
 class GeeFarm(Ball):
     """ A farm, for now.. 
@@ -344,6 +415,8 @@ class Shepherd(Ball):
         self.relays = {}
         self.path = [self]
 
+        self.interaction = Interact(self.path[-1])
+
         self.add_filter('h', self.help)
         self.add_filter('n', self.next)
         self.add_filter('p', self.previous)
@@ -354,8 +427,32 @@ class Shepherd(Ball):
 
         self.add_filter('T', self.status)
 
+        self.add_filter('i', self.interact)
+
         # make a little sleepy
         self.sleep *= 10
+
+
+    async def interact(self):
+        """ Go into interactive mode 
+        
+        hmm.... worm can time
+        """
+
+
+        # Now if interaction has
+        current = self.current()
+        if current is not self.interaction.ball:
+            self.interaction.set_ball(current)
+
+        if self.interaction not in self.path:
+            self.path.append(self.interaction)
+
+        await self.interaction.interact()
+
+    def current(self):
+
+        return self.path[-1]
 
 
     async def status(self):
@@ -404,7 +501,10 @@ class Shepherd(Ball):
             #print('whistle', sheep, lu)
             if key in lu.keys():
                 print('sending message', key, name, sheep)
-                await lu[key]()
+                try:
+                    await lu[key]()
+                except:
+                    print_exc()
 
                 # first one gets it?
                 return True
@@ -510,7 +610,7 @@ class Shepherd(Ball):
     async def next(self):
         """ Move focus to next """
         print(f'what is next?: {self.path}')
-        print(self.path[-1])
+        print(self.current())
 
     async def previous(self):
         """ Move focus to previous """
@@ -524,10 +624,7 @@ class Shepherd(Ball):
 
     async def down(self):
         """ Move focus to next node """
-        current = None
-        
-        if self.path:
-            current = self.path[-1]
+        current = self.current()
 
         succ = nx.dfs_successors(self.flock, current, 1)
 
@@ -541,7 +638,7 @@ class Shepherd(Ball):
     async def toggle_run(self, sheep=None):
         """ Toggle run status of sheep """
 
-        sheep = sheep or self.path[-1]
+        sheep = sheep or self.current()
         
         # run it if not already running
         if sheep not in self.running:
@@ -575,7 +672,7 @@ class Shepherd(Ball):
             if sheep in self.running:
                 c = 'red'
 
-            if sheep is self.path[-1]:
+            if sheep is self.current():
                 c = 'gold'
             elif sheep in self.path:
                 c= 'green'

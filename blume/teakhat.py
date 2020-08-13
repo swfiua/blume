@@ -47,7 +47,7 @@ class Hat(Ball):
 
     def keypress(self, event):
         """ Take tk events and stick them in a curio queue """
-        print('teakhat handling', event.char)
+        #print('teakhat handling', event.char)
         self.select('stdout').put(event.char)
         
         return True
