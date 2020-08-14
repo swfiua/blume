@@ -149,6 +149,7 @@ class Interact(Ball):
         self.add_filter('8', self.cycle)
         self.add_filter('x', self.tenx)
         self.add_filter('t', self.tenth)
+
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
 
@@ -170,7 +171,12 @@ class Interact(Ball):
         from pprint import pprint
         pprint(vars(self.ball))
 
-        print(self.current())
+        self.show_current()
+
+    def show_current(self):
+        
+        attr = self.current()
+        print(attr, getattr(self.ball, attr))
 
 
     def current(self):
@@ -180,13 +186,16 @@ class Interact(Ball):
     async def next_attr(self):
 
         self.attrs.rotate()
-        print(self.attrs[0])
+
+        self.show_current()
 
     async def prev_attr(self):
 
         self.attrs.rotate(-1)
         attr = self.attrs[0]
-        print(attr, getattr(self.ball, attr))
+
+        self.show_current()
+
 
     def operate(self, op=operator.add, b=2):
         
