@@ -102,45 +102,12 @@ class Milky(Ball):
         self.level = 6
         self.plots = False
         self.sagastar = False
-        self.clip = (25, 75)
+        self.clip = 25  # either side
 
-        self.key = 'r_est'
+        self.keys = deque(('r_est', 'radial_velocity'))
 
-        self.coord = ('C', 'G')
+        self.coord = deque((('C', 'G'), 'C', 'E'))
         
-        self.add_filter('z', self.zoom)
-        self.add_filter('x', self.xzoom)
-        self.add_filter('c', self.rotate_view)
-        self.add_filter('k', self.nextkey)
-        self.add_filter('l', self.clip_less)
-        self.add_filter('L', self.clip_more)
-        self.add_filter('P', self.toggle_plots)
-
-    async def clip_less(self):
-
-        zmin, zmax = self.clip
-
-        zmin = zmin / 2
-        zmax = zmax + ((100-zmax)/2)
-
-        self.clip = zmin, zmax
-
-    async def clip_more(self):
-        
-        zmin, zmax = self.clip
-
-        zmin = zmin + (zmin / 2)
-        zmax = zmax - ((100-zmax)/2)
-
-        self.clip = zmin, zmax
-
-
-    async def nextkey(self):
-
-        if self.key == 'r_est':
-            self.key = 'radial_velocity'
-        else:
-            self.key == 'r_est'
 
     async def start(self):
         """ start async task to read/download data """
@@ -255,7 +222,7 @@ class Milky(Ball):
         dist = np.zeros(0)
         cdata = np.zeros(0)
         
-        key = self.key
+        key = self.keys[0]
 
         # get a table
         table = self.bunches.popleft()
@@ -273,7 +240,7 @@ class Milky(Ball):
                 radvel = np.zeros(npix, dtype=np.float)
 
             # Rotate the view
-            rot = hp.rotator.Rotator(coord=self.coord, deg=False)
+            rot = hp.rotator.Rotator(coord=self.coord[0], deg=False)
 
             rra, ddec = rot(
                 [x['ra'] for x in table],
@@ -325,8 +292,8 @@ class Milky(Ball):
 
             #radvel = np.where(mask, radvel, np.zeros(npix))
 
-            vmin, vmax = np.percentile(radvel, self.clip)
-            coord = self.coord
+            vmin, vmax = np.percentile(radvel, (self.clip, 100-self.clip))
+            coord = self.coord[0]
             hp.mollview(radvel,
                         coord=coord,
                         nest=True,
@@ -371,7 +338,7 @@ class Milky(Ball):
             dist = dist.clip(max=6000)
 
 
-            vmin, vmax = np.percentile(cdata, self.clip)
+            vmin, vmax = np.percentile(cdata, (self.clip, 100-self.clip))
             plt.scatter(dec,
                         dist,
                         s=0.1,
@@ -393,21 +360,7 @@ class Milky(Ball):
             self.coord = ('C', 'G')
             
 
-    async def zoom(self):
-        """ zoom out the healpix """
 
-        if self.level < 12:
-            self.level += 1
-
-    async def xzoom(self):
-        """ Zoom in the healpix """
-
-        if self.level > 0:
-            self.level -= 1
-
-    async def toggle_plots(self):
-        """ Toggle showing of scatter plots """
-        self.plots = not self.plots
         
 
 async def run(args):

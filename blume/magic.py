@@ -581,7 +581,7 @@ class Shepherd(Ball):
         print(msg)
         await self.put(msg, 'help')
         from blume import teakhat
-        teakhat.Help(msg)
+        #teakhat.Help(msg)
 
 
     def doc_firstline(self, doc):
