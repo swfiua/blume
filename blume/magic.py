@@ -141,11 +141,14 @@ class Interact(Ball):
         
         self.ball = ball
 
+        self.add_filter('0', self.toggle)
         self.add_filter('1', self.add_one)
+        self.add_filter('-', self.sub_one)
         self.add_filter('2', self.double)
         self.add_filter('3', self.half)
+        self.add_filter('8', self.cycle)
         self.add_filter('x', self.tenx)
-        self.add_filter('c', self.tenth)
+        self.add_filter('t', self.tenth)
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
 
@@ -185,34 +188,59 @@ class Interact(Ball):
         attr = self.attrs[0]
         print(attr, getattr(self.ball, attr))
 
-    def operate(self, op=operator.add, factor=2):
+    def operate(self, op=operator.add, b=2):
         
         key = self.current()
         value = getattr(self.ball, key)
-        value = op(value, factor)
+        if b is not None:
+            value = op(value, b)
+        else:
+            value = op(value)
+
         setattr(self.ball, key, value)
 
         print(f'{key}: {value}')
 
     async def double(self):
-
+        """ i double """
         self.operate(operator.mul, 2) 
         
     async def half(self):
-
+        """ i half """
         self.operate(operator.mul, 1/2)
 
     async def tenx(self):
+        """ i ten x """
 
         self.operate(operator.mul, 10)
         
     async def tenth(self):
+        """ i one tenth """
 
         self.operate(operator.mul, 1/10)
         
     async def add_one(self):
+        """ i one more """
 
         self.operate(operator.add, 1)
+
+    async def sub_one(self):
+        """ i one less """
+        self.operate(operator.add, -1)
+
+    async def toggle(self):
+        """ i toggle """
+        self.operate(operator.not_, None)
+
+    async def cycle(self):
+        """ i cycle """
+        key = self.current()
+        value = getattr(self.ball, key)
+
+        try:
+            value.rotate()
+        except:
+            print('no cycle for you')
         
 
 class GeeFarm(Ball):

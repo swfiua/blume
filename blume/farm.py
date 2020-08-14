@@ -145,7 +145,7 @@ class Carpet(Ball):
 
     async def rewind_history(self):
         
-        while len(self.history):
+        for x in range(len(self.history)):
             await self.put(self.history.popleft(), 'stdin')
 
     async def start(self):

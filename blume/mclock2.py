@@ -216,13 +216,13 @@ class GuidoClock(Ball):
         # sucessive shades of pigment applied to it, ranging from
         # fully transparent to only allowing one of the three colors
         # Cyan, Magenta, Yellow through.
-        N = self.segments
+        N = int(self.segments)
         table = []
         for angle, colorindex in [(bigd - 180/N, 0),
                                   (litd - 180/N, 1),
                                   (secd - 180/N, 2)]:
             angle %= 360
-            for i in range(N):
+            for i in range(int(N)):
                 color = 255
                 if colorindex in colors:
                     color = (N-1-i)*color//(N-1)
