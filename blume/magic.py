@@ -143,12 +143,12 @@ class Interact(Ball):
 
         self.add_filter('0', self.toggle)
         self.add_filter('1', self.add_one)
-        self.add_filter('-', self.sub_one)
+        self.add_filter('3', self.sub_one)
         self.add_filter('2', self.double)
-        self.add_filter('3', self.half)
+        self.add_filter('4', self.half)
         self.add_filter('8', self.cycle)
         self.add_filter('x', self.tenx)
-        self.add_filter('t', self.tenth)
+        self.add_filter('z', self.tenth)
 
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
@@ -159,7 +159,7 @@ class Interact(Ball):
     def set_ball(self, ball):
 
         self.ball = ball
-        self.attrs = deque(vars(ball).keys())
+        self.attrs = deque(sorted(vars(ball).keys()))
 
         
     async def interact(self):
@@ -185,13 +185,13 @@ class Interact(Ball):
 
     async def next_attr(self):
 
-        self.attrs.rotate()
+        self.attrs.rotate(-1)
 
         self.show_current()
 
     async def prev_attr(self):
 
-        self.attrs.rotate(-1)
+        self.attrs.rotate()
         attr = self.attrs[0]
 
         self.show_current()
@@ -334,8 +334,9 @@ class GeeFarm(Ball):
         await self.superdog.cancel()
 
 
+modes = deque(['grey', 'white', 'black'])
 
-def fig2data(fig):
+def fig2data(fig=None, background='grey'):
     """ Convert a Matplotlib figure to a PIL image.
 
     fig: a matplotlib figure
@@ -345,9 +346,11 @@ def fig2data(fig):
 
     FIXME -- turning matplotlib figures into PIL or numpy
     """
-    facecolor = 'white'
-    facecolor = 'grey'
-    facecolor = 'black'
+    #facecolor = 
+    #facecolor = 
+    #facecolor = 'black'
+    fig = fig or plt
+    facecolor = modes[0]
     if hasattr(fig, 'get_facecolor'):
         facecolor = fig.get_facecolor()
         #print('facecolor', facecolor)
