@@ -13,6 +13,10 @@ import datetime
 import numpy as np
 
 import traceback
+import hashlib
+
+from blume import magic
+from blume import farm as fm
 
 URL = "https://opendata.arcgis.com/datasets/de83f9e01278463e916f14121d5980d1_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
 
@@ -45,21 +49,9 @@ def to_date(value):
     y, m, d = (int(x) for x in fields)
 
     return datetime.date(y, m, d)
-    
 
-if __name__ == '__main__':
 
-    from pprint import pprint
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-cumulative', action='store_true')
-
-    args = parser.parse_args()
-
-    if args.cumulative:
-        URL = URL2
-        keys = keys2
+def get_data(url, keys):
     
     resp = requests.get(URL)
 
@@ -76,6 +68,78 @@ if __name__ == '__main__':
     print(data['exceededTransferLimit'])
 
     results = [x['attributes'] for x in data['features']]
+
+    return results
+
+class River(magic.Ball):
+    """ Like a river that """
+
+
+    async def start(self):
+    
+        import glob
+
+        index = Path('index')
+        if not index.exists():
+            index.touch()
+
+        data = []
+        for row in csv.reader(index.open()):
+            dt = dateutil.isoparse(row[0])
+            cksum = row[1].strip()
+
+            data.append(dt, cksum)
+            
+
+        self.files = deque(data)
+        self.files.sort()
+
+
+    def check_and_save(self, results):
+
+        # turn results back into json
+        data = json.dumps(results)
+        ck = hashlib.md5(data.encode()).digest()
+
+        ck = ''.join(['%02x' % x for x in ck])
+
+        print(ck)
+        
+        cksums = set(x[0] for x in self.files)
+
+        if ck not in cksums:
+            path = Path(ck + str(datetime.datetime.now()))
+            
+        
+
+    
+
+
+class Ocixx(magic.Ball):
+    
+    async def run(self):
+        pass
+
+if __name__ == '__main__':
+
+    from pprint import pprint
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-cumulative', action='store_true')
+    parser.add_argument('-save', action='store_true')
+    parser.add_argument('-update', action='store_true')
+
+    args = parser.parse_args()
+
+    if args.cumulative:
+        URL = URL2
+        keys = keys2
+
+    results = get_data(URL, keys)
+
+    if args.update:
+        check_and_save(results)
 
     pprint(results[0])
     pprint(results[-1])
