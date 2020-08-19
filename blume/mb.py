@@ -30,11 +30,10 @@ def npmand(c, n=300):
     """
     z = 0
 
-    results = np.zeros(len(c))
     results = n
-
     diverged = np.zeros(len(c))
-    for i in range(n):
+
+    for i in range(int(n)):
 
         z = (z * z) + c
         diverged = np.where(abs(z) > 2, i, n)
@@ -53,6 +52,8 @@ class Mandy(magic.Ball):
         self.size = 450
 
         self.seed()
+
+        self.modes = magic.modes
         
         self.add_filter('c', self.reseed)
 
@@ -93,10 +94,7 @@ class Mandy(magic.Ball):
 
         for ix, xx in enumerate(gridx):
 
-            ii[ix] = npmand(xx + (gridy * 1j))
-            #for iy, yy in enumerate(gridy):
-            #    value = mand(xx + yy * 1j, self.n)
-            #    ii[ix][iy] = value
+            ii[ix] = npmand(xx + (gridy * 1j), self.n)
 
             # keep things responsive
             self.ix = ix
