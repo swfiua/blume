@@ -8,26 +8,84 @@ It started as a place to draw tables with `matplotlib`.  Or rather a
 home for a new version of the `matplotlib.table` module that I created
 way back in the day.
 
+The table tries to be clever and pick the biggest font it can find
+that fits the data.  I barely knew what I was doing creating this
+table, I was finding my way around `matplotlib` as I was writing the
+code.   It quietly did the job for over ten years as I was busy
+elsewhere.
+
+More recently I tried to fix up some of the problems and add some new
+features.  It was difficult to do this in backward compatible ways.
+
+Hence, `blume` is a new home for the `table`.
+
 I decided it would be a good place to accumulate some examples of
 tables in use.   Examples of ideas that take my interest.
 
 I try to look for common themes across the examples and let that guide
-the code. 
+what happens next.
 
 As things have progressed it has become clear that everybody already
-has a table: pandas, astropy, mathematica.
+has a table: pandas, astropy, mathematica, every database query.
 
-I am leaning towards tables as lists of dictionaries as the lowest
-common denominator.
+As far as python is concerned, I am leaning towards tables as lists of
+dictionaries as the lowest common denominator.  With the same set of keys
+for each item in the list, there is a natural mapping to dictionaries
+with lists as values.
 
-But these tables are compelling, they come with matplotlib plotting too.
+I am particularly interested in what I call, *spherical data*.  Data
+where the observations lie on the surface of a sphere.  Cosmological
+data and output from global climate reanalysis models.
 
-So it would be good to accommodate anybody that is going that route too.
+Values that indicate a time or a place are of particular interest.  I
+find myself repeatedly parsing and transforming such data to suit
+some, often implicit, choice of coordinates.
 
-What works for me is a script running in a loop as I change the script
-parameters and see how it changes the plots.
+It feels that 99.99% of computing is trying to transform data from one
+coordinate system to another, one world view to another.
 
-That is just what I have created for now.  Just run::
+As an example, the `astropy` world is generally using the `healpy`
+software to store and manipulate data in the `healpix` format, where
+each pixel represents an equal area.
+
+Meanwhile, the meteorologists are using a grid based approach,
+dividing the planet into a rectangular grid of latitudes and
+longitudes. 
+
+Interactive magic
+=================
+
+I find myself writing a number of short scripts, 100 lines or so, to
+display some data with `matplotlib`.  As I explore the data the script
+acquires a number of variables that control what is displayed.
+
+At this point I often resort to `argparse` to add a few command line
+options to control the key variables.
+
+A typical blume module creates a `blume.magic.Ball` and adds it to a
+farm which ends up running the `Ball.run` co-routine in a loop.
+
+It is possible to have keyboard events call co-routines which can in
+turn change the values.
+
+This is a fairly quick way to build an interactive tool to explore
+data.
+
+However, it soon gets tedious writing repetitive code for the
+co-routines.  Then you have to decide what key to assign to each
+routine.
+
+The latest enhancement, is to simply allow me to scroll through the
+attributes of the object, by pressing space, until I find the one I
+wish to change.  Then a bunch of keys are matched to various
+co-routines that offer various changes.
+
+It is a bit like running code in an interactive debugger.
+
+This is all managed by a `Shepherd`, via which you can browse the
+values of the `Ball` objects, select one and change it.
+
+Just run::
 
   python -m blume.mb -r
 
@@ -44,10 +102,6 @@ press 'h' to see the keys that will change the value.
 
 You can do much of what I am trying to do with a *Jupyter notebook*
 and some *ipython widgets*.
-
-I have also taken it as an opportunity to explore asynchronous
-programming in python.   I am using `curio` to help with this part of
-the problem, in particular, the objects form the `curio.queue` module.
 
 
 
@@ -109,7 +163,8 @@ And the accelerating expansion of the universe.
 
 Could this not be explained, in de Sitter space, by the probability
 that a distant galaxy is a new arrival increases as you get further
-away?   
+away?
+
 
 Some distant galaxies may be exibiting less red shift than would be
 expected given their distance.
@@ -118,6 +173,25 @@ Dwarf, blue galaxies, if you like.
 
 It should be possible to calculate what we would expect to see based
 on [AP]
+
+Putting it all together
+=======================
+
+Once the de Sitter module is a little further along, the goal is to
+develop a model that might explain the gravitational waves we are
+seeing, not as black hole mergers, but rather as waves arriving from
+the edge of our visible universe.
+
+Paradox
+=======
+
+Simulataneously believing that rotating masses induce a rotation on
+space time and that it is not possible for black hole mergers to
+generate gravitational waves as they spiral into each other would
+appear to be some sort of paradox.
+
+How to resolve this?
+
 
 
 [0] http://msp.warwick.ac.uk/~cpr/paradigm
