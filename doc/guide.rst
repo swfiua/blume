@@ -26,7 +26,9 @@ I try to look for common themes across the examples and let that guide
 what happens next.
 
 As things have progressed it has become clear that everybody already
-has a table: pandas, astropy, mathematica, every database query.
+has a table: pandas, astropy, mathematica, every database query.  So
+the scope of this project has expanded somewhat, to how to explore
+tables of data, with `matplotlib` generating all the pictures?
 
 As far as python is concerned, I am leaning towards tables as lists of
 dictionaries as the lowest common denominator.  With the same set of keys
@@ -48,9 +50,16 @@ As an example, the `astropy` world is generally using the `healpy`
 software to store and manipulate data in the `healpix` format, where
 each pixel represents an equal area.
 
-Meanwhile, the meteorologists are using a grid based approach,
-dividing the planet into a rectangular grid of latitudes and
-longitudes. 
+The meteorologists are using a grid based approach, dividing the
+planet into a rectangular grid of latitudes and longitudes.
+
+The `astroquery` project provides tools to query data from a whole
+host of astronomical projects, using a common query language and
+returning results in common formats.
+
+This may well reflect the extraordinary amount of international
+collaboration there is in the world of astronomy.
+
 
 Interactive magic
 =================
