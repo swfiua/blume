@@ -76,6 +76,8 @@ from traceback import print_exc
 
 import curio
 
+sleep = curio.sleep
+
 import numpy as np
 
 from PIL import Image
@@ -87,7 +89,6 @@ from matplotlib import figure
 from matplotlib import pyplot as plt
 
 import networkx as nx
-
 
 class Ball:
     

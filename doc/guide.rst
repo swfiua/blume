@@ -14,7 +14,7 @@ table, I was finding my way around `matplotlib` as I was writing the
 code.   It quietly did the job for over ten years as I was busy
 elsewhere.
 
-More recently I tried to fix up some of the problems and add some new
+More recently I tried to fix up some of its problems and add some new
 features.  It was difficult to do this in backward compatible ways.
 
 Hence, `blume` is a new home for the `table`.
@@ -48,10 +48,20 @@ coordinate system to another, one world view to another.
 
 As an example, the `astropy` world is generally using the `healpy`
 software to store and manipulate data in the `healpix` format, where
-each pixel represents an equal area.
+each pixel represents an equal area.  It comes with tools to do
+spherical harmonic analysis, and was used to detect harmonics in the
+COBE, Cosmic Microwave Background data.
+
+It also comes with some built in plotting, using `matplotlib` as the
+plotting engine.
+
+Healpix does not have a table, as far as I know, but it is my current
+favourite for spherical data.
 
 The meteorologists are using a grid based approach, dividing the
-planet into a rectangular grid of latitudes and longitudes.
+planet into a rectangular grid of latitudes and longitudes.  This has
+some benefits, in particular, it gives higher resolution at the
+poles.  Computers like grid calculations.
 
 The `astroquery` project provides tools to query data from a whole
 host of astronomical projects, using a common query language and
@@ -59,6 +69,11 @@ returning results in common formats.
 
 This may well reflect the extraordinary amount of international
 collaboration there is in the world of astronomy.
+
+There is also no shortage of fascinating data sets to work with, and
+the set is growing too.
+
+And gravitational waves are now a thing too.
 
 
 Interactive magic
@@ -112,7 +127,9 @@ press 'h' to see the keys that will change the value.
 You can do much of what I am trying to do with a *Jupyter notebook*
 and some *ipython widgets*.
 
-
+I would really like to have dynamic key bindings that adapt to usage,
+but that will have to wait for the `blume.magic.Roundabout` to
+actually be magic.
 
 Cosmology
 =========
@@ -120,7 +137,7 @@ Cosmology
 A number of modules relate to astronomical data.
 
   * `blume.gaia` downloads and displays data from the Gaia survey of
-    our galaxy.
+    our galaxy.  Over a billion observations and growing.
 
   * `blume.cpr` implements galactic rotation curves per [AP].  This
     module is a natural companion for Gaia data.
@@ -136,14 +153,22 @@ module with the data in the `gaia` module.  It would be good to try to
 get good estimates of both the mass and the angular velocity of the
 black hole at the centre of our galaxy.
 
-For now, I think it is worth waiting for more data releases.
-
 There are already a number of excellent projects processing this
 data.  Many of these use some sort of Bayesian re-estimation to fit
-models.
+some sort of galactic model to the data set.  It should be noted that
+prior assumptions can still impact such models.
 
 I suspect some of these will be using the assumption that Sagittarius
-A* is at the centre of our galaxy and is just 26,000 light years away.
+A* is at the centre of our galaxy and is just 26,000 light years away,
+but I have not followed that up.
+
+There is a fair amount of work in understanding all the follow on
+processing that is being done on the dataset.  The raw observations
+have a lot of sampling noise, multiple observations of each source.
+
+For now, I think it is worth waiting for more data releases.  I do not
+think it will be long before we have a much better picture of the
+structure of our galaxy and our place in it.
 
 The de Sitter module is just a stub at this point.  It has lead to the
 discovery of the `einsteinpy` project.
@@ -153,7 +178,7 @@ Einstein's general relativty equations.
 
 The fascinating thing is that his solution implied that the universe
 should, in some sense be rotating.  He would often ask if observations
-had yet confirmed this, only to be told, not yet.
+had yet confirmed this, only to be told, "not yet".
 
 I have been fascinated by Kurt Gödel since I learned of his wonderful
 incompleteness theorems, all mathematicians have cause to be greatful
@@ -174,7 +199,6 @@ Could this not be explained, in de Sitter space, by the probability
 that a distant galaxy is a new arrival increases as you get further
 away?
 
-
 Some distant galaxies may be exibiting less red shift than would be
 expected given their distance.
 
@@ -183,13 +207,20 @@ Dwarf, blue galaxies, if you like.
 It should be possible to calculate what we would expect to see based
 on [AP]
 
+
 Putting it all together
 =======================
 
 Once the de Sitter module is a little further along, the goal is to
 develop a model that might explain the gravitational waves we are
 seeing, not as black hole mergers, but rather as waves arriving from
-the edge of our visible universe.
+giant black holes at the edge of our visible universe.
+
+The puzzle is why we are not seeing gamma ray bursts at the same time
+as each gravitational wave.
+
+The belief is that we should only see these when one component is a
+neutron star, and even then, not always.
 
 Paradox
 =======
@@ -199,7 +230,24 @@ space time and that it is not possible for black hole mergers to
 generate gravitational waves as they spiral into each other would
 appear to be some sort of paradox.
 
+The way I see things, I would expect the stars themselves to absorb
+energy that would otherwise generate a wave, by increasing the angular
+velocity of each component in the system.
+
 How to resolve this?
+
+First, quite a bit more explanation is in order here. But a rough
+argument follows.
+
+A closed system, following geodesics in space time, surely conserves
+angular momentum.
+
+But we have to factor in here that the rotating stars are, by that
+very rotation, inducing a rotation on the surrounding space time.
+
+My suspicion is that these binary systems are in fact very stable and
+do not ever spiral into each other, rather they grow as they both
+accumulate mass.
 
 
 

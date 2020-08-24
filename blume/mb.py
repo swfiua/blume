@@ -11,6 +11,8 @@ from matplotlib import pyplot as plt
 from blume import magic
 from blume import farm as fm
 
+from blume.magic import sleep
+
 def mand(c, n=300):
     """ Test to see if a point is in the Mandlebrot set """
     z = 0
@@ -22,7 +24,7 @@ def mand(c, n=300):
             return i
     return i
     
-def npmand(c, n=300):
+def npmand(c, n=300, skip=10):
     """ Mandelbrot numpy version 
 
     This trades doing a bit of pointless computation for the
@@ -38,8 +40,12 @@ def npmand(c, n=300):
         z = (z * z) + c
         diverged = np.where(abs(z) > 2, i, n)
         results = np.minimum(results, diverged)
+        if 1 == i % (n/skip):
+            #print(f'npmand yielding {i} {n}')
+            yield results
 
-    return results
+    yield results
+
     
     
 class Mandy(magic.Ball):
@@ -72,7 +78,7 @@ class Mandy(magic.Ball):
         self.zoom = 1
 
 
-    async def capture(self):
+    def capture(self):
 
         size = int(self.size)
 
@@ -81,6 +87,9 @@ class Mandy(magic.Ball):
             self.thissize = size
         
         ii = np.zeros((size, size))
+
+        if not self.c:
+            self.seed()
 
         zoom = self.zoom
 
@@ -92,32 +101,34 @@ class Mandy(magic.Ball):
         gridx = np.linspace(r-1/zoom, r+1/zoom, size)
         gridy = np.linspace(i-1/zoom, i+1/zoom, size)
 
-        for ix, xx in enumerate(gridx):
+        xgrid, ygrid = np.meshgrid(gridx, gridy)
 
-            ii[ix] = npmand(xx + (gridy * 1j), self.n)
-
-            # keep things responsive
-            self.ix = ix
-            await curio.sleep(self.sleep/size)
-        return ii
+        skip = 10
+        n = self.n
+        for ix, img in enumerate(npmand(xgrid + (ygrid * 1j), n), skip):
+            yield img
+            self.ix = ix * (n / skip)
+            if ix > self.n:
+                break
+        
 
     async def run(self):
 
-        img = await self.capture()
-
         cmap = self.cmap
-        if cmap == 'random':
+        if self.random:
             cmap = magic.random_colour()
-            print(cmap)
+        flip = random.random() > 0.5
+        
+        for img in self.capture():
 
             # half the time, flip direction of colour map
-            if random.random() > 0.5:
+            if flip:
                 img = -1 * img
 
-
-        plt.imshow(img.T, cmap=cmap)
+            plt.imshow(img.T, cmap=cmap)
         
-        await self.put(magic.fig2data(plt))
+            await self.put(magic.fig2data(plt))
+            await sleep(self.sleep/self.n)
 
         #self.zoomer(img)
         self.zoom *= 2
@@ -174,20 +185,19 @@ def seed():
     # it seems an appropriate paradigm.
     return seed()
 
-    
-
 
 async def run(args):
 
     mandy = Mandy()
 
+    for key, value in vars(args).items():
+        setattr(mandy, key, value)
+
     if args.random:
         mandy.cmap = 'random'
-    else:
-        mandy.cmap = args.cmap
 
-    mandy.size = args.size
-    mandy.n = args.n
+    #mandy.size = args.size
+    #mandy.n = args.n
 
     #milky = Milky()
     farm = fm.Farm()
@@ -210,7 +220,9 @@ if __name__ == '__main__':
     parser.add_argument('-random', action='store_true')
     parser.add_argument('-size', type=int, default=400)
     parser.add_argument('-n', type=int, default=300)
+    parser.add_argument('-zoom', type=float, default=1)
     parser.add_argument('-cmap', default='rainbow')
+    parser.add_argument('c', type=complex, nargs='?')
 
     args = parser.parse_args()
     import curio

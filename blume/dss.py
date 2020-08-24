@@ -31,6 +31,8 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 
+from traceback import print_exc
+
 # hmm, sympy is a whole universe of stuff
 from sympy import *
 from einsteinpy.symbolic import predefined
@@ -46,6 +48,11 @@ class Dss(magic.Ball):
     def __init__(self):
         """ initialise """
         super().__init__()
+
+        self.theta = 0.1
+        self.phi = 5
+        self.size = 50
+        self.aaa = magic.modes
         
         self.alpha, self.beta, self.gamma, self.delta = symbols(
             'alpha beta gamma delta')
@@ -72,10 +79,10 @@ class Dss(magic.Ball):
 
     def blue_shift_time(self, alpha=None, delta=None):
         """ """
-        a = sqrt(alpha or self.alpha)
-        d = sqrt(delta or self.delta)
+        a = alpha or self.alpha
+        d = delta or self.delta
 
-        etb = sqrt((1+a+d)/(2*d)) + sqrt((1+a-d)/d)
+        etb = sqrt((1+a)/(a+d)) + sqrt((1-d)/(a-d))
         
         return log(etb)
 
@@ -86,23 +93,31 @@ class Dss(magic.Ball):
 
     async def run(self):
 
-        size = 100
+        size = self.size
         epsilon = 1e-3
 
         img = np.zeros((size, size))
 
         for row in range(1, size+1):
 
-            delta = row/(2*(size+1))
+            delta = math.cos(math.pi * row/(size+1))
             for col in range(1, size+1):
-                alpha = col/(size+1)
-            
-                img[row-1][col-1] = self.blue_shift_time(
-                    alpha or epsilon, delta or epsilon)
+                alpha = math.cosh(self.phi * col/(size+1))
+
+                try:
+                    img[row-1][col-1] = self.blue_shift_time(
+                        alpha or epsilon, delta or epsilon)
+                except:
+                    print_exc()
+                    print(alpha, delta)
+                    raise
  
-            print(img[row-1])
+            #print(img[row-1])
+
+            await curio.sleep(0)
 
         plt.imshow(img, cmap=magic.random_colour())
+        plt.colorbar()
         await self.put(magic.fig2data(plt))
 
 async def run():
