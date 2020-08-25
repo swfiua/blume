@@ -230,25 +230,14 @@ space time and that it is not possible for black hole mergers to
 generate gravitational waves as they spiral into each other would
 appear to be some sort of paradox.
 
-The way I see things, I would expect the stars themselves to absorb
-energy that would otherwise generate a wave, by increasing the angular
-velocity of each component in the system.
-
 How to resolve this?
 
-First, quite a bit more explanation is in order here. But a rough
-argument follows.
+Multi-messenger astronomy may very well hold the key to resolving this
+mystery and many more.
 
-A closed system, following geodesics in space time, surely conserves
-angular momentum.
-
-But we have to factor in here that the rotating stars are, by that
-very rotation, inducing a rotation on the surrounding space time.
-
-My suspicion is that these binary systems are in fact very stable and
-do not ever spiral into each other, rather they grow as they both
-accumulate mass.
-
+The exciting part is that we already know some gravitational waves are
+followed up by a short gamma ray burst, and observations further down
+the spectrum too.
 
 
 [0] http://msp.warwick.ac.uk/~cpr/paradigm

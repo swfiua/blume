@@ -63,7 +63,8 @@ class Mandy(magic.Ball):
         
         self.add_filter('c', self.reseed)
 
-        self.n = 300
+        self.maxn = 3000
+        self.n = self.maxn/10
 
     async def reseed(self):
 
@@ -125,20 +126,27 @@ class Mandy(magic.Ball):
             if flip:
                 img = -1 * img
 
-            plt.imshow(img.T, cmap=cmap)
+
+            # re-seed if image is 2 values or less
+            counts = Counter(img.flatten())
+            print('number of values:', len(counts))
+
+            if len(counts) > self.n/3:
+                continue
+
+            if len(counts) > 1:
+                plt.imshow(img.T, cmap=cmap)
         
-            await self.put(magic.fig2data(plt))
+                await self.put(magic.fig2data(plt))
             await sleep(self.sleep/self.n)
 
-        #self.zoomer(img)
+            
+        if self.n < self.maxn:
+            if len(counts) <= 20:
+                self.n *= 2
+
         self.zoom *= 2
 
-        # re-seed if image is 2 values or less
-        counts = Counter(img.flatten())
-        print('number of values:', len(counts))
-        if len(counts) <= 2:
-            self.seed()
-        
 
         
 
