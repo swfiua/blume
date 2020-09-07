@@ -113,6 +113,19 @@ class Ball:
         """
         return getattr(self.radii, attr)
 
+    def update(self, args):
+        """ Update attributes as per args 
+
+        args is expected to be from argparse.
+
+        Now it is super easy to write a short module that has a bunch of
+        command line parameters.
+
+        
+        """
+        for key, value in vars(args).items():
+            setattr(self, key, value)
+
     async def sleepy(self):
         """ Sleep more between updates """
         self.sleep *= 2

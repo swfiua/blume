@@ -59,8 +59,6 @@ class Mandy(magic.Ball):
 
         self.seed()
 
-        self.modes = magic.modes
-        
         self.add_filter('c', self.reseed)
 
         self.maxn = 3000
@@ -129,18 +127,19 @@ class Mandy(magic.Ball):
 
             # re-seed if image is 2 values or less
             counts = Counter(img.flatten())
-            print('number of values:', len(counts))
-
-            if len(counts) > self.n/3:
-                continue
 
             if len(counts) > 1:
                 plt.imshow(img.T, cmap=cmap)
         
                 await self.put(magic.fig2data(plt))
+                
             await sleep(self.sleep/self.n)
 
+            if len(counts) > self.depth:
+                break
+
             
+        #print('number of values:', len(counts))
         if self.n < self.maxn:
             if len(counts) <= 20:
                 self.n *= 2
@@ -198,14 +197,16 @@ async def run(args):
 
     mandy = Mandy()
 
-    for key, value in vars(args).items():
-        setattr(mandy, key, value)
+    mandy.update(args)
 
     if args.random:
         mandy.cmap = 'random'
 
     #mandy.size = args.size
     #mandy.n = args.n
+    mandy.modes = magic.modes
+    mandy.modes.rotate()
+
 
     #milky = Milky()
     farm = fm.Farm()
@@ -230,6 +231,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=300)
     parser.add_argument('-zoom', type=float, default=1)
     parser.add_argument('-cmap', default='rainbow')
+    parser.add_argument('-depth', default=200, type=float)
     parser.add_argument('c', type=complex, nargs='?')
 
     args = parser.parse_args()

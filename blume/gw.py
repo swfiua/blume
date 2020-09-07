@@ -92,7 +92,7 @@ async def run(args):
     #bino.random = args.random
 
     #  ????
-    bino.__dict__.update(vars(args))
+    bino.update(args)
 
     # farm strageness, whilst I figure out how it should work
     # add to path to get key events at start 
