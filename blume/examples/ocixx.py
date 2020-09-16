@@ -9,6 +9,8 @@ from matplotlib import pyplot as plt
 import requests
 import json
 import datetime
+import csv
+from pprint import pprint
 
 import numpy as np
 
@@ -18,20 +20,6 @@ import hashlib
 from blume import magic
 from blume import farm as fm
 
-URL = "https://opendata.arcgis.com/datasets/de83f9e01278463e916f14121d5980d1_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json"
-
-keys =[
-    '%_No_Known_Source_for_Cases_with_non-institutional__source_of_infection_over_the_last_14_days',
-    'No_Information_Available',
-    'No_Known_Source_of_Infection',
-    'Outbreak_or_Close_Contact_with_a_Case',
-    'Sum_of_Non-institutional_Source_of_Infection_Over_the_Last_14_Days',
-    'Travel'] 
-
-keys2 = ["Cumulative_Cases", "Cumulative_Deaths"]
-           
-URL2 = 'https://opendata.arcgis.com/datasets/cf9abb0165b34220be8f26790576a5e7_0/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json'
-
 def find_date_key(record):
 
     for key, value in record.items():
@@ -40,7 +28,8 @@ def find_date_key(record):
             date = to_date(value)
             return key
         except:
-            traceback.print_exc()
+            # guess it is not this one
+            print(key, 'is not a date')
 
 
 def to_date(value):
@@ -51,74 +40,105 @@ def to_date(value):
     return datetime.date(y, m, d)
 
 
-def get_data(url, keys):
-    
-    resp = requests.get(URL)
-
-    data = resp.content
-
-    print(len(data))
-
-    data = json.loads(data)
-
-    print(len(data['features']))
-
-    print(data.keys())
-
-    print(data['exceededTransferLimit'])
-
-    results = [x['attributes'] for x in data['features']]
-
-    return results
-
 class River(magic.Ball):
     """ Like a river that """
-
+    format = '.csv'
 
     async def start(self):
     
-        import glob
+        p = Path('.')
 
-        index = Path('index')
-        if not index.exists():
-            index.touch()
-
-        data = []
-        for row in csv.reader(index.open()):
-            dt = dateutil.isoparse(row[0])
-            cksum = row[1].strip()
-
-            data.append(dt, cksum)
-            
-
+        data = p.glob(f'**.{self.format}')
+        
         self.files = deque(data)
         self.files.sort()
 
 
-    def check_and_save(self, results):
+    def check_and_save(self, data):
 
-        # turn results back into json
-        data = json.dumps(results)
         ck = hashlib.md5(data.encode()).digest()
 
         ck = ''.join(['%02x' % x for x in ck])
 
         print(ck)
         
-        cksums = set(x[0] for x in self.files)
+        cksums = set(x.stem.split('_')[1] for x in self.files)
 
         if ck not in cksums:
-            path = Path(ck + str(datetime.datetime.now()))
-            
+            path = Path(ck + str(datetime.datetime.now() + self.format))
+            path.write_text(data)
+            self.files.append(path)
         
 
+BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
+ITEM_IDS = [
+    'cf9abb0165b34220be8f26790576a5e7',
+    '02c99319ef44488e85cd4f96f5061f20',
+    '77078920fea8499dbb6f54cc69c03a90']
+
+def get_csv_data(url):
+    
+    resp = requests.get(url)
+    data = resp.text.split('\n')
+
+    # figure out what we have
+    for row in csv.reader(data):
+        keys = [x.strip() for x in row]
+        break
+
+    for row in csv.DictReader(data[1:], keys):
+        yield row
     
 
+def find_casts(data, sniff=10):
+
+    keys = data[0].keys()
+
+    # look for a date key
+    datekey = find_date_key(data[0])
+    
+    casts = {}
+    casts[datekey] = to_date
+
+    upcast = {None: int, int: float, float: str}
+    
+    for row in data[:sniff]:
+        for key in keys:
+            value = row[key].strip()
+            if key:
+                try:
+                    casts.setdefault(key, int)(value)
+                except:
+                    casts[key] = upcast[casts[key]]
+                
+                    
+    pprint(casts)
+    return casts
+
+def cast_data(data, casts):
+
+    fill = {None: None, int: 0, float: 0.0, str:''}
+
+    for row in data:
+
+        result = {}
+        for key, value in row.items():
+            cast = casts[key]
+            if not value.strip():
+                value = fill.setdefault(cast)
+
+            result[key] = cast(value)
+        yield result
+
+                  
 
 class Ocixx(magic.Ball):
-    
+
     async def run(self):
-        pass
+
+        item_id = self.items[0]
+
+        URL = BASE_URL + item_id + '/data'
 
 if __name__ == '__main__':
 
@@ -129,29 +149,39 @@ if __name__ == '__main__':
     parser.add_argument('-cumulative', action='store_true')
     parser.add_argument('-save', action='store_true')
     parser.add_argument('-update', action='store_true')
+    parser.add_argument('-itemid', type=int, default=0)
 
     args = parser.parse_args()
 
-    if args.cumulative:
-        URL = URL2
-        keys = keys2
+    URL = BASE_URL + ITEM_IDS[args.itemid] + '/data'
 
-    results = get_data(URL, keys)
+    data = list(get_csv_data(URL))
 
-    if args.update:
-        check_and_save(results)
+    casts = find_casts(data)
+    
+    results = list(cast_data(data, casts))
+
+    foo = json.dumps(results, default=str)
 
     pprint(results[0])
-    pprint(results[-1])
+    pprint(results[-2:])
 
-    datekey = find_date_key(results[0])
-    print(datekey)
+    for key, value in results[0].items():
+        if isinstance(value, datetime.date):
+            datekey = key
+            break
 
-    index = [to_date(x[datekey]) for x in results]
-
-    for key in keys:
+    index = [x[datekey] for x in results]
+    
+    for key in casts.keys():
+        if key == datekey:
+            continue
+        if casts[key] is str:
+            continue
+        
         data = [x[key] for x in results]
         plt.plot(index, data, label=key)
+
 
         if args.cumulative:
             data = np.array(data[1:]) - np.array(data[:-1]) 
