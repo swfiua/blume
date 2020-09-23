@@ -1,16 +1,52 @@
-"""
-Ottawa c19
+"""Ottawa c19
 
 Data thanks to open ottawa
 
 https://open.ottawa.ca/datasets/covid-19-source-of-infection/geoservice
+
+This short little example, originally written to explore Ottawa
+datasets relating to covid 19.
+
+There are a number of interesting datasets.
+
+The actual data itself is hosted by arcgis.  
+
+The endpoints all include random hexadecimal ids.
+
+So far I have not been able to find stable endpoints for these
+datasets and they have had a half-life of about one month.
+
+A script will stop working as a dataset no longer seems to exist.
+
+This is not all bad news, the breakages usually also mean some more
+data is available.  There are now 9 covid related datasets.
+
+The primary dataset now has more fields and the date field is now called Date.
+
+Data for the last 14 days in these datasets is typically incomplete,
+so it is useful to keep a few days of data so get a better idea of the
+evolving picture.
+
+I've started saving data each time the code is run.
+
+Aim to add checksums and scrolling through data sets to see how the
+plots change in time.
+
+Seems this little problem has all the key ingredients of the costs of
+keeping a data pipeline going.
+
 """
+
 from matplotlib import pyplot as plt
+
 import requests
 import json
 import datetime
 import csv
 from pprint import pprint
+
+from pathlib import Path
+from collections import deque
 
 import numpy as np
 
@@ -42,45 +78,44 @@ def to_date(value):
 
 class River(magic.Ball):
     """ Like a river that """
-    format = '.csv'
 
-    async def start(self):
-    
+    def __init__(self):
+
+        super().__init__()
         p = Path('.')
-
-        data = p.glob(f'**.{self.format}')
+        self.format = '.csv'
         
-        self.files = deque(data)
-        self.files.sort()
-
-
-    def check_and_save(self, data):
-
-        ck = hashlib.md5(data.encode()).digest()
-
-        ck = ''.join(['%02x' % x for x in ck])
-
-        print(ck)
+        data = p.glob(f'*{self.format}')
         
-        cksums = set(x.stem.split('_')[1] for x in self.files)
+        self.files = deque(sorted(data))
+        
 
-        if ck not in cksums:
-            path = Path(ck + str(datetime.datetime.now() + self.format))
-            path.write_text(data)
-            self.files.append(path)
+    async def xstart(self):
+        pass
+
+
+    def save(self, data):
+
+        path = Path(str(datetime.datetime.now()) + self.format)
+        path.write_text(data)
+        self.files.append(path)
         
 
 BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
 ITEM_IDS = [
+    '6bfe7832017546e5b30c5cc6a201091b',
+    '26c902bf1da44d3d90b099392b544b81',
     'cf9abb0165b34220be8f26790576a5e7',
     '02c99319ef44488e85cd4f96f5061f20',
     '77078920fea8499dbb6f54cc69c03a90']
 
-def get_csv_data(url):
+def get_response(url):
     
-    resp = requests.get(url)
-    data = resp.text.split('\n')
+    return requests.get(url)
 
+
+def data_to_rows(data):
+    
     # figure out what we have
     for row in csv.reader(data):
         keys = [x.strip() for x in row]
@@ -112,7 +147,6 @@ def find_casts(data, sniff=10):
                     casts[key] = upcast[casts[key]]
                 
                     
-    pprint(casts)
     return casts
 
 def cast_data(data, casts):
@@ -134,11 +168,50 @@ def cast_data(data, casts):
 
 class Ocixx(magic.Ball):
 
+    def __init__(self, data):
+
+        super().__init__()
+
+        self.data = data
+        self.fields = deque(self.data[0].keys())
+        
+        
     async def run(self):
 
-        item_id = self.items[0]
+        
+        for key, value in self.data[0].items():
+            if isinstance(value, datetime.date):
+                datekey = key
+                break 
+        index = [x[datekey] for x in results]
 
-        URL = BASE_URL + item_id + '/data'
+        key = self.fields[0]
+        data = [x[key] for x in results]
+        
+        plt.plot(index, data, label=key)
+
+        plt.legend(loc=0)
+        plt.grid(True)
+
+        #self.put(magic.fig2data(plt))
+        await self.put()
+
+
+async def run(results):
+    
+    pprint(results[0])
+
+    ocixx = Ocixx(results)
+
+    farm = fm.Farm()
+    
+    farm.add(ocixx)
+    farm.shep.path.append(ocixx)
+
+    await farm.start()
+    await farm.run()
+
+
 
 if __name__ == '__main__':
 
@@ -153,44 +226,27 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    URL = BASE_URL + ITEM_IDS[args.itemid] + '/data'
+    url = BASE_URL + ITEM_IDS[args.itemid] + '/data' # 
 
-    data = list(get_csv_data(URL))
+    resp = get_response(url)
+
+    River().save(resp.text)
+
+    data = list(data_to_rows(resp.text.split('\n')))
 
     casts = find_casts(data)
     
     results = list(cast_data(data, casts))
 
-    foo = json.dumps(results, default=str)
-
-    pprint(results[0])
-    pprint(results[-2:])
-
-    for key, value in results[0].items():
-        if isinstance(value, datetime.date):
-            datekey = key
-            break
-
-    index = [x[datekey] for x in results]
+    import curio
+    curio.run(run(results))
     
-    for key in casts.keys():
-        if key == datekey:
-            continue
-        if casts[key] is str:
-            continue
-        
-        data = [x[key] for x in results]
-        plt.plot(index, data, label=key)
-
-
-        if args.cumulative:
-            data = np.array(data[1:]) - np.array(data[:-1]) 
-            plt.plot(index[1:], data, label='delta' + key)
-            print(key)
-            print(data[-14:])
+    if args.cumulative:
+        data = np.array(data[1:]) - np.array(data[:-1]) 
+        plt.plot(index[1:], data, label='delta' + key)
+        print(key)
+        print(data[-14:])
+        print('Sum for last 14 days:', sum(data[-14:]))
             
-        plt.legend(loc=0)
-        plt.grid(True)
-    plt.show()
 
     

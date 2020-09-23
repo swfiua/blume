@@ -417,10 +417,10 @@ class RoundAbout:
 
         return qq
 
-    async def put(self, value, name='stdout'):
+    async def put(self, value=None, name='stdout'):
 
         self.counts.update([('put', name)])
-        await self.select(name).put(value)
+        await self.select(name).put(value or fig2data(plt))
 
     async def get(self, name='stdin'):
 

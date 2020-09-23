@@ -4,6 +4,11 @@
 
 What's happening with the `blume.table.Table`?
 
+2020/09/02
+==========
+
+September.   `guide.rst` for a longer version.
+
 2020/07/28
 ==========
 
