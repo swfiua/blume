@@ -39,6 +39,7 @@ keeping a data pipeline going.
 
 from matplotlib import pyplot as plt
 
+import sys
 import requests
 import json
 import datetime
@@ -55,6 +56,8 @@ import hashlib
 
 from blume import magic
 from blume import farm as fm
+
+import git
 
 def find_date_key(record):
 
@@ -94,9 +97,10 @@ class River(magic.Ball):
         pass
 
 
-    def save(self, data):
+    def save(self, data, filename='data.csv'):
 
-        path = Path(str(datetime.datetime.now()) + self.format)
+        #path = Path(str(datetime.datetime.now()) + self.format)
+        path = Path(filename)
         path.write_text(data)
         self.files.append(path)
         
@@ -105,9 +109,7 @@ BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
 ITEM_IDS = [
     '6bfe7832017546e5b30c5cc6a201091b',
     '26c902bf1da44d3d90b099392b544b81',
-    'cf9abb0165b34220be8f26790576a5e7',
-    '02c99319ef44488e85cd4f96f5061f20',
-    '77078920fea8499dbb6f54cc69c03a90']
+    ]
 
 def get_response(url):
     
@@ -137,7 +139,7 @@ def find_casts(data, sniff=10):
 
     upcast = {None: int, int: float, float: str}
     
-    for row in data[:sniff]:
+    for row in data[-sniff:]:
         for key in keys:
             value = row[key].strip()
             if key:
@@ -163,46 +165,68 @@ def cast_data(data, casts):
 
             result[key] = cast(value)
         yield result
-
                   
 
 class Ocixx(magic.Ball):
 
-    def __init__(self, data):
+
+    def __init__(self):
 
         super().__init__()
+        self.fields = None
 
-        self.data = data
-        self.fields = deque(self.data[0].keys())
+
+    def get_data(self, commit):
+
+        repo.git.checkout(commit)
+            
+        data = list(data_to_rows(open(self.filename).read().split('\n')))
+        casts = find_casts(data)
+        results = list(cast_data(data, casts))
         
+        if self.fields is None:
+            self.fields = deque(results[0].keys())
+
+            for key, value in results[0].items():
+                if isinstance(value, datetime.date):
+                    self.datekey = key
+                    break 
+        
+        return results
         
     async def run(self):
 
-        
-        for key, value in self.data[0].items():
-            if isinstance(value, datetime.date):
-                datekey = key
-                break 
-        index = [x[datekey] for x in results]
 
-        key = self.fields[0]
-        data = [x[key] for x in results]
-        
-        plt.plot(index, data, label=key)
+        repo = git.Repo()
+        repo.git.checkout('master')
 
-        plt.legend(loc=0)
+        for commit in repo.iter_commits():
+
+            results = self.get_data(commit)
+
+            index = [x[self.datekey] for x in results]
+
+            key = self.fields[0]
+            data = [x[key] for x in results]
+
+        
+            plt.plot(index, data, label=key)
+
+        #plt.legend(loc=0)
+        plt.title(self.fields[0])
         plt.grid(True)
 
         #self.put(magic.fig2data(plt))
         await self.put()
 
+        self.fields.rotate()
 
-async def run(results):
+
+async def run(args):
     
-    pprint(results[0])
-
-    ocixx = Ocixx(results)
-
+    ocixx = Ocixx()
+    ocixx.update(args)
+    
     farm = fm.Farm()
     
     farm.add(ocixx)
@@ -222,31 +246,41 @@ if __name__ == '__main__':
     parser.add_argument('-cumulative', action='store_true')
     parser.add_argument('-save', action='store_true')
     parser.add_argument('-update', action='store_true')
-    parser.add_argument('-itemid', type=int, default=0)
+    parser.add_argument('-itemid', default=ITEM_IDS[0])
+    parser.add_argument('-filename', default='data.csv')
+    parser.add_argument('-hint', default='store_true')
 
     args = parser.parse_args()
 
-    url = BASE_URL + ITEM_IDS[args.itemid] + '/data' # 
+    if args.hint:
+        print('Try these with --itemid:')
+        for x in ITEM_IDS:
+            print(x)
+
+    url = BASE_URL + args.itemid + '/data' 
 
     resp = get_response(url)
 
-    River().save(resp.text)
+    repo = git.Repo()
 
-    data = list(data_to_rows(resp.text.split('\n')))
+    if list(repo.iter_commits('--all')):
+        repo.git.checkout('master')
 
-    casts = find_casts(data)
+    River().save(resp.text, args.filename)
     
-    results = list(cast_data(data, casts))
+    if args.filename in repo.untracked_files:
+        print(f"Add {args.filename} to git repo to track")
+        sys.exit(0)
+        
+    if repo.index.diff(None):
+        print('New data, updating git repo')
+        repo.index.add(args.fileame)
+        repo.index.commit('latest data')
+        
 
     import curio
-    curio.run(run(results))
+    curio.run(run(args))
     
-    if args.cumulative:
-        data = np.array(data[1:]) - np.array(data[:-1]) 
-        plt.plot(index[1:], data, label='delta' + key)
-        print(key)
-        print(data[-14:])
-        print('Sum for last 14 days:', sum(data[-14:]))
             
 
     
