@@ -42,6 +42,16 @@ Instead import table from blume and use as follows::
   tab = table(plt.gca(), ...)
 
 
+And lots more
+=============
+
+The general theme is how to create generic tools to explore tables of
+data, visualising the data with *matplotlib*.
+
+Tools that also help with managing open data.
+
+For small datasets, there is an evolving example of working with
+simple csv files, stored in a git repository.   See `blume.examples.ocixx`.
 
 Install
 =======

@@ -183,7 +183,8 @@ class Interact(Ball):
         """
 
         from pprint import pprint
-        pprint(vars(self.ball))
+        for key, value in vars(self.ball).items():
+            print(key, type(value))
 
         self.show_current()
 

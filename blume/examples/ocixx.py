@@ -35,6 +35,17 @@ plots change in time.
 Seems this little problem has all the key ingredients of the costs of
 keeping a data pipeline going.
 
+29th September 2020 update
+==========================
+
+Things are moving along.  An initial stab at downloading csv files and
+checking differences into git is up and running.
+
+Also starting to develop a class to help guessing what sort of values are in each column.
+
+For now, I am just looking for int's, float's and dates.
+
+As things are going it might work for a lot of the Ottawa datasets.
 """
 
 from matplotlib import pyplot as plt
@@ -127,6 +138,42 @@ def data_to_rows(data):
         yield row
     
 
+class Spell:
+    """ A magic spell, or cast if you like, if it works
+
+    For help processing lists of dictionaries.
+
+    Or csv files, where we have to turn strings into values.
+
+    The game is guessing the types of the columns in a csv file.
+
+    Use a magic.Spell.
+
+    
+    """
+
+    def __init__(self, cache=None):
+        """ Cache size is how much rewind we get if a type changes
+        
+        If None, everything gets cached.
+
+        For small datasets this might be what you want.
+        """
+
+        # casts by keyword
+        self.casts = {}
+        self.upcast = {None: int, int: float, float: str}
+        self.fill = {None: None, int: 0, float: 0.0, str:''}
+        
+        self.cache = deque(maxlen=cache)
+
+
+    def cast(self, data):
+        """ Apply casts to data, updating the casts as we go. """
+        pass
+        
+
+        
 def find_casts(data, sniff=10):
 
     keys = data[0].keys()
@@ -139,7 +186,7 @@ def find_casts(data, sniff=10):
 
     upcast = {None: int, int: float, float: str}
     
-    for row in data[-sniff:]:
+    for row in data[sniff:]:
         for key in keys:
             value = row[key].strip()
             if key:
@@ -181,7 +228,7 @@ class Ocixx(magic.Ball):
         repo.git.checkout(commit)
             
         data = list(data_to_rows(open(self.filename).read().split('\n')))
-        casts = find_casts(data)
+        casts = find_casts(data, self.sniff)
         results = list(cast_data(data, casts))
         
         if self.fields is None:
@@ -193,24 +240,27 @@ class Ocixx(magic.Ball):
                     break 
         
         return results
+
+    async def start(self):
+
+        self.repo = git.Repo()
+        self.repo.git.checkout('master')
+
+        self.commits = deque(self.repo.iter_commits())
+        self.master = self.commits[0]
         
     async def run(self):
 
 
-        repo = git.Repo()
-        repo.git.checkout('master')
+        results = self.get_data(self.commits[0])
 
-        for commit in repo.iter_commits():
+        index = [x[self.datekey] for x in results]
 
-            results = self.get_data(commit)
-
-            index = [x[self.datekey] for x in results]
-
-            key = self.fields[0]
-            data = [x[key] for x in results]
+        key = self.fields[0]
+        data = [x[key] for x in results]
 
         
-            plt.plot(index, data, label=key)
+        plt.plot(index, data, label=key)
 
         #plt.legend(loc=0)
         plt.title(self.fields[0])
@@ -219,7 +269,9 @@ class Ocixx(magic.Ball):
         #self.put(magic.fig2data(plt))
         await self.put()
 
-        self.fields.rotate()
+        self.commits.rotate()
+        if self.commits[0] is self.master:
+            self.fields.rotate()
 
 
 async def run(args):
@@ -249,6 +301,7 @@ if __name__ == '__main__':
     parser.add_argument('-itemid', default=ITEM_IDS[0])
     parser.add_argument('-filename', default='data.csv')
     parser.add_argument('-hint', default='store_true')
+    parser.add_argument('-sniff', type=int, default=10)
 
     args = parser.parse_args()
 
@@ -274,7 +327,7 @@ if __name__ == '__main__':
         
     if repo.index.diff(None):
         print('New data, updating git repo')
-        repo.index.add(args.fileame)
+        repo.index.add(args.filename)
         repo.index.commit('latest data')
         
 
