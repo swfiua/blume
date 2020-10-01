@@ -10,15 +10,22 @@ Welcome to blume's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   README.rst
+   news.rst
+   guide.rst
+   requirements.rst
+   
+   hulsetaylor.rst
    about.rst
-   cpr.rst
    universal.rst
+   cpr.rst
    farm.rst
    tabledotpy.rst
-   
+   godel.rst
+   why.rst
 
 Indices and tables
-==================
+==================q
 
 * :ref:`genindex`
 * :ref:`modindex`
