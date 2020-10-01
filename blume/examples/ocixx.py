@@ -221,6 +221,7 @@ class Ocixx(magic.Ball):
 
         super().__init__()
         self.fields = None
+        self.rotate = False
 
 
     def get_data(self, commit):
@@ -257,8 +258,13 @@ class Ocixx(magic.Ball):
         index = [x[self.datekey] for x in results]
 
         key = self.fields[0]
+        if key == self.datekey:
+            self.fields.rotate()
+            key = self.fields[0]
+
         data = [x[key] for x in results]
 
+        pprint(stats(data))
         
         plt.plot(index, data, label=key)
 
@@ -270,9 +276,20 @@ class Ocixx(magic.Ball):
         await self.put()
 
         self.commits.rotate()
-        if self.commits[0] is self.master:
+        if self.rotate and self.commits[0] is self.master:
             self.fields.rotate()
 
+def stats(data):
+
+    data = np.array(data)
+    results = {}
+    results['count'] = len(data)
+    results['mean'] = data.mean()
+    results['std'] = data.std()
+    for percentile in [50, 75, 90, 95]:
+        results[percentile] = np.percentile(data, percentile)
+
+    return results
 
 async def run(args):
     
