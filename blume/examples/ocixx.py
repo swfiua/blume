@@ -221,8 +221,6 @@ class Ocixx(magic.Ball):
 
         super().__init__()
         self.fields = None
-        self.rotate = False
-
 
     def get_data(self, commit):
 
@@ -253,31 +251,34 @@ class Ocixx(magic.Ball):
     async def run(self):
 
 
-        results = self.get_data(self.commits[0])
+        while True:
+            results = self.get_data(self.commits[0])
 
-        index = [x[self.datekey] for x in results]
+            index = [x[self.datekey] for x in results]
 
-        key = self.fields[0]
-        if key == self.datekey:
-            self.fields.rotate()
             key = self.fields[0]
+            print('field,commit', key, self.commits[0])
+            if key == self.datekey:
+                self.fields.rotate()
+                key = self.fields[0]
 
-        data = [x[key] for x in results]
+            data = [x[key] for x in results]
 
-        pprint(stats(data))
-        
-        plt.plot(index, data, label=key)
+            print(stats(data))
+            
+            plt.plot(index, data, label=key)
 
-        #plt.legend(loc=0)
-        plt.title(self.fields[0])
-        plt.grid(True)
+            #plt.legend(loc=0)
+            plt.title(self.fields[0])
+            plt.grid(True)
 
-        #self.put(magic.fig2data(plt))
+            #self.put(magic.fig2data(plt))
+
+            self.commits.rotate()
+            if self.rotate and self.commits[0] is self.master:
+                self.fields.rotate()
+                break
         await self.put()
-
-        self.commits.rotate()
-        if self.rotate and self.commits[0] is self.master:
-            self.fields.rotate()
 
 def stats(data):
 
@@ -317,6 +318,7 @@ if __name__ == '__main__':
     parser.add_argument('-update', action='store_true')
     parser.add_argument('-itemid', default=ITEM_IDS[0])
     parser.add_argument('-filename', default='data.csv')
+    parser.add_argument('-rotate', default='store_true')
     parser.add_argument('-hint', default='store_true')
     parser.add_argument('-sniff', type=int, default=10)
 
