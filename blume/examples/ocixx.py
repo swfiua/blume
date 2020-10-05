@@ -99,6 +99,10 @@ complications.
 Exchanging data as `csv` files, stored in a git repository offers a
 lot more flexibility.
 
+Others are also using git for covid data:
+
+https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports
+
 Now about that magic spell...
 """
 
