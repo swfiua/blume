@@ -562,7 +562,6 @@ class Shepherd(Ball):
             lu = sheep.radii.filters[name]
             #print('whistle', sheep, lu)
             if key in lu.keys():
-                print('sending message', key, name, sheep)
                 try:
                     await lu[key]()
                 except:
