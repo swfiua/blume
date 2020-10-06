@@ -2,7 +2,20 @@
  Colin P Rourke
 ================
 
+Colin P. Rourke, a brilliant mathematician with a deep understanding
+of the Poincaré conjecture, now solved.
+
+In 2000 started an interest in cosmology.  His **New paradigm for the
+universe**, a stunning work that suggests an ancient universe, no big
+bang, and no need for dark matter.
+
+It is a beautiful theory, more economical in its assumptions than the
+current big bang and dark matter cosmology.
+
 The *U* in BLUME stands for `universal`.
+
+The goal is to act as a guide to the mathematics of the *new
+paradigm*.  
 
 The `blume.cpr` module is where it starts to come into life.
 
@@ -12,7 +25,8 @@ Explore geodesics in *de Sitter Space*.
 
 Binary systems and the *new paradigm*, when *M* is large and *r* is small?
 
-How do they make waves?
+How do they make waves, rather than preserve their angular momentum by
+a suitable change in rotation?
 
 Where do the harmonics arise in the CMB?  Is it just the *local
 galaxies* that modulate the signal?
@@ -32,13 +46,9 @@ It would also be of interest to see how the new paradigm changes
 planetary formation theory and movements of dust through a solar
 system and beyond.
 
-For more on *Colin P. Rourke**, the inspiration behind all this, then
-`universal` is a good place to learn more.
-
 The `cpr` module is a first stab at implementing the physics of
 his book, *A new paradigm for the universe*, in `python`.
 
 All errors, and there are likely may be many, are on me for now.
 
-Like most good mysteries, the more you explore, insights rapidly raise
-a flurry of more intriguing questions. 
+
