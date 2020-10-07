@@ -254,13 +254,12 @@ def find_casts(data, sniff=10):
     for row in data[sniff:]:
         for key in keys:
             value = row[key].strip()
-            if key:
+            if value:
                 try:
                     casts.setdefault(key, int)(value)
                 except:
                     casts[key] = upcast[casts[key]]
                 
-                    
     return casts
 
 def cast_data(data, casts):
@@ -389,8 +388,8 @@ if __name__ == '__main__':
     parser.add_argument('-update', action='store_true')
     parser.add_argument('-itemid', default=ITEM_IDS[0])
     parser.add_argument('-filename', default='data.csv')
-    parser.add_argument('-rotate', default='store_true')
-    parser.add_argument('-hint', default='store_true')
+    parser.add_argument('-rotate', action='store_true')
+    parser.add_argument('-hint', action='store_true')
     parser.add_argument('-sniff', type=int, default=10)
 
     args = parser.parse_args()
