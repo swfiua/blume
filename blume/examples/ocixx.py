@@ -70,6 +70,10 @@ breaks in different ways for different commits.
 
 I think the fix here is to get the magic spell working!
 
+Update: bug in my code, wrote key where it should have been value.
+
+Still need to get the magic spell working.
+
 Back to the git tracking of data
 ================================
 
