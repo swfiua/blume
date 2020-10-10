@@ -27,7 +27,7 @@ Welcome to blume's documentation!
    gallery.rst
 
 Indices and tables
-==================q
+==================
 
 * :ref:`genindex`
 * :ref:`modindex`
