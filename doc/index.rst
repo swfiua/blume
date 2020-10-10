@@ -24,6 +24,8 @@ Welcome to blume's documentation!
    godel.rst
    why.rst
 
+   gallery.rst
+
 Indices and tables
 ==================q
 

@@ -184,7 +184,10 @@ class Interact(Ball):
 
         from pprint import pprint
         for key, value in vars(self.ball).items():
-            print(key, type(value))
+            rep = repr(value)
+            if len(rep) > 200:
+                rep = rep[:10] + ' ... ' + rep[-10:]
+            print(key, rep, type(value))
 
         self.show_current()
 

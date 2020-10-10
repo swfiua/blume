@@ -334,8 +334,8 @@ class Ocixx(magic.Ball):
 
             #print(stats(data))
 
-            print(Counter(type(x) for x in data), key)
-            print(data[-10:])
+            #print(Counter(type(x) for x in data), key)
+            #print(data[-10:])
 
             try:
                 plt.plot(index, data, label=key)
@@ -345,8 +345,6 @@ class Ocixx(magic.Ball):
             #plt.legend(loc=0)
             plt.title(self.fields[0])
             plt.grid(True)
-
-            #self.put(magic.fig2data(plt))
 
             self.commits.rotate()
             if self.rotate and self.commits[0] is self.master:

@@ -22,7 +22,7 @@ setup(
     version=__version__,
     description='Better looking tables for matplotlib',
     long_description=long_description,
-    url='https://github.com/matplotlib/blume',
+    url='https://github.com/swfiua/blume',
     license='Matplotlib',
     classifiers = [
       'Development Status :: 4 - Beta',
