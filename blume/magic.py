@@ -77,6 +77,8 @@ from traceback import print_exc
 import curio
 
 sleep = curio.sleep
+run = curio.run
+spawn = curio.spawn
 
 import numpy as np
 
@@ -163,6 +165,7 @@ class Interact(Ball):
         self.add_filter('8', self.cycle)
         self.add_filter('x', self.tenx)
         self.add_filter('z', self.tenth)
+        self.add_filter('m', self.add_m)
 
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
@@ -183,13 +186,15 @@ class Interact(Ball):
         """
 
         from pprint import pprint
-        for key, value in vars(self.ball).items():
+        for key, value in sorted(vars(self.ball).items()):
             rep = repr(value)
             if len(rep) > 200:
                 rep = rep[:10] + ' ... ' + rep[-10:]
             print(key, rep, type(value))
 
+        print()
         self.show_current()
+        print()
 
     def show_current(self):
         
@@ -250,6 +255,11 @@ class Interact(Ball):
         """ i one more """
 
         self.operate(operator.add, 1)
+
+    async def add_m(self):
+        """ i one thousand more """
+
+        self.operate(operator.add, 1000)
 
     async def sub_one(self):
         """ i one less """
@@ -559,7 +569,7 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
-        print('whsitle', key, name)
+        #print('whsitle', key, name)
         
         for sheep in reversed(self.path):
             lu = sheep.radii.filters[name]
@@ -829,7 +839,7 @@ async def relay(a, b):
         
         await b.put(value, 'stdin')
 
-async def run():
+async def runme():
 
     farm = GeeFarm()
 
@@ -853,4 +863,4 @@ def random_colour():
 if __name__ == '__main__':
     
     
-    curio.run(run(), with_monitor=True)
+    run(runme(), with_monitor=True)
