@@ -189,7 +189,11 @@ BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
 ITEM_IDS = [
     '6bfe7832017546e5b30c5cc6a201091b',
     '26c902bf1da44d3d90b099392b544b81',
-    ]
+    '7cf545f26fb14b3f972116241e073ada',
+    '5b24f70482fe4cf1824331d89483d3d3',
+    'd010a848b6e54f4990d60a202f2f2f99',
+    'ae347819064d45489ed732306f959a7e',
+]
 
 def get_response(url):
     
@@ -293,8 +297,13 @@ class Ocixx(magic.Ball):
     def get_data(self, commit):
 
         repo.git.checkout(commit)
-            
-        data = list(data_to_rows(open(self.filename).read().split('\n')))
+
+        path = Path(self.filename)
+
+        if not path.exists():
+            return
+
+        data = list(data_to_rows(path.open().read().split('\n')))
         casts = find_casts(data, self.sniff)
         results = list(cast_data(data, casts))
         
@@ -310,7 +319,7 @@ class Ocixx(magic.Ball):
 
     async def start(self):
 
-        self.repo = git.Repo()
+        self.repo = git.Repo(search_parent_directories=True)
         self.repo.git.checkout('master')
 
         self.commits = deque(self.repo.iter_commits())
@@ -321,6 +330,9 @@ class Ocixx(magic.Ball):
 
         while True:
             results = self.get_data(self.commits[0])
+
+            if not results:
+                continue
 
             index = [x[self.datekey] for x in results]
 
@@ -400,12 +412,14 @@ if __name__ == '__main__':
         print('Try these with --itemid:')
         for x in ITEM_IDS:
             print(x)
+        import sys
+        sys.exit(0)
 
     url = BASE_URL + args.itemid + '/data' 
 
     resp = get_response(url)
 
-    repo = git.Repo()
+    repo = git.Repo(search_parent_directories=True)
 
     if list(repo.iter_commits('--all')):
         repo.git.checkout('master')
@@ -416,12 +430,11 @@ if __name__ == '__main__':
         print(f"Add {args.filename} to git repo to track")
         sys.exit(0)
         
-    if repo.index.diff(None):
+    if diff:=repo.index.diff(None):
         print('New data, updating git repo')
-        repo.index.add(args.filename)
+        repo.index.add(diff[0].a_path)
         repo.index.commit('latest data')
         
-
     import curio
     curio.run(run(args))
     
