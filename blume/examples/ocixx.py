@@ -255,8 +255,9 @@ class Spell:
 
 
     def spell(self, data, sniff=10):
-        """ Apply casts to data, updating the casts as we go. """
-        self.find_casts(data, sniff)
+        """ Apply casts to data
+        
+        Would like this to be dynamic, updating the casts as we go """
 
         # short hand for:  for xx in self.cast_data(data); yield xx
         yield from self.cast_data(data)
@@ -303,6 +304,10 @@ class Spell:
 
                 result[key] = cast(value)
             yield result
+
+    def fields(self):
+
+        return self.casts.keys()
                       
 
 
@@ -312,6 +317,7 @@ class Ocixx(magic.Ball):
     def __init__(self):
 
         super().__init__()
+        self.spell = None
         self.fields = None
 
     def get_data(self, commit):
@@ -328,16 +334,12 @@ class Ocixx(magic.Ball):
         if not data:
             return
 
-        spell = Spell()
-        results = list(spell.spell(data, self.sniff))
-        
-        if self.fields is None:
-            self.fields = deque(results[0].keys())
-
-            for key, value in results[0].items():
-                if isinstance(value, datetime.date):
-                    self.datekey = key
-                    break 
+        if self.spell is None:
+            self.spell = Spell()
+            self.spell.find_casts(data, self.sniff)
+            
+        results = list(self.spell.spell(data))
+        pprint(self.spell.casts)
         
         return results
 
@@ -351,24 +353,20 @@ class Ocixx(magic.Ball):
         
     async def run(self):
 
-
+        
         while True:
             results = self.get_data(self.commits[0])
 
-            self.commits.rotate()
-            if self.rotate and self.commits[0] is self.master:
-                self.fields.rotate()
-                break
-
+            if self.fields is None:
+                self.fields = deque(self.spell.fields())
+                
+            key = self.fields[0]
+            
             if results:
+                spell = self.spell
+                index = [x[spell.datekey] for x in results]
 
-                index = [x[self.datekey] for x in results]
-
-                key = self.fields[0]
                 #print('field,commit', key, self.commits[0])
-                if key == self.datekey:
-                    self.fields.rotate()
-                    key = self.fields[0]
 
                 data = [x[key] for x in results]
 
@@ -385,6 +383,18 @@ class Ocixx(magic.Ball):
                 #plt.legend(loc=0)
                 plt.title(self.fields[0])
                 plt.grid(True)
+
+            self.commits.rotate()
+            if self.rotate and self.commits[0] is self.master:
+
+                keytype = str
+                while keytype not in (float, int):
+
+                    self.fields.rotate()
+                    key = self.fields[0]
+                    keytype = self.spell.casts[key]
+                break
+            
 
         await self.put()
 
