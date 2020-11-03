@@ -254,9 +254,9 @@ class Spell:
         self.cache = deque(maxlen=cache)
 
 
-    def spell(self, data):
+    def spell(self, data, sniff=10):
         """ Apply casts to data, updating the casts as we go. """
-        self.find_casts(data)
+        self.find_casts(data, sniff)
 
         # short hand for:  for xx in self.cast_data(data); yield xx
         yield from self.cast_data(data)
@@ -273,7 +273,7 @@ class Spell:
 
         casts = self.casts
         
-        casts[datekey] = to_date
+        casts[self.datekey] = to_date
 
         upcast = self.upcast
         
@@ -324,11 +324,12 @@ class Ocixx(magic.Ball):
             return
 
         data = list(data_to_rows(path.open().read().split('\n')))
+        print('data', len(data))
+        if not data:
+            return
 
         spell = Spell()
-        spell.find_casts(data, self.sniff)
-        
-        results = list(cast_data(data, casts))
+        results = list(spell.spell(data, self.sniff))
         
         if self.fields is None:
             self.fields = deque(results[0].keys())
@@ -345,7 +346,7 @@ class Ocixx(magic.Ball):
         self.repo = git.Repo(search_parent_directories=True)
         self.repo.git.checkout('master')
 
-        self.commits = deque(self.repo.iter_commits())
+        self.commits = deque(self.repo.iter_commits(paths=self.filename))
         self.master = self.commits[0]
         
     async def run(self):
@@ -354,37 +355,37 @@ class Ocixx(magic.Ball):
         while True:
             results = self.get_data(self.commits[0])
 
-            if not results:
-                continue
-
-            index = [x[self.datekey] for x in results]
-
-            key = self.fields[0]
-            #print('field,commit', key, self.commits[0])
-            if key == self.datekey:
-                self.fields.rotate()
-                key = self.fields[0]
-
-            data = [x[key] for x in results]
-
-            #print(stats(data))
-
-            #print(Counter(type(x) for x in data), key)
-            #print(data[-10:])
-
-            try:
-                plt.plot(index, data, label=key)
-            except:
-                print(f'oopsie plotting {key}') 
-
-            #plt.legend(loc=0)
-            plt.title(self.fields[0])
-            plt.grid(True)
-
             self.commits.rotate()
             if self.rotate and self.commits[0] is self.master:
                 self.fields.rotate()
                 break
+
+            if results:
+
+                index = [x[self.datekey] for x in results]
+
+                key = self.fields[0]
+                #print('field,commit', key, self.commits[0])
+                if key == self.datekey:
+                    self.fields.rotate()
+                    key = self.fields[0]
+
+                data = [x[key] for x in results]
+
+                #print(stats(data))
+
+                #print(Counter(type(x) for x in data), key)
+                #print(data[-10:])
+
+                try:
+                    plt.plot(index, data, label=key)
+                except:
+                    print(f'oopsie plotting {key}') 
+
+                #plt.legend(loc=0)
+                plt.title(self.fields[0])
+                plt.grid(True)
+
         await self.put()
 
 def stats(data):
@@ -416,7 +417,7 @@ async def run(args):
 def hexarg(value):
 
     hexx = set('abcdef0123456789')
-    for char in value:
+    for char in str(value):
         if char.lower() not in hexx:
             return False
             
@@ -446,13 +447,33 @@ if __name__ == '__main__':
         import sys
         sys.exit(0)
 
+    """ # FIXME: create an object that digests the inputs and gives filename and itemid
+
+    aiming to support a range of possibilities
+
+    a better approach would just be to look and see what is there and figure out what is what.
+
+    imagine a folder:
+
+          foo/data.csv
+              26c902bf1da44d3d90b099392b544b81/data.csv
+
+    problem: want to check out different git commits, so need to re-scan for each commit
+
+    so this code needs putting in a function somewhere
+    """
     itemid = ITEM_IDS[0]
     for path in args.paths:
         path = Path(path)
+
+        # if it is a folder, assume target is data.csv
+        if path.is_dir():
+            path = path / 'data.csv'
+
         if path.name == 'data.csv':
             tag = path.parent
             if len(str(tag)) == 32 and hexarg(tag):
-                itemid = tab
+                itemid = str(tag)
                 args.filename = path
                 break
 
@@ -465,6 +486,8 @@ if __name__ == '__main__':
     if list(repo.iter_commits('--all')):
         repo.git.checkout('master')
 
+    print(args.filename)
+    print(itemid)
     River().save(resp.text, args.filename)
     
     if args.filename in repo.untracked_files:
