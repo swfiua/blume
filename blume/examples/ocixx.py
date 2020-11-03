@@ -226,65 +226,85 @@ class Spell:
     """
 
     def __init__(self, cache=None):
-        """ Cache size is how much rewind we get if a type changes
+        """  
         
+        Older idea, updated::
+
+        Cache size is how much rewind we get if a type changes
+
         If None, everything gets cached.
 
+        It would make sense to coordinate this with
+        functools.lru_cache, now known as functools.cache (python 3.9).
+        
         For small datasets this might be what you want.
+
         """
 
         # casts by keyword
         self.casts = {}
         self.upcast = {None: int, int: float, float: str}
         self.fill = {None: None, int: 0, float: 0.0, str:''}
+
+        # how much data to look at to find casts
+        self.sniff = 10
         
+        
+        # i don't think this bit is implemented yet -- see comment above
         self.cache = deque(maxlen=cache)
 
 
-    def cast(self, data):
+    def spell(self, data):
         """ Apply casts to data, updating the casts as we go. """
-        pass
+        self.find_casts(data)
+
+        # short hand for:  for xx in self.cast_data(data); yield xx
+        yield from self.cast_data(data)
         
-
         
-def find_casts(data, sniff=10):
+    def find_casts(self, data, sniff=10):
 
-    keys = data[0].keys()
+        sniff = sniff or self.sniff
 
-    # look for a date key
-    datekey = find_date_key(data[0])
-    
-    casts = {}
-    casts[datekey] = to_date
+        keys = data[0].keys()
 
-    upcast = {None: int, int: float, float: str}
-    
-    for row in data[sniff:]:
-        for key in keys:
-            value = row[key].strip()
-            if value:
-                try:
-                    casts.setdefault(key, int)(value)
-                except:
-                    casts[key] = upcast[casts[key]]
-                
-    return casts
+        # look for a (first) date key 
+        self.datekey = find_date_key(data[0])
 
-def cast_data(data, casts):
+        casts = self.casts
+        
+        casts[datekey] = to_date
 
-    fill = {None: None, int: 0, float: 0.0, str:''}
+        upcast = self.upcast
+        
+        for row in data[self.sniff:]:
+            for key in keys:
+                value = row[key].strip()
+                if value:
+                    try:
+                        casts.setdefault(key, int)(value)
+                    except:
+                        casts[key] = upcast[casts[key]]
+                    
 
-    for row in data:
+    def cast_data(self, data):
 
-        result = {}
-        for key, value in row.items():
-            cast = casts[key]
-            if not value.strip():
-                value = fill.setdefault(cast)
+        casts = self.casts
 
-            result[key] = cast(value)
-        yield result
-                  
+        fill = self.fill
+
+        for row in data:
+
+            result = {}
+            for key, value in row.items():
+                cast = casts[key]
+                if not value.strip():
+                    value = fill.setdefault(cast)
+
+                result[key] = cast(value)
+            yield result
+                      
+
 
 class Ocixx(magic.Ball):
 
@@ -304,7 +324,10 @@ class Ocixx(magic.Ball):
             return
 
         data = list(data_to_rows(path.open().read().split('\n')))
-        casts = find_casts(data, self.sniff)
+
+        spell = Spell()
+        spell.find_casts(data, self.sniff)
+        
         results = list(cast_data(data, casts))
         
         if self.fields is None:
@@ -390,6 +413,14 @@ async def run(args):
     await farm.run()
 
 
+def hexarg(value):
+
+    hexx = set('abcdef0123456789')
+    for char in value:
+        if char.lower() not in hexx:
+            return False
+            
+    return True
 
 if __name__ == '__main__':
 
@@ -397,10 +428,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('paths', nargs='*', default='.')
     parser.add_argument('-cumulative', action='store_true')
-    parser.add_argument('-save', action='store_true')
     parser.add_argument('-update', action='store_true')
-    parser.add_argument('-itemid', default=ITEM_IDS[0])
+    parser.add_argument('-itemid', default=None)
     parser.add_argument('-filename', default='data.csv')
     parser.add_argument('-rotate', action='store_true')
     parser.add_argument('-hint', action='store_true')
@@ -415,7 +446,17 @@ if __name__ == '__main__':
         import sys
         sys.exit(0)
 
-    url = BASE_URL + args.itemid + '/data' 
+    itemid = ITEM_IDS[0]
+    for path in args.paths:
+        path = Path(path)
+        if path.name == 'data.csv':
+            tag = path.parent
+            if len(str(tag)) == 32 and hexarg(tag):
+                itemid = tab
+                args.filename = path
+                break
+
+    url = BASE_URL + itemid + '/data' 
 
     resp = get_response(url)
 

@@ -7,6 +7,8 @@ import sys
 from matplotlib import pyplot as plt
 from blume.table import table
 
+from blume.taybell import table
+
 cell_text = [["long text\nWith\nmany\nlines"],
                  ['more but short']]
                  
