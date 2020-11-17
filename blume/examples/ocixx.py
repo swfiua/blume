@@ -330,7 +330,6 @@ class Ocixx(magic.Ball):
             return
 
         data = list(data_to_rows(path.open().read().split('\n')))
-        print('data', len(data))
         if not data:
             return
 
@@ -339,7 +338,6 @@ class Ocixx(magic.Ball):
             self.spell.find_casts(data, self.sniff)
             
         results = list(self.spell.spell(data))
-        pprint(self.spell.casts)
         
         return results
 
@@ -368,14 +366,14 @@ class Ocixx(magic.Ball):
 
                 #print('field,commit', key, self.commits[0])
 
-                data = [x[key] for x in results]
-
                 #print(stats(data))
 
                 #print(Counter(type(x) for x in data), key)
                 #print(data[-10:])
 
                 try:
+                    data = [x[key] for x in results]
+
                     plt.plot(index, data, label=key)
                 except:
                     print(f'oopsie plotting {key}') 
