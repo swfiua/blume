@@ -288,6 +288,10 @@ class Spell:
                         casts[key] = upcast[casts[key]]
                     
 
+    def check_casts(self, data, sniff=10):
+
+        self.find_casts(data, sniff)
+
     def cast_data(self, data):
 
         casts = self.casts
@@ -298,7 +302,11 @@ class Spell:
 
             result = {}
             for key, value in row.items():
-                cast = casts[key]
+                if key not in casts:
+                    print(key)
+                    continue
+                
+                cast = casts[key] 
                 if not value.strip():
                     value = fill.setdefault(cast)
 
@@ -336,6 +344,8 @@ class Ocixx(magic.Ball):
         if self.spell is None:
             self.spell = Spell()
             self.spell.find_casts(data, self.sniff)
+        else:
+            self.spell.check_casts(data, self.sniff)
             
         results = list(self.spell.spell(data))
         
@@ -347,6 +357,9 @@ class Ocixx(magic.Ball):
         self.repo.git.checkout('master')
 
         self.commits = deque(self.repo.iter_commits(paths=self.filename))
+        while len(self.commits) > self.history:
+            self.commits.pop()
+
         self.master = self.commits[0]
         
     async def run(self):
@@ -445,6 +458,7 @@ if __name__ == '__main__':
     parser.add_argument('-rotate', action='store_true')
     parser.add_argument('-hint', action='store_true')
     parser.add_argument('-sniff', type=int, default=10)
+    parser.add_argument('-history', type=int, default=14)
 
     args = parser.parse_args()
 
