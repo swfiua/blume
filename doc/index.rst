@@ -22,6 +22,7 @@ Welcome to blume's documentation!
    farm.rst
    tabledotpy.rst
    godel.rst
+   waves.rst
    why.rst
 
    gallery.rst

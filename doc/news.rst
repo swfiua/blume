@@ -5,7 +5,7 @@
 What's happening with the `blume.table.Table`?
 
 2020/12/03
-~~~~~~~~~~
+==========
 
 I started work on a `blume.taybell.table` function, with the same
 interface as the current `blume.table`, but some additonal tricks.
@@ -47,7 +47,7 @@ missing values.
 
 
 Cosmology
-=========
+---------
 
 There has been a lot of news from on gravitational waves with a number
 of announcements relating to observations in the third observational
