@@ -21,7 +21,7 @@ output, whilst not what intended, is better than expected:
 
 
 Interactive Magic
-=================
+-----------------
 
 it has mainly been a period of small improvements to the
 `blume.examples.ocixx` module.
