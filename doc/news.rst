@@ -4,6 +4,24 @@
 
 What's happening with the `blume.table.Table`?
 
+2020/12/03
+~~~~~~~~~~
+
+I started work on a `blume.taybell.table` function, with the same
+interface as the current `blume.table`, but some additonal tricks.
+
+The goal is to come up with a way to specify the maximum string-length
+to display, with ellipses used if the string is too long.
+
+
+The `blume.examples.ocixx` module.
+
+Tracking time changing data with *git*.
+
+Using a *magic spell* to cast data.
+
+
+
 2020/09/02
 ==========
 

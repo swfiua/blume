@@ -1,5 +1,5 @@
 """
- A new table
+ A new table?
 """
 
 import numpy as np
@@ -20,42 +20,89 @@ class Table:
         for key, values in self.data:
             pass
 
-def shortify(value, maxlen):
+def shortify(values, maxlen=None, ellipsis='...'):
     """ Shorten the value 
 
     Ho-hum need to deal with long strings with new lines:
 
     shorten each line, and have a max number of rows?
     """
+    
+    result = []
+    for value in values:
+        aline = []
+        for line in value.split('\n'):
+            aline.append(shortify_line(line, maxlen, ellipsis))
+
+        result.append('\n'.join(aline))
+
+    return result
+
+def shortify_line(value, maxlen=None, ellipsis='...'):
 
     size = len(value)
-    if size < maxlen:
+    if maxlen is None or size < maxlen:
+        print(maxlen)
         return value
-
+        
     # need to shorten and insert ...
-    sluglen = (maxlen-3)//2
-    return value[:sluglen] + '...' + value[-sluglen:]
+    elen = len(ellipsis)
+
+    # how many characters neet the chop?
+    ncut = (size-maxlen) + elen
+
+    # give beginning and end
+    sluglen = (size-ncut)//2
+
+    # and if there is a spare character, take it at the beginning
+    spare = ncut - (2*sluglen)
+
+    print(ncut, sluglen, spare)
+    
+    return value[:sluglen+spare] + '...' + value[-sluglen:]
+
+
         
 def table(ax,
-          cell=None,
-          rows=None,
-          cols=None,
-          col_widths=None,
-          row_label_width=None,
+          cellText=None,
+          rowLabels=None,
+          colLabels=None,
+
+          # new keyword arguments
+          max_cell_width=None,
+          cell_width=None,
+          col_width=None,
+          row_width=None,
           **kwargs):
 
-    # here wer need to turn cells, rows and cols into strings, unless they already are.
-    if rows:
-        srows = [str(x) for x in rows]
-        if row_label_width:
-            srows = shortify(srows, row_label_width)
+    if max_cell_width:
+        cell_width = cell_width or max_cell_width
+        row_width = row_width or max_cell_width
+        col_width = col_width or max_cell_width
         
+
+    # here we need to turn cells, rows and cols into strings, unless they already are.
+    if rowLabels:
+        fields = [str(x) for x in rowLabels]
+        rowLabels = shortify(fields, row_width)
+
+    if colLabels:
+        fields = [str(x) for x in colLabels]
+        colLabels = shortify(fields, col_width)
+
+    if cellText:
+        cells = []
+
+        for row in cellText:
+            cells.append(shortify(row, cell_width))
+
+        cellText = cells
 
     return mpl_table(
         ax,
-        cellTexts=cells,
-        rowLabels = rows or srows,
-        colLabels = cols,
+        cellText=cellText,
+        rowLabels = rowLabels,
+        colLabels = colLabels,
         **kwargs)
 
 def tokens(line, sep=','):

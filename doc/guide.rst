@@ -150,7 +150,7 @@ A number of modules relate to astronomical data.
 
 At some point it will be productive to combine the ideas in the `cpr`
 module with the data in the `gaia` module.  It would be good to try to
-get good estimates of both the mass and the angular velocity of the
+get good estimates of both the mass, given the angular velocity of the
 black hole at the centre of our galaxy.
 
 There are already a number of excellent projects processing this
