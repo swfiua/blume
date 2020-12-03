@@ -207,7 +207,6 @@ Dwarf, blue galaxies, if you like.
 It should be possible to calculate what we would expect to see based
 on [AP]
 
-
 Putting it all together
 =======================
 

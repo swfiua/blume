@@ -13,14 +13,52 @@ interface as the current `blume.table`, but some additonal tricks.
 The goal is to come up with a way to specify the maximum string-length
 to display, with ellipses used if the string is too long.
 
+I have been using `blume.examples.shortify` to test the code.  Still
+buggy, but I love that brief moment of joy when the code runs and the
+output, whilst not what intended, is better than expected:
 
-The `blume.examples.ocixx` module.
-
-Tracking time changing data with *git*.
-
-Using a *magic spell* to cast data.
+.. image:: images/short.png
 
 
+Interactive Magic
+=================
+
+it has mainly been a period of small improvements to the
+`blume.examples.ocixx` module.
+
+This module downloads and plots data from the Ottawa Covid Database,
+also known as *the COD*.  This is a database of Covid 19 cases in the
+Ottawa area.
+
+See comments in the *ocixx* code for more information on the data
+sources.
+
+There are a handful of tables available and they are generally updated
+once a day.
+
+The code now downloads new data, compares to see if it has changed,
+commits to git if so.
+
+It then spins through all the commits and plots each version of each
+variable in the file.
+
+It is also using a *magic spell* to cast data and attempt to fill in
+missing values.
+
+
+Cosmology
+=========
+
+There has been a lot of news from on gravitational waves with a number
+of announcements relating to observations in the third observational
+run.   See `waves.rst` for more information from the key papers.  
+
+I read something this week that the black hole at the centre of our
+galaxy is deemed to be 2000 or so light years nearer to us than had
+previously been thought, based on observations from the Gaia project.
+
+I am wondering if this will in time put strain on the idea that Sag A*
+is indeed at the centre of our galaxy.
 
 2020/09/02
 ==========
