@@ -19,6 +19,16 @@ output, whilst not what intended, is better than expected:
 
 .. image:: images/short.png
 
+Fixed the bug, ruined the image:
+
+.. image:: images/short2.png
+
+Fixme?
+
+Look for white space to delete?
+
+Camelcase while we are at it?           
+           
 
 Interactive Magic
 -----------------

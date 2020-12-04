@@ -20,7 +20,7 @@ class Table:
         for key, values in self.data:
             pass
 
-def shortify(values, maxlen=None, ellipsis='...'):
+def shortify(values, maxlen=None, ellipsis=None, squash=None):
     """ Shorten the value 
 
     Ho-hum need to deal with long strings with new lines:
@@ -32,34 +32,47 @@ def shortify(values, maxlen=None, ellipsis='...'):
     for value in values:
         aline = []
         for line in value.split('\n'):
-            aline.append(shortify_line(line, maxlen, ellipsis))
+            aline.append(shortify_line(line, maxlen, ellipsis, squash))
 
         result.append('\n'.join(aline))
 
     return result
 
-def shortify_line(value, maxlen=None, ellipsis='...'):
+def shortify_line(value, maxlen=None, ellipsis=None, squash=None):
 
+    ellipsis = ellipsis or '...'
     size = len(value)
-    if maxlen is None or size < maxlen:
-        print(maxlen)
+    if maxlen is None or size <= maxlen:
         return value
-        
+
     # need to shorten and insert ...
     elen = len(ellipsis)
 
-    # how many characters neet the chop?
-    ncut = (size-maxlen) + elen
+    # try removing space -- maybe camel case too?
+    if squash:
+        for key in squash:
+            value = value.replace(key, '')
+            if len(value) <= maxlen:
+                return value
 
-    # give beginning and end
-    sluglen = (size-ncut)//2
+        # update size
+        size = len(value)
+        
+
+    # how many characters neet the chop?
+    ncut = size-maxlen
+
+    while ncut < len(ellipsis) and ellipsis:
+        ellipsis = ellipsis[:-1]
+        elen = len(ellipsis)
+
+    # give equal to beginning and end
+    sluglen = (size-(ncut+elen))//2
 
     # and if there is a spare character, take it at the beginning
-    spare = ncut - (2*sluglen)
-
-    print(ncut, sluglen, spare)
-    
-    return value[:sluglen+spare] + '...' + value[-sluglen:]
+    spare = maxlen - ((2*sluglen) + elen)
+    print(size, ncut, sluglen, spare)
+    return value[:sluglen+spare] + ellipsis + value[-sluglen:]
 
 
         
@@ -73,6 +86,7 @@ def table(ax,
           cell_width=None,
           col_width=None,
           row_width=None,
+          squash=None,
           **kwargs):
 
     if max_cell_width:
@@ -84,17 +98,17 @@ def table(ax,
     # here we need to turn cells, rows and cols into strings, unless they already are.
     if rowLabels:
         fields = [str(x) for x in rowLabels]
-        rowLabels = shortify(fields, row_width)
+        rowLabels = shortify(fields, row_width, squash=squash)
 
     if colLabels:
         fields = [str(x) for x in colLabels]
-        colLabels = shortify(fields, col_width)
+        colLabels = shortify(fields, col_width, squash=squash)
 
     if cellText:
         cells = []
 
         for row in cellText:
-            cells.append(shortify(row, cell_width))
+            cells.append(shortify(row, cell_width, squash=squash))
 
         cellText = cells
 

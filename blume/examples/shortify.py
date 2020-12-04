@@ -19,8 +19,9 @@ ax.axis('off')
 # Add a table at the top of the axes
 table(
     ax,
-    max_cell_width=6,
+    max_cell_width=8,
     cellText=cell_text,
+    squash=' aeiou',
     bbox=(0, 0, 1, 1))
 
 if not sys.flags.interactive:
