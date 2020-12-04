@@ -245,21 +245,25 @@ class MagicPlot(Ball):
 
 
             
-async def run():
+def run(farm=None, dump=False):
 
+    if farm is None:
+        farm = Farm()
 
-    farm = Farm()
-
-    magic_plotter = MagicPlot()
-    farm.add(magic_plotter)
+        magic_plotter = MagicPlot()
+        farm.add(magic_plotter)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     #farm.setup()
 
-    print()
-    print('DUMP')
-    farm.dump()
+    if dump:
+        print()
+        print('DUMP')
+        farm.dump()
 
+    curio.run(start_and_run(farm))  
+
+async def start_and_run(farm):
 
     print('starting farm')
     await farm.start()
@@ -267,9 +271,8 @@ async def run():
     print('running farm')
     runner = await farm.run()
 
-    
         
 if __name__ == '__main__':
     
     
-    curio.run(run(), with_monitor=True)
+    run()
