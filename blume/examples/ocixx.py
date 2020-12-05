@@ -211,111 +211,6 @@ def data_to_rows(data):
         yield row
     
 
-class Spell:
-    """ A magic spell, or cast if you like, if it works
-
-    For help processing lists of dictionaries.
-
-    Or csv files, where we have to turn strings into values.
-
-    The game is guessing the types of the columns in a csv file.
-
-    Use a magic.Spell.
-
-    
-    """
-
-    def __init__(self, cache=None):
-        """  
-        
-        Older idea, updated::
-
-        Cache size is how much rewind we get if a type changes
-
-        If None, everything gets cached.
-
-        It would make sense to coordinate this with
-        functools.lru_cache, now known as functools.cache (python 3.9).
-        
-        For small datasets this might be what you want.
-
-        """
-
-        # casts by keyword
-        self.casts = {}
-        self.upcast = {None: int, int: float, float: str}
-        self.fill = {None: None, int: 0, float: 0.0, str:''}
-
-        # how much data to look at to find casts
-        self.sniff = 10
-        
-        
-        # i don't think this bit is implemented yet -- see comment above
-        self.cache = deque(maxlen=cache)
-
-
-    def spell(self, data, sniff=10):
-        """ Apply casts to data
-        
-        Would like this to be dynamic, updating the casts as we go """
-
-        # short hand for:  for xx in self.cast_data(data); yield xx
-        yield from self.cast_data(data)
-        
-        
-    def find_casts(self, data, sniff=10):
-
-        sniff = sniff or self.sniff
-
-        keys = data[0].keys()
-
-        # look for a (first) date key 
-        self.datekey = find_date_key(data[0])
-
-        casts = self.casts
-        
-        casts[self.datekey] = to_date
-
-        upcast = self.upcast
-        
-        for row in data[self.sniff:]:
-            for key in keys:
-                value = row[key].strip()
-                if value:
-                    try:
-                        casts.setdefault(key, int)(value)
-                    except:
-                        casts[key] = upcast[casts[key]]
-                    
-
-    def check_casts(self, data, sniff=10):
-
-        self.find_casts(data, sniff)
-
-    def cast_data(self, data):
-
-        casts = self.casts
-
-        fill = self.fill
-
-        for row in data:
-
-            result = {}
-            for key, value in row.items():
-                if key not in casts:
-                    print(key)
-                    continue
-                
-                cast = casts[key] 
-                if not value.strip():
-                    value = fill.setdefault(cast)
-
-                result[key] = cast(value)
-            yield result
-
-    def fields(self):
-
-        return self.casts.keys()
                       
 
 
@@ -342,7 +237,7 @@ class Ocixx(magic.Ball):
             return
 
         if self.spell is None:
-            self.spell = Spell()
+            self.spell = magic.Spell()
             self.spell.find_casts(data, self.sniff)
         else:
             self.spell.check_casts(data, self.sniff)

@@ -57,3 +57,11 @@ More thoughts: branches of course, part of the meta data puzzle.
 Merge branches into collections of blobs.
 
 And merge those into branches again.
+
+
+Met-a-git
+=========
+
+Put it in git.
+
+So that's the plan.
