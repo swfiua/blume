@@ -52,4 +52,8 @@ I am guessing we can supply our own function if need be.
 
 Time to write some metagit python and see what happens.
 
+More thoughts: branches of course, part of the meta data puzzle.
 
+Merge branches into collections of blobs.
+
+And merge those into branches again.
