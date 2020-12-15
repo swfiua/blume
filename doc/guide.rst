@@ -238,7 +238,7 @@ The exciting part is that we already know some gravitational waves are
 followed up by a short gamma ray burst, and observations further down
 the spectrum too.
 
-It would be surprising if these new observations do not change out
+It would be surprising if these new observations do not change our
 current thinking in some significant way.
 
 

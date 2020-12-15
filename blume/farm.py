@@ -1,5 +1,40 @@
-"""
-Split the farm from magic.
+"""Split the farm from magic.
+
+The reason for this split is a growing belief that almost everything in the farm,
+and the Farm itself should be some sort of Ball.
+
+And wanting the default Farm to have a basic structure running with
+everything a typical Ball might need, it needs to import some examples
+from other modules.  Since those modules use magic, the end result is
+a circular import.
+
+This splt also allows me to think about what lives where.  And how
+everything relates.  
+
+Plan
+====
+
+This Farm is currently just a directed graph.  It feels like round
+abouts should be the graph nodes, with their edges being the graph
+edges.
+
+That should simplify things a little from the current code.
+
+I would like to change how the graph connects objects dynamically, in
+a similar way to the way I can change attributes of running Ball's
+with the magic.Interact object.
+
+The Farm seems the right place -- or maybe the Shepherd?
+
+Objects with a start and a run.
+
+That might start and run each other.
+
+Balls can write things to a queue.
+
+The plan in magic land is to get the magic roundabout working.
+
+At the moment there is a magic roundabout for each Ball.
 
 """
 import random

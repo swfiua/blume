@@ -1,5 +1,4 @@
-"""
-Matplotlib plus async
+"""Matplotlib plus async
 
 
 mainloop()
@@ -17,7 +16,7 @@ numbers.
 
 You want to see what is going on without grinding the calculations to a halt.
 
-At the same time, the more you explore the dyata with plots (thanks matplotlib)
+At the same time, the more you explore the data with plots (thanks matplotlib)
 the more questions appear.
 
 Often the calculation has a number of parameters, or a selection of data
@@ -29,8 +28,11 @@ me to control more of the parameters.
 This module aims to provide a small number of components to help asynchronous
 data exploration and graphical monitoring of data processing pipelines.
 
-It is particularly focussed on global climate data that typically comes in a
-lat/lon grid of values.
+It also aims to help with the process of maintenance of data streams
+over time.   See metagit.py for more ideas there.
+
+Many magic classes started as objects in other short scripts, see
+examples for some of those.
 
 Internals?
 ==========
@@ -53,14 +55,42 @@ I am starting off here with some pieces from my project *karmapi*.
 
 So there will be Pig Farms, Piglets and widgets all mixed up for a while.
 
-Objects with a start and run.
+Update
+======
 
-Some writing to queues where viewers are polling.
+I am planning to re-work how objects pass between Balls.
+
+Balls await put() and get() messages and not care where they come from.
+
+The plan is for the GeeFarm or Shepherd to allow you to examine queue
+statistics and add and delete edges to the graph, with an option
+whereby it randomly connects things together until it works or melts
+or something.
+
+Make it a bit easier to view and navigate the various graphs.
+
+Leaning to a bunch of different *Controller* objects that you can call
+up for different tasks such as viewing queues, starting and stopping
+processes.
+
+Other objects, waiting on input.
+
+In short, there is a working prototype.  
+
+It is time to untangle the various objects and mold it into something
+smaller and more powerful.
+
+That we can then use in the farm module to build a functioning whole.
+
+Let the balls bounce around randomly with the magic roundabout routing
+the photons.
 
 """
 import random
 
 import math
+
+import datetime
 
 import io
 
@@ -94,7 +124,7 @@ import networkx as nx
 
 class Ball:
     
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         self.paused = False
         self.sleep = .3
@@ -385,6 +415,26 @@ class Spell:
     def fields(self):
 
         return self.casts.keys()
+
+def find_date_key(record):
+
+    for key, value in record.items():
+        try:
+
+            date = to_date(value)
+            return key
+        except:
+            # guess it is not this one
+            
+            print(key, value, 'is not a date')
+
+
+def to_date(value):
+
+    fields = value.split()[0].split('-')
+    y, m, d = (int(x) for x in fields)
+
+    return datetime.date(y, m, d)
 
 
 class GeeFarm(Ball):

@@ -139,25 +139,6 @@ from blume import farm as fm
 
 import git
 
-def find_date_key(record):
-
-    for key, value in record.items():
-        try:
-
-            date = to_date(value)
-            return key
-        except:
-            # guess it is not this one
-            print(key, 'is not a date')
-
-
-def to_date(value):
-
-    fields = value.split()[0].split('-')
-    y, m, d = (int(x) for x in fields)
-
-    return datetime.date(y, m, d)
-
 
 class River(magic.Ball):
     """ Like a river that """
