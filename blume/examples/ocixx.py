@@ -240,6 +240,14 @@ class Ocixx(magic.Ball):
         
     async def run(self):
 
+        from matplotlib import dates as mdates
+
+        # Make dates on X-axis pretty
+        locator = mdates.AutoDateLocator()
+        formatter = mdates.ConciseDateFormatter(locator)
+        ax = plt.gca()
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
         
         while True:
             results = self.get_data(self.commits[0])
@@ -282,7 +290,7 @@ class Ocixx(magic.Ball):
                     keytype = self.spell.casts[key]
                 break
             
-
+        
         await self.put()
 
 def stats(data):
