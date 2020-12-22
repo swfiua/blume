@@ -250,16 +250,30 @@ class Ocixx(magic.Ball):
         ax.xaxis.set_major_formatter(formatter)
         
         while True:
-            results = self.get_data(self.commits[0])
+
+            commit = self.commits[0]
+            print(commit)
+            results = self.get_data(commit)
 
             if self.fields is None:
                 self.fields = deque(self.spell.fields())
                 
             key = self.fields[0]
-            
+            print(key)
             if results:
+                # fixme: give spell an index
                 spell = self.spell
                 index = [x[spell.datekey] for x in results]
+
+                for ii in index:
+                    # fixme 2: let's use matplotlib's mdates.
+                    if type(index) == mdates.datetime:
+                        print('date oops')
+
+                start, end = drange(index)
+                if start.year == 20:
+                    print('20 20 wtf!')
+                print()
 
                 #print('field,commit', key, self.commits[0])
 
@@ -293,6 +307,10 @@ class Ocixx(magic.Ball):
         
         await self.put()
 
+def drange(data):
+
+    return min(data), max(data)
+        
 def stats(data):
 
     data = np.array(data)

@@ -434,7 +434,14 @@ def to_date(value):
     fields = value.split()[0].split('-')
     y, m, d = (int(x) for x in fields)
 
-    return datetime.date(y, m, d)
+    date = datetime.date(y, m, d)
+
+    if date.year == 20:
+        print(date, 'timewarp')
+        date = datetime.date(y+2000, m, d)
+        print(date, 'timewarped')
+        
+    return date
 
 
 class GeeFarm(Ball):
