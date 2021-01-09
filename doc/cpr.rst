@@ -52,3 +52,24 @@ his book, *A new paradigm for the universe*, in `python`.
 All errors, and there are likely may be many, are on me for now.
 
 
+2021 update
+===========
+
+There is tension in the value of the HLSW constant.
+
+The estimate from the CMB, assuming the Big Bang, gives a lower value
+than the estimate of observations of cepheid variables.
+
+With the new paradigm, the CMB is in fact predominately made up of
+radiation from galaxies in the incoming flow.
+
+Step back a moment.  The CMB says, the univers is about 2.73K,
+saturated with microwaves from the outer galaxies.
+
+A microwave that hits a particle of ice in the cosmos, emerges without
+losing energy, on average.  It can potentially travel a great
+distance, though likely with some divergence.
+
+What the observations are saying is that the light from these distant
+galaxies is not as red shifted as we would have expected it to be.
+

@@ -35,6 +35,10 @@ plots change in time.
 Seems this little problem has all the key ingredients of the costs of
 keeping a data pipeline going.
 
+Jan 9th 2021 update
+===================
+
+
 29th September 2020 update
 ==========================
 
@@ -196,6 +200,9 @@ def data_to_rows(data):
 
 
 class Ocixx(magic.Ball):
+    """ Ottawa COD data viewer 
+
+    """
 
 
     def __init__(self):
@@ -252,14 +259,12 @@ class Ocixx(magic.Ball):
         while True:
 
             commit = self.commits[0]
-            print(commit)
             results = self.get_data(commit)
 
             if self.fields is None:
                 self.fields = deque(self.spell.fields())
                 
             key = self.fields[0]
-            print(key)
             if results:
                 # fixme: give spell an index
                 spell = self.spell
@@ -270,24 +275,17 @@ class Ocixx(magic.Ball):
                     if type(index) == mdates.datetime:
                         print('date oops')
 
-                start, end = drange(index)
-                if start.year == 20:
-                    print('20 20 wtf!')
-                print()
-
-                #print('field,commit', key, self.commits[0])
-
-                #print(stats(data))
-
-                #print(Counter(type(x) for x in data), key)
-                #print(data[-10:])
-
                 try:
                     data = [x[key] for x in results]
-
+                    xy = sorted(zip(index, data))
+                    index = [foo[0] for foo in xy]
+                    data = [foo[1] for foo in xy]
                     plt.plot(index, data, label=key)
-                except:
-                    print(f'oopsie plotting {key}') 
+                except Exception as e:
+                    print(f'oopsie plotting {key} {commit}')
+                    import traceback
+                    traceback.print_exc()
+                    print(f'{e}') 
 
                 #plt.legend(loc=0)
                 plt.title(self.fields[0])

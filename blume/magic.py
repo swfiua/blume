@@ -306,7 +306,10 @@ class Interact(Ball):
 
         try:
             value.rotate()
+            if value:
+                print(value[0])
         except:
+            print(value)
             print('no cycle for you')
         
 
@@ -436,10 +439,8 @@ def to_date(value):
 
     date = datetime.date(y, m, d)
 
-    if date.year == 20:
-        print(date, 'timewarp')
+    if date.year <= 30:
         date = datetime.date(y+2000, m, d)
-        print(date, 'timewarped')
         
     return date
 
