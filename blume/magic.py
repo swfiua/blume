@@ -192,7 +192,8 @@ class Interact(Ball):
         self.add_filter('3', self.sub_one)
         self.add_filter('2', self.double)
         self.add_filter('4', self.half)
-        self.add_filter('8', self.cycle)
+        self.add_filter('8', self.rcycle)
+        self.add_filter('9', self.cycle)
         self.add_filter('x', self.tenx)
         self.add_filter('z', self.tenth)
         self.add_filter('m', self.add_m)
@@ -299,18 +300,26 @@ class Interact(Ball):
         """ i toggle """
         self.operate(operator.not_, None)
 
-    async def cycle(self):
-        """ i cycle """
+    def acycle(self, howmuch=1):
+
         key = self.current()
         value = getattr(self.ball, key)
-
+        
         try:
-            value.rotate()
+            value.rotate(howmuch)
             if value:
                 print(value[0])
-        except:
+        except:  
             print(value)
-            print('no cycle for you')
+            print('no cycle for you', howmuch)
+
+    async def cycle(self):
+        """ i cycle """
+        self.acycle()
+        
+    async def rcycle(self):
+        """ i cycle back """
+        self.acycle(-1)
         
 
 class Spell:

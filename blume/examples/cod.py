@@ -4,6 +4,11 @@ Data thanks to open ottawa
 
 https://open.ottawa.ca/datasets/covid-19-source-of-infection/geoservice
 
+Known locally as "the COD" it is the open data behind the Ottawa
+Public Health dashboard.
+
+https://www.ottawapublichealth.ca/en/reports-research-and-statistics/daily-covid19-dashboard.aspx
+
 This short little example, originally written to explore Ottawa
 datasets relating to covid 19.
 
@@ -37,6 +42,19 @@ keeping a data pipeline going.
 
 Jan 9th 2021 update
 ===================
+
+The example is still working and I am in the process of renaming
+everything to *cod*.
+
+Maybe start a fish theme.
+
+The module has a lot of interesting pieces, the tracking of data in
+git has been helpful, in this case.
+
+There has been some general date confusion, that has migrated to the
+blume.magic.Spell core, at least for the time being.
+
+
 
 
 29th September 2020 update
@@ -199,7 +217,7 @@ def data_to_rows(data):
                       
 
 
-class Ocixx(magic.Ball):
+class Cod(magic.Ball):
     """ Ottawa COD data viewer 
 
     """
@@ -236,14 +254,19 @@ class Ocixx(magic.Ball):
 
     async def start(self):
 
+        self.load_commits()
+
+
+    def load_commits(self):
+
         self.repo = git.Repo(search_parent_directories=True)
         self.repo.git.checkout('master')
 
         self.commits = deque(self.repo.iter_commits(paths=self.filename))
         while len(self.commits) > self.history:
             self.commits.pop()
-
         self.master = self.commits[0]
+        
         
     async def run(self):
 
@@ -255,7 +278,7 @@ class Ocixx(magic.Ball):
         ax = plt.gca()
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
-        
+
         while True:
 
             commit = self.commits[0]
@@ -280,6 +303,14 @@ class Ocixx(magic.Ball):
                     xy = sorted(zip(index, data))
                     index = [foo[0] for foo in xy]
                     data = [foo[1] for foo in xy]
+                    if self.days:
+                        # only keep data later than self.days ago
+                        start = datetime.date.today() - datetime.timedelta(days=self.days)
+
+                        index = [x for x in index if x >= start]
+                        data = data[-len(index):]
+                        
+            
                     plt.plot(index, data, label=key)
                 except Exception as e:
                     print(f'oopsie plotting {key} {commit}')
@@ -292,17 +323,21 @@ class Ocixx(magic.Ball):
                 plt.grid(True)
 
             self.commits.rotate()
-            if self.rotate and self.commits[0] is self.master:
+            if self.commits[0] is self.master:
+                if self.rotate:
+                    self.load_commits()
+                    keytype = str
+                    while keytype not in (float, int):
 
-                keytype = str
-                while keytype not in (float, int):
-
-                    self.fields.rotate()
+                        self.fields.rotate()
+                        keytype = self.spell.casts[key]
+                        
+                    break
+                else:
                     key = self.fields[0]
-                    keytype = self.spell.casts[key]
-                break
+                    break
+                
             
-        
         await self.put()
 
 def drange(data):
@@ -323,13 +358,13 @@ def stats(data):
 
 async def run(args):
     
-    ocixx = Ocixx()
-    ocixx.update(args)
+    fish = Cod()
+    fish.update(args)
     
     farm = fm.Farm()
     
-    farm.add(ocixx)
-    farm.shep.path.append(ocixx)
+    farm.add(fish)
+    farm.shep.path.append(fish)
 
     await farm.start()
     await farm.run()
@@ -358,6 +393,7 @@ if __name__ == '__main__':
     parser.add_argument('-rotate', action='store_true')
     parser.add_argument('-hint', action='store_true')
     parser.add_argument('-sniff', type=int, default=10)
+    parser.add_argument('-days', default=100)
     parser.add_argument('-history', type=int, default=14)
 
     args = parser.parse_args()

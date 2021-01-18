@@ -65,3 +65,43 @@ Met-a-git
 Put it in git.
 
 So that's the plan.
+
+Update
+======
+
+Thinking in terms of tables.
+
+What's a table?
+
+A grid of values.
+
+Indexed by columns and rows.
+
+With column and row headings.
+
+Maybe multiple headings, grouping perhaps.
+
+Think of an event as just a value at a place in time, everything else
+is just metadata, about the event.
+
+Do we know the time and the place?
+
+Does each record come with a time?
+
+Are there multiple records for each time and place?
+
+what to do?
+===========
+
+Have an algorithm that organises tables into meta data with a place
+and a time.
+
+Have a plotter that randomly selects interesting subsets of the meta-data
+and plots it, with added values.
+
+But also lets you provide your own value added meta-data, should you wish.
+
+Lets you move through time and space, as far as the data allows.
+
+
+
