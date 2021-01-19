@@ -328,14 +328,14 @@ class Cod(magic.Ball):
                     self.load_commits()
                     keytype = str
                     while keytype not in (float, int):
-
                         self.fields.rotate()
+                        key = self.fields[0]
                         keytype = self.spell.casts[key]
-                        
-                    break
                 else:
                     key = self.fields[0]
-                    break
+
+                # that is this plot finished
+                break
                 
             
         await self.put()
