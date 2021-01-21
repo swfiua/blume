@@ -197,6 +197,7 @@ class Interact(Ball):
         self.add_filter('x', self.tenx)
         self.add_filter('z', self.tenth)
         self.add_filter('m', self.add_m)
+        self.add_filter('\177', self.shorten)
 
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
@@ -320,7 +321,16 @@ class Interact(Ball):
     async def rcycle(self):
         """ i cycle back """
         self.acycle(-1)
+
+    async def shorten(self):
+
+        key = self.current()
         
+        value = getattr(self.ball, key)
+        if len(value) > 1:
+            print(f'popping {value[0]}')
+            value.popleft()
+            print(f'new head {value[0]}')
 
 class Spell:
     """ A magic spell, or cast if you like, if it works
@@ -758,7 +768,10 @@ class Shepherd(Ball):
                 return True
 
         # nobody cares :(
-        print('nobody cares :(', key)
+        try:
+            print('nobody cares :(', key, ord(key))
+        except:
+            print(key)
         return False
 
     async def help(self, name='keys'):
@@ -929,9 +942,7 @@ class Shepherd(Ball):
             
         nx.draw_networkx(self.flock, node_color=colours)
 
-        print('sheput')
-        await self.put(fig2data(plt))
-        print('shepend')
+        await self.put()
         #print(self.radii.counts)
         
         #print(self.radii)
@@ -957,18 +968,23 @@ class Shepherd(Ball):
         return f'shepherd of flock degree {len(self.flock)}'
 
 
-class Table(Ball):
+class Table:
     """ Magic table.
 
     A list of dictionaries, and ways to explore them?
     """
     
-    def __init__self(self, data=None):
+    def __init__self(self, path=None, data=None, meta_data=None):
+        """ Turn what we are given into a table """
 
-        super(self).__init__()
-
+        self.path = path or Path()
         self.data = data
-    
+        self.meta_data = meta_data
+        
+        """ now what?  look at data with a magic spell and get meta data.
+        
+        
+        """
 
 async def canine(ball):
     """ A sheep dog, something to control when it pauses and sleeps
