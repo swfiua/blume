@@ -299,7 +299,10 @@ class Interact(Ball):
 
     async def toggle(self):
         """ i toggle """
-        self.operate(operator.not_, None)
+        try:
+            self.operate(operator.mul, -1)
+        except:
+            self.operate(operator.not_, None)
 
     def acycle(self, howmuch=1):
 

@@ -220,6 +220,13 @@ def data_to_rows(data):
 class Cod(magic.Ball):
     """ Ottawa COD data viewer 
 
+    Fixme: make a table that works for Ottawa and John Hopkins University data too.
+
+    There are csv files under git control there too.
+
+    Data is tilted, with each row giving the region and time series.
+
+    Again, what we need is a magic.Spell that works.
     """
 
 
