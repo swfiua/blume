@@ -100,6 +100,8 @@ from pathlib import Path
 
 from collections import deque, defaultdict, Counter
 
+import argparse
+
 import operator
 
 from traceback import print_exc
@@ -121,6 +123,8 @@ from matplotlib import figure
 from matplotlib import pyplot as plt
 
 import networkx as nx
+
+Parser = argparse.ArgumentParser
 
 class Ball:
     
