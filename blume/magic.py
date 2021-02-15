@@ -106,6 +106,8 @@ import operator
 
 from traceback import print_exc
 
+import inspect
+
 import curio
 
 sleep = curio.sleep
@@ -529,7 +531,9 @@ class GeeFarm(Ball):
         self.shep.flock = self.hub
 
         print('starting shep')
-        await self.shep.start()
+        result = self.shep.start()
+        if inspect.iscoroutine(result):
+            await result
 
         # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
@@ -826,8 +830,10 @@ class Shepherd(Ball):
                 continue
                 
             print('starting', sheep)
-            # just start all the nodes
-            await sheep.start()
+            # just start all the nodes 
+            dolly = sheep.start()
+            if inspect.iscoroutine(dolly):
+                await dolly
             
             info = self.flock.nodes[sheep]
             print('info', info)
@@ -1019,11 +1025,11 @@ async def canine(ball):
     while True:
         if not ball.paused:
 
-            await ball.run()
+            result = ball.run()
+            if inspect.iscoroutine(result):
+                await result
+            
             runs += 1
-
-            if False:
-                print(f'run {runs} for {ball}')
 
         await curio.sleep(ball.sleep)
 
