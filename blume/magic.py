@@ -108,6 +108,8 @@ from traceback import print_exc
 
 import inspect
 
+import dateutil
+
 import curio
 
 sleep = curio.sleep
@@ -321,7 +323,12 @@ class Interact(Ball):
                 print(value[0])
         except:  
             print(value)
-            print('no cycle for you', howmuch)
+            try:
+                if howmuch > 0:
+                    split = -1 * (1 + howmuch)
+                    value = value[:] + value[:howmuch]
+            except:
+                              print('no cycle for you', howmuch)
 
     async def cycle(self):
         """ i cycle """
@@ -373,8 +380,9 @@ class Spell:
 
         # casts by keyword
         self.casts = {}
-        self.upcast = {None: int, int: float, float: str}
-        self.fill = {None: None, int: 0, float: 0.0, str:''}
+        self.date_parse = date_parse = dateutil.parser.parser().parse
+        self.upcast = {None: int, int: float, float: date_parse, date_parse: str}
+        self.fill = {None: None, int: 0, float: 0.0, date_parse: None, str: ''}
 
         # how much data to look at to find casts
         self.sniff = 10
@@ -399,13 +407,8 @@ class Spell:
 
         keys = data[0].keys()
 
-        # look for a (first) date key 
-        self.datekey = find_date_key(data[0])
-
         casts = self.casts
         
-        casts[self.datekey] = to_date
-
         upcast = self.upcast
         
         for row in data[self.sniff:]:
@@ -417,6 +420,14 @@ class Spell:
                     except:
                         casts[key] = upcast[casts[key]]
                     
+        # look for a (first) date key - probably should looke
+        # for all dates, really we are looking for an index here
+        self.datekey = None
+        for key, cast in self.casts.items():
+            if cast is self.date_parse:
+                self.datekey = key
+                return
+
 
     def check_casts(self, data, sniff=10):
 
@@ -452,25 +463,12 @@ def find_date_key(record):
     for key, value in record.items():
         try:
 
-            date = to_date(value)
+            date = dateutil.parser.parser(value)
             return key
-        except:
+        except Exception as e:
             # guess it is not this one
-            
+            print(e)
             print(key, value, 'is not a date')
-
-
-def to_date(value):
-
-    fields = value.split()[0].split('-')
-    y, m, d = (int(x) for x in fields)
-
-    date = datetime.date(y, m, d)
-
-    if date.year <= 30:
-        date = datetime.date(y+2000, m, d)
-        
-    return date
 
 
 class GeeFarm(Ball):
@@ -1017,6 +1015,8 @@ async def canine(ball):
     off runs.
 
     With a bit more work when building things ... self.radii time?
+
+    Update: trying to accommodate balls where run is just a function.
     
     """
 
@@ -1059,7 +1059,7 @@ async def runme():
 
     
 def random_colour():
-
+    """ Pick a random matplotlib colormap """
     return random.choice(plt.colormaps())
     
 

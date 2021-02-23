@@ -160,7 +160,7 @@ from blume import magic
 from blume import farm as fm
 
 import git
-
+from dateutil.utils import today
 
 class River(magic.Ball):
     """ Like a river that """
@@ -252,6 +252,7 @@ class Cod(magic.Ball):
         if self.spell is None:
             self.spell = magic.Spell()
             self.spell.find_casts(data, self.sniff)
+            print(self.spell.casts)
         else:
             self.spell.check_casts(data, self.sniff)
             
@@ -300,10 +301,12 @@ class Cod(magic.Ball):
                 spell = self.spell
                 index = [x[spell.datekey] for x in results]
 
+                # not sure what this was about ???
                 for ii in index:
                     # fixme 2: let's use matplotlib's mdates.
                     if type(index) == mdates.datetime:
                         print('date oops')
+                
 
                 try:
                     data = [x[key] for x in results]
@@ -312,12 +315,10 @@ class Cod(magic.Ball):
                     data = [foo[1] for foo in xy]
                     if self.days:
                         # only keep data later than self.days ago
-                        start = datetime.date.today() - datetime.timedelta(days=self.days)
-
+                        start = today() - datetime.timedelta(days=self.days)
                         index = [x for x in index if x >= start]
                         data = data[-len(index):]
                         
-            
                     plt.plot(index, data, label=key)
                 except Exception as e:
                     print(f'oopsie plotting {key} {commit}')
