@@ -36,8 +36,29 @@ def data_to_rows(data):
     
 
 
-class Spell(magic.Ball):
-    """ Magically figure out what's in a table """
+class Cod(magic.Ball):
+    """Magically figure out what's in a table 
+
+    
+    The idea here is that the Spell will figure out tedious details
+    such as what type everything is.
+
+    The ultimate goal of a spell is to find a way to separate meta
+    data from observations.
+
+    An event is just a time and a place with a value.
+
+    Everything else is meta data about that event.
+
+    But first, find how to cast columns of data into appropriate types.
+
+    Then look for columns that are indexes: a list of times or places?
+
+    Or just a simple n-up counter?
+
+    Positive floats, are they unix timestamps?
+
+    """
     def __init__(self):
 
         super().__init__()
@@ -96,11 +117,13 @@ class Spell(magic.Ball):
         
 
     async def start(self):
-        pass
+        
+        self.update_meta()
 
     async def run(self):
-        """ """
-        pass
+        """ Show what's there """
+        print(self.counts.keys())
+        
 
     def save(self):
         """ Save meta data ? """
@@ -114,7 +137,7 @@ if __name__ == '__main__':
     parser.add_argument('-topn', type=int, default=3)
     args = parser.parse_args()
     
-    spell = Spell()
+    spell = Cod()
     
     spell.update(args)
     spell.cast(open(args.infile).readlines())
