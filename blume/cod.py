@@ -30,8 +30,9 @@ def data_to_rows(data):
     for row in csv.reader(data):
         keys = [x.strip() for x in row]
         break
-    
-    for row in csv.DictReader(data[1:], keys):
+
+    for ix, row in enumerate(csv.DictReader(data[1:], keys)):
+        #print(ix, row)
         yield row
     
 
