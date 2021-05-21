@@ -7,6 +7,8 @@ A handful of issues have been raised on *github*.
 For now, I will document things that I am still thinking about.
 
 
+
+
 Add ability to ellipsize text overflowing in table cell
 =======================================================
 
@@ -39,8 +41,20 @@ Another puzzle is how to specify the input?
 
 Working at the `Table.add_cell` level we just need to add a span.
 
-Making it all work is quite a bit more complex.
+Making it all work is quite a bit more complex, but the end result
+might simplify a lot of things.
 
 For now I am thinking more generally about tables and just how
 flexible things can be without writing an entire spreadsheet.
+
+Core class should not treat negative rows specially
+===================================================
+
+Rather, the wrapper function should indicate that the negative rows
+are special by setting the appropriate cell options.
+
+More generally, a core class that just lays out grids of cells with
+various constraints on rows and columns, provided as data.
+
+The core needs to handle things like 
 

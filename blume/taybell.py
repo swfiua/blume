@@ -1,5 +1,34 @@
-"""
- A new table?
+"""A new table?
+
+The current table was written with a very specific problem in mind and
+the code reflects this to a large degree.
+
+Take a grid of values, with optional row and column labels and draw
+it, typically under the axes of some plot.
+
+By default, it adjusts the font size until it finds one that best fits
+the available space.
+
+Much of the complexity of the code comes from the fact that it is only
+at the time of drawing do we get a graphics context that allows us to
+measure text.
+
+Since making the font smaller is not the only option to make things
+fit, it seems natural to allow other options.
+
+I think the solution here is to split things into a few different layers.
+
+At the core, something that just takes the grid of cells and draws them.
+
+Wrapper classes can then do the font scaling, text eliding, or
+whatever transformations might be of interest.
+
+Wrappers around wrappers?
+
+Another way to shrink the table is to summarise the rows, or columns.
+
+For example, as table.describe() does for `pandas` tables.
+
 """
 
 import numpy as np
@@ -11,6 +40,8 @@ class Table:
 
         self.data = data
 
+    def add_cell(self, cell, *args, **kwargs):
+        pass
 
     def summarise(self):
 
@@ -19,6 +50,14 @@ class Table:
         rows = []
         for key, values in self.data:
             pass
+
+    def draw_table(self):
+        """ Draw the table """
+        pass
+
+class MagicTable(Table):
+    """ """
+    pass
 
 def shortify(values, maxlen=None, ellipsis=None, squash=None):
     """ Shorten the value 

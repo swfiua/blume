@@ -73,3 +73,23 @@ distance, though likely with some divergence.
 What the observations are saying is that the light from these distant
 galaxies is not as red shifted as we would have expected it to be.
 
+2021 May 20 update
+==================
+
+A new book is due to be published in July.
+
+**The Geometry of the Universe**
+
+https://www.worldscientific.com/worldscibooks/10.1142/12195
+
+I am super excited for a book that I suspect will be worthy of the title.
+
+Meanwhile, I see this press release from the same publisher:
+
+https://www.worldscientific.com/pressroom/2021-05-11-01
+
+It seems to be a micro theory,  with experimental tests, for
+rotational models within Lorentz space.
+
+Good times ahead.
+
