@@ -431,7 +431,7 @@ if __name__ == '__main__':
 
     so this code needs putting in a function somewhere
     """
-    itemid = ITEM_IDS[0]
+    itemid = args.itemid or ITEM_IDS[0]
     for path in args.paths:
         path = Path(path)
 
