@@ -401,7 +401,7 @@ if __name__ == '__main__':
     parser.add_argument('-rotate', action='store_true')
     parser.add_argument('-hint', action='store_true')
     parser.add_argument('-sniff', type=int, default=10)
-    parser.add_argument('-days', default=100)
+    parser.add_argument('-days', type=int, default=100)
     parser.add_argument('-history', type=int, default=14)
 
     args = parser.parse_args()
@@ -425,6 +425,9 @@ if __name__ == '__main__':
               26c902bf1da44d3d90b099392b544b81/data.csv
 
     problem: want to check out different git commits, so need to re-scan for each commit
+
+    later: learning more about git internals and the python git module it should be possible
+           to do this cheaply.
 
     so this code needs putting in a function somewhere
     """

@@ -96,6 +96,7 @@ class Cell(Rectangle):
                  loc=None,
                  fontproperties=None,
                  visible_edges=None,
+                 span=1,
                  ):
 
         # Call base
@@ -104,6 +105,7 @@ class Cell(Rectangle):
         self.set_clip_on(False)
 
         self.visible_edges = visible_edges
+        self.span = span
 
         # Create text object
         if loc is None:
@@ -406,6 +408,7 @@ class Table(Artist):
 
         self._cells = {}
         self._edges = None
+
         self._autoColumns = []
         self._autoFontsize = True
         self._has_column_labels = False
