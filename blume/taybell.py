@@ -33,6 +33,10 @@ For example, as table.describe() does for `pandas` tables.
 
 import numpy as np
 from .table import table as mpl_table
+from .table import Cell as mpl_Cell
+
+class Cell:
+    pass
 
 class Table:
 
@@ -113,7 +117,10 @@ def shortify_line(value, maxlen=None, ellipsis=None, squash=None):
     print(size, ncut, sluglen, spare)
     return value[:sluglen+spare] + ellipsis + value[-sluglen:]
 
-
+def taybell(ax, cells):
+    """ """
+    pass
+        
         
 def table(ax,
           cellText=None,

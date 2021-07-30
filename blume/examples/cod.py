@@ -252,7 +252,7 @@ class Cod(magic.Ball):
         if self.spell is None:
             self.spell = magic.Spell()
             self.spell.find_casts(data, self.sniff)
-            print(self.spell.casts)
+            #print(self.spell.casts)
         else:
             self.spell.check_casts(data, self.sniff)
             
@@ -287,6 +287,7 @@ class Cod(magic.Ball):
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 
+        last_dcases = None
         while True:
 
             commit = self.commits[0]
@@ -296,6 +297,22 @@ class Cod(magic.Ball):
                 self.fields = deque(self.spell.fields())
                 
             key = self.fields[0]
+
+            if self.filter and self.filter in key:
+                print('skip', key)
+                self.fields.rotate()
+                continue
+
+            try:
+                cases = sum(x[key] for x in results)
+                if last_cases and last_cases < cases:
+                    print(f"Total cases: {cases} New today: {cases-last_dcases:5}")
+
+                last_cases = cases
+
+            except:
+                pass
+
             if results:
                 # fixme: give spell an index
                 spell = self.spell
@@ -394,15 +411,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('paths', nargs='*', default='.')
-    parser.add_argument('-cumulative', action='store_true')
-    parser.add_argument('-update', action='store_true')
-    parser.add_argument('-itemid', default=None)
-    parser.add_argument('-filename', default='data.csv')
-    parser.add_argument('-rotate', action='store_true')
-    parser.add_argument('-hint', action='store_true')
-    parser.add_argument('-sniff', type=int, default=10)
-    parser.add_argument('-days', type=int, default=100)
-    parser.add_argument('-history', type=int, default=14)
+    parser.add_argument('--cumulative', action='store_true')
+    parser.add_argument('--update', action='store_true')
+    parser.add_argument('--itemid', default=None)
+    parser.add_argument('--filename', default='data.csv')
+    parser.add_argument('--rotate', action='store_true')
+    parser.add_argument('--hint', action='store_true')
+    parser.add_argument('--sniff', type=int, default=10)
+    parser.add_argument('--days', type=int, default=100)
+    parser.add_argument('--history', type=int, default=14)
+    parser.add_argument('--filter')
 
     args = parser.parse_args()
 

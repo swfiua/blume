@@ -96,7 +96,6 @@ class Cell(Rectangle):
                  loc=None,
                  fontproperties=None,
                  visible_edges=None,
-                 span=1,
                  ):
 
         # Call base
@@ -105,7 +104,6 @@ class Cell(Rectangle):
         self.set_clip_on(False)
 
         self.visible_edges = visible_edges
-        self.span = span
 
         # Create text object
         if loc is None:
@@ -247,6 +245,7 @@ class Cell(Rectangle):
 
         # apply transform to get width and height in table coordinates.
         l, b, w, h = bbox.inverse_transformed(self.get_data_transform()).bounds
+
         return w, h
 
     def _get_horizontal_pad(self):
@@ -266,7 +265,7 @@ class Cell(Rectangle):
 
         Valid kwargs are
 
-        %(Text)s
+        ??see Text??
         """
         self._text.update(kwargs)
         self.stale = True
@@ -444,7 +443,6 @@ class Table(Artist):
         """
         Set a Cell in a given position.
         """
-        cbook._check_isinstance(Cell, cell=cell)
         try:
             row, col = position[0], position[1]
         except Exception:
