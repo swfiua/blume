@@ -19,6 +19,8 @@ If you think as legends as meta data regarding a plot, the row and
 column headings of a table, if you like, with their associated
 timelines, then the association with tables is stronger still.
 
+The legend probes around in the plot data to uncover meta-data.
+
 The legend code has some specific restrictions::
 
 * each column is a pair (patch/text) or (text/patch).
@@ -29,6 +31,18 @@ The legend code has some specific restrictions::
 The objects in `matplotlib.offsetbox` are more general.
 
 
-`matplotlib.subplot_mosaic`
+notes
+=====
+
+`matplotlib.subplot_mosaic` introduces an interesting ways of
+specifying table layouts.
 
 """
+
+from matplotlib import legend
+
+from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
+
+from blume.table import Cell
+
+
