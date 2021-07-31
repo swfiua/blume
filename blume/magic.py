@@ -200,6 +200,7 @@ class Interact(Ball):
         self.add_filter('3', self.sub_one)
         self.add_filter('2', self.double)
         self.add_filter('4', self.half)
+        self.add_filter('5', self.flipsign)
         self.add_filter('8', self.rcycle)
         self.add_filter('9', self.cycle)
         self.add_filter('x', self.tenx)
@@ -307,10 +308,11 @@ class Interact(Ball):
 
     async def toggle(self):
         """ i toggle """
-        try:
-            self.operate(operator.mul, -1)
-        except:
-            self.operate(operator.not_, None)
+        self.operate(operator.not_, None)
+        
+    async def flipsign(self):
+        """ i flip """
+        self.operate(operator.mul, -1)
 
     def acycle(self, howmuch=1):
 
@@ -328,7 +330,7 @@ class Interact(Ball):
                     split = -1 * (1 + howmuch)
                     value = value[:] + value[:howmuch]
             except:
-                              print('no cycle for you', howmuch)
+                print('no cycle for you', howmuch)
 
     async def cycle(self):
         """ i cycle """
