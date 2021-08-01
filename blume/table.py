@@ -263,9 +263,7 @@ class Cell(Rectangle):
         """
         Update the text properties.
 
-        Valid kwargs are
-
-        ??see Text??
+        Valid kwargs are as per `.Text`.
         """
         self._text.update(kwargs)
         self.stale = True
