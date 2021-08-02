@@ -244,7 +244,7 @@ class Cell(Rectangle):
         bbox.y1 = bbox.y0 + height
 
         # apply transform to get width and height in table coordinates.
-        l, b, w, h = bbox.inverse_transformed(self.get_data_transform()).bounds
+        l, b, w, h = bbox.transformed(self.get_data_transform().inverted()).bounds
 
         return w, h
 
@@ -521,7 +521,7 @@ class Table(Artist):
                  if row >= start_row and col >= 0]
         bbox = Bbox.union(boxes)
 
-        return bbox.inverse_transformed(self.get_transform())
+        return bbox.transformed(self.get_transform().inverted())
 
     def contains(self, mouseevent):
         # docstring inherited
