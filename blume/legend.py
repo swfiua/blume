@@ -40,9 +40,72 @@ specifying table layouts.
 """
 
 from matplotlib import legend
-
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
 
+from blume import magic
 from blume.table import Cell
 
+def legend(data, inner=HPacker, outer=VPacker, transpose=False):
+    """ Draw a table from a dictionary of ...
 
+    dictionaries of artists?
+
+    dictionaries of dictionaries
+
+    list of dictionaries with lists of dictionaries as values.
+
+    and so on, ad infinitum.
+    
+    I think the answer will be to make this all recursive.
+
+    So hang on and lets see what goes boom!
+    """
+    if transpose:
+        inner, outer = outer, inner
+    hboxes = []
+
+    for row in data:
+        hboxes.append(inner(children=row))
+
+    return outer(children=hboxes)
+            
+
+class Legend(magic.Ball):
+
+    async def run(self):
+
+        ax = pyplot.subplot()
+        leg = legend([[]])
+
+        await self.put()
+
+
+    
+if __name__ == '__main__':
+
+
+    import argparse
+    from blume import farm as land
+    import numpy as np
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cols', type=int, default=6)
+
+    args = parser.parse_args()
+
+    cols = args.cols
+    
+    words = [x.strip() for x in legend.__doc__.split()]
+
+    words = np.array(words)
+    words[:cols * cols].reshape(cols, cols)
+    
+    leg = legend(words)
+
+    farm = land.Farm()
+
+    farm.add(leg)
+
+    farm.shep.path.append(leg)
+
+    land.start_and_run(farm)
