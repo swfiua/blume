@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.testing.decorators import image_comparison
 from matplotlib.colors import Normalize
 
-from mpltable.table import Cell, Table, table
+from blume.table import Cell, Table, table
 from matplotlib.path import Path
 
 

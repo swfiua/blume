@@ -39,13 +39,15 @@ specifying table layouts.
 
 """
 
-from matplotlib import legend
+from matplotlib import offsetbox, pyplot, artist
+
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
+offsetbox.DEBUG = True
 
 from blume import magic
 from blume.table import Cell
 
-def legend(data, inner=HPacker, outer=VPacker, transpose=False):
+class LegendArray(offsetbox.DrawingArea):
     """ Draw a table from a dictionary of ...
 
     dictionaries of artists?
@@ -60,52 +62,21 @@ def legend(data, inner=HPacker, outer=VPacker, transpose=False):
 
     So hang on and lets see what goes boom!
     """
-    if transpose:
-        inner, outer = outer, inner
-    hboxes = []
 
-    for row in data:
-        hboxes.append(inner(children=row))
+    def __init__(self,
+                 data,
+                 inner=None,
+                 outer=None,
+                 transpose=False):
 
-    return outer(children=hboxes)
-            
+        if inner is None: inner = HPacker
+        if outer is None: outer = VPacker
+        if transpose:
+            inner, outer = outer, inner
 
-class Legend(magic.Ball):
+        hboxes = []
 
-    async def run(self):
+        for row in data:
+            hboxes.append(inner(children=[TextArea(item) for item in row]))
 
-        ax = pyplot.subplot()
-        leg = legend([[]])
-
-        await self.put()
-
-
-    
-if __name__ == '__main__':
-
-
-    import argparse
-    from blume import farm as land
-    import numpy as np
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cols', type=int, default=6)
-
-    args = parser.parse_args()
-
-    cols = args.cols
-    
-    words = [x.strip() for x in legend.__doc__.split()]
-
-    words = np.array(words)
-    words[:cols * cols].reshape(cols, cols)
-    
-    leg = legend(words)
-
-    farm = land.Farm()
-
-    farm.add(leg)
-
-    farm.shep.path.append(leg)
-
-    land.start_and_run(farm)
+        super().__init__(children = outer(children=hboxes))
