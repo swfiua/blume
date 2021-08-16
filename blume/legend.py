@@ -47,7 +47,7 @@ offsetbox.DEBUG = True
 from blume import magic
 from blume.table import Cell
 
-class LegendArray(offsetbox.DrawingArea):
+class LegendArray(offsetbox.AnchoredOffsetbox):
     """ Draw a table from a dictionary of ...
 
     dictionaries of artists?
@@ -77,6 +77,10 @@ class LegendArray(offsetbox.DrawingArea):
         hboxes = []
 
         for row in data:
-            hboxes.append(inner(children=[TextArea(item) for item in row]))
+            hboxes.append(inner(pad=0, sep=0,
+                                children=[TextArea(item) for item in row]))
 
-        super().__init__(children = outer(children=hboxes))
+        vbox = outer(pad=0, sep=0,
+                     children=hboxes)
+        super().__init__(loc=1,
+                         child=vbox)

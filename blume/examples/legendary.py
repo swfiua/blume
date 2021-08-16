@@ -3,6 +3,8 @@ Example using legend.Legendary
 
 
 """
+from matplotlib import pyplot
+
 from blume import legend, magic, farm
 
 class Legend(magic.Ball):
@@ -11,14 +13,13 @@ class Legend(magic.Ball):
 
         super().__init__()
 
-        self.leg = legend.LegendArray(data)
+        self.data = data
 
     async def run(self):
 
         ax = pyplot.subplot()
 
-        self.leg.axes(ax)
-        self.leg.bbox = (0,0,1,1)
+        ax.add_artist(legend.LegendArray(self.data, transpose=True))
         
         await self.put()
 
@@ -42,7 +43,8 @@ cols = args.cols
 words = [x.strip() for x in legend.__doc__.split()]
 
 words = np.array(words)
-words[:cols * cols].reshape(cols, cols)
+words = words[:cols * cols].reshape(cols, cols)
+print(words)
 
 leg = Legend(words)
 
