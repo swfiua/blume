@@ -16,7 +16,7 @@ class Legend(magic.Ball):
         super().__init__()
 
         self.data = data
-
+        self.fontsize = 6
         self.transpose = True
         self.modes = deque(['fixed', 'equal', 'expand'])
         self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baseline'])
@@ -25,11 +25,15 @@ class Legend(magic.Ball):
 
         ax = pyplot.subplot()
 
+        prop = dict(size=self.fontsize)
+
         grid = legend.Grid(
             self.data,
             transpose=self.transpose,
             mode=self.modes[0],
-            align=self.aligns[0])
+            align=self.aligns[0],
+            prop=prop,
+        )
         
         ax.add_artist(grid)
         

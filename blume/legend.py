@@ -92,7 +92,8 @@ class Grid(offsetbox.AnchoredOffsetbox):
                  mode=None,
                  transpose=False,
                  bbox=None,
-                 loc=None):
+                 loc=None,
+                 prop=None):
 
         if inner is None: inner = HPacker
         if outer is None: outer = VPacker
@@ -104,10 +105,11 @@ class Grid(offsetbox.AnchoredOffsetbox):
         loc = loc or 1
         hboxes = []
 
+        textprops = prop.copy()
         for row in data:
             #textprops = dict(horizontalalignment='right')
             #textprops = {}
-            children = [TextArea(item) for item in row]
+            children = [TextArea(item, textprops=textprops) for item in row]
             
             hboxes.append(inner(pad=0, sep=0, mode=mode, align=align,
                                 children=children))
@@ -115,7 +117,8 @@ class Grid(offsetbox.AnchoredOffsetbox):
         vbox = outer(pad=0, sep=0, align=align, mode=mode,
                      children=hboxes)
         super().__init__(loc=loc,
-                         child=vbox)
+                         child=vbox,
+                         prop=prop)
 
 
         
