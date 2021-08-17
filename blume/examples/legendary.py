@@ -3,6 +3,8 @@ Example using legend.Legendary
 
 
 """
+from collections import deque
+
 from matplotlib import pyplot
 
 from blume import legend, magic, farm
@@ -15,11 +17,21 @@ class Legend(magic.Ball):
 
         self.data = data
 
+        self.transpose = True
+        self.modes = deque(['fixed', 'equal', 'expand'])
+        self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baseline'])
+
     async def run(self):
 
         ax = pyplot.subplot()
 
-        ax.add_artist(legend.LegendArray(self.data, transpose=True))
+        grid = legend.Grid(
+            self.data,
+            transpose=self.transpose,
+            mode=self.modes[0],
+            align=self.aligns[0])
+        
+        ax.add_artist(grid)
         
         await self.put()
 

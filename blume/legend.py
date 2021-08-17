@@ -47,7 +47,7 @@ offsetbox.DEBUG = True
 from blume import magic
 from blume.table import Cell
 
-class LegendArray(offsetbox.AnchoredOffsetbox):
+class LegendArray(magic.Ball):
     """ Draw a table from a dictionary of ...
 
     dictionaries of artists?
@@ -62,25 +62,60 @@ class LegendArray(offsetbox.AnchoredOffsetbox):
 
     So hang on and lets see what goes boom!
     """
+    def __init__(self, data):
 
+        self.inner = HPacker
+        self.outer = VPacker
+        self.grid = Grid(data)
+        pass
+
+class Cell(offsetbox.OffsetBox):
+    pass
+
+class Grid(offsetbox.AnchoredOffsetbox):
+    """ A grid of cells.
+
+    What I really need here is just create a grid of
+    nested [HV]Packers.
+
+    But you cannot create the Packers until you have it's children.
+
+    The way forward is less clear.
+
+    For now, just create something, so we can explore the mode
+    """
     def __init__(self,
                  data,
                  inner=None,
                  outer=None,
-                 transpose=False):
+                 align=None,
+                 mode=None,
+                 transpose=False,
+                 bbox=None,
+                 loc=None):
 
         if inner is None: inner = HPacker
         if outer is None: outer = VPacker
         if transpose:
             inner, outer = outer, inner
 
+        align = align or 'baseline'
+        mode = mode or 'equal'
+        loc = loc or 1
         hboxes = []
 
         for row in data:
-            hboxes.append(inner(pad=0, sep=0,
-                                children=[TextArea(item) for item in row]))
+            #textprops = dict(horizontalalignment='right')
+            #textprops = {}
+            children = [TextArea(item) for item in row]
+            
+            hboxes.append(inner(pad=0, sep=0, mode=mode, align=align,
+                                children=children))
 
-        vbox = outer(pad=0, sep=0,
+        vbox = outer(pad=0, sep=0, align=align, mode=mode,
                      children=hboxes)
-        super().__init__(loc=1,
+        super().__init__(loc=loc,
                          child=vbox)
+
+
+        
