@@ -22,7 +22,7 @@ class Legend(magic.Ball):
         super().__init__()
 
         self.data = data
-
+        self.fontsize = 6
         self.transpose = True
         self.modes = deque(['fixed', 'equal', 'expand'])
         self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baseline'])
@@ -32,6 +32,7 @@ class Legend(magic.Ball):
         fig = pyplot.figure()
         ax = fig.add_subplot()
 
+        prop = dict(size=self.fontsize)
         grid = legend.LayoutGrid(
             self.data,
             transpose=self.transpose,
@@ -39,7 +40,8 @@ class Legend(magic.Ball):
             align=self.aligns[0])
 
         grid.figure = fig
-        #ax.add_artist(grid)
+        
+        ax.add_artist(grid)
         
         await self.put()
 
@@ -65,6 +67,10 @@ words = [x.strip() for x in legend.__doc__.split()]
 words = np.array(words)
 words = words[:cols * cols].reshape(cols, cols)
 print(words)
+
+data = 'abc;abd;abe'
+foo = pyplot.subplot_mosaic(data)
+print(foo)
 
 leg = Legend(words)
 
