@@ -39,7 +39,7 @@ specifying table layouts.
 
 """
 
-from matplotlib import offsetbox, pyplot, artist
+from matplotlib import offsetbox, pyplot, artist, transforms
 
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
 offsetbox.DEBUG = True
@@ -121,4 +121,12 @@ class Grid(offsetbox.AnchoredOffsetbox):
                          prop=prop)
 
 
-        
+    def draw(self, renderer):
+
+        x0, y0, x1, y1 = self.get_extent(renderer)
+
+        bbox = transforms.Bbox(((x0,y0), (x1,y1)))
+        print(bbox.p0, bbox.p1)
+        print(renderer.dpi)
+        print(f'{bbox}')
+        super().draw(renderer)

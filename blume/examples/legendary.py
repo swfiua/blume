@@ -5,7 +5,7 @@ Example using legend.Legendary
 """
 from collections import deque
 
-from matplotlib import pyplot
+from matplotlib import pyplot, transforms
 
 from blume import legend, magic, farm
 
@@ -34,14 +34,13 @@ class Legend(magic.Ball):
             align=self.aligns[0],
             prop=prop,
         )
-        
+
+        #tf = grid.get_transform()
+
         ax.add_artist(grid)
         
         await self.put()
 
-    def draw(self, renderer=None):
-
-        self.leg.draw(renderer)
 
 
     
