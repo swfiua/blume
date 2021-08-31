@@ -1,5 +1,11 @@
-"""
-Example using legend.Legendary
+"""Example using legend.Legendary
+
+At this point I am just exploring how the various parameters to the
+packers from `offsetbox` interact.
+
+After digging into the whole issue of `matplolib.transforms` I
+happened across the LayoutGrid.
+
 
 
 """
@@ -23,15 +29,17 @@ class Legend(magic.Ball):
 
     async def run(self):
 
-        ax = pyplot.subplot()
+        fig = pyplot.figure()
+        ax = fig.add_subplot()
 
-        grid = legend.Grid(
+        grid = legend.LayoutGrid(
             self.data,
             transpose=self.transpose,
             mode=self.modes[0],
             align=self.aligns[0])
-        
-        ax.add_artist(grid)
+
+        grid.figure = fig
+        #ax.add_artist(grid)
         
         await self.put()
 
