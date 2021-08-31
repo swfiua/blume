@@ -11,6 +11,10 @@ Rows and columns, some text and a patch of colour.  Or color?
 The legend, has magic capabilities, including being able to inspect
 a plot and figure out what to use for the various labels and patches.
 
+The patches for the legend are just `handles` for which there are a
+number of magic functions that turn the handle into an `Artist` to
+represent that handle in the legend.
+
 The legend uses objects from `matplotlib.offsetbox` to do all the drawing.
 
 These look to be the pieces that the table ought to be using.
@@ -37,9 +41,35 @@ notes
 `matplotlib.subplot_mosaic` introduces an interesting ways of
 specifying table layouts.
 
+After more digging around in matplotlib inards I discovered the
+LayoutGrid class.
+
+`_layoutgrid`
+
+This one uses constraints and a solver to deal with layouts.
+
+There's a lot of offsetbox code that would not be needed.
+
+The key thing about an `offsetbox.Artist` that it knows the fontsize
+and should aim to ensure that it's size is proportional to the
+fontsize.  This is achieved by making things such as padding a
+multiple of the fontsize.
+
+This is desirable for packing tables with text and provides a way to
+scale the whole image by adjusting a single fontsize variable.
+
+It can save a lot of work over the current table, constantly measuring
+text.
+
+Presumably we can add the fontsize into the whole thing as a
+constraint of some sort.
+
+In short, I think I have another module to take a look at.
+
 """
 
 from matplotlib import offsetbox, pyplot, artist, transforms
+from matplotlib import _layoutgrid as layoutgrid
 
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
 offsetbox.DEBUG = True
@@ -119,6 +149,46 @@ class Grid(offsetbox.AnchoredOffsetbox):
         super().__init__(loc=loc,
                          child=vbox,
                          prop=prop)
+
+class LayoutGrid(layoutgrid.LayoutGrid):
+    """ A grid of cells.
+
+    What I really need here is just create a grid of
+    nested [HV]Packers.
+
+    But you cannot create the Packers until you have it's children.
+
+    The way forward is less clear.
+
+    For now, just create something, so we can explore the mode
+    """
+    def __init__(self,
+                 data,
+                 inner=None,
+                 outer=None,
+                 align=None,
+                 mode=None,
+                 transpose=False,
+                 bbox=None,
+                 loc=None):
+
+
+        if inner is None: inner = HPacker
+        if outer is None: outer = VPacker
+        if transpose:
+            inner, outer = outer, inner
+
+        align = align or 'baseline'
+        mode = mode or 'equal'
+        loc = loc or 1
+        hboxes = []
+
+        super().__init__(nrows=len(data), ncols=len(data[0]))
+
+        for rix, row in enumerate(data):
+            for cix, col in enumerate(row):
+                self.add_child(TextArea(col), rix, cix)
+
 
 
     def draw(self, renderer):
