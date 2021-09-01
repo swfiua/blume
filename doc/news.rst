@@ -4,6 +4,45 @@
 
 What's happening with the `blume.table.Table`?
 
+2021/01/01
+==========
+
+I have been on a bit of a tour of parts of matplotlib that are
+concerned with laying out rectangles in grids.
+
+It is a common problem, legends, tables, grids of plots and more
+recently mosaics too.
+
+Each approach has a different focus, and each has some features very
+specific to the use case.
+
+The `blume.legend` module is where I am trying to combine some of
+these ideas.   Together with `blume.examples.legendary` where much of
+the fun is.
+
+For a while, the plan was just to use the objects from
+`matplotlib.offsetbox`, also used by `matplotlib.legend`.
+
+This takes a nice approach to scaling of text by having artists scale
+the size of their drawings by the font size in points.   For example,
+if you want to place padding around some text, make that padding a
+multiple of the fontsize and all should be good.
+
+The recent new arrival of `subplot_mosaic` introduces some powerful
+ways to describe the subplots you wish to see.
+
+It allows mosaics of axes to be created.  In addition, each cell of a
+mosaic can be its own mosaic, and so on ad-infinitum, or at least to
+some recursion limit.
+
+So we can now have tables, where every cell of the table is, in fact,
+an entire axis.
+
+I think what I need at this point is some combination of the offsetbox
+magic with the mosaics and it should be possible to make some very
+interesting tables.
+
+
 2020/12/03
 ==========
 

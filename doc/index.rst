@@ -25,7 +25,33 @@ Welcome to blume's documentation!
    waves.rst
    why.rst
 
+   magic.rst
+   dry.rst
+   issues.rst
+   metagit.rst
+   notes.rst
+   status.rst
+   types.rst
+   success.rst
+   taybell.rst
+   gardening.rst
+
+
    gallery.rst
+
+Blume modules
+=============
+
+.. automodule:: blume.legend
+   :members:
+
+Metagit
+=======
+
+.. automodule:: blume.metagit
+   :members:
+
+
 
 Indices and tables
 ==================
