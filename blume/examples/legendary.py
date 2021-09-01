@@ -29,24 +29,26 @@ class Legend(magic.Ball):
 
     async def run(self):
 
+        mosaic = 'aaeee;bbbcc;zyxwv'
+        mosaic = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
         fig = pyplot.figure()
-        ax = fig.add_subplot()
+        fig, plots = pyplot.subplot_mosaic(mosaic)
 
-        prop = dict(size=self.fontsize)
-        grid = legend.LayoutGrid(
-            self.data,
-            transpose=self.transpose,
-            mode=self.modes[0],
-            align=self.aligns[0],
-            prop=prop,
-        )
-
-        grid.figure = fig
+        props = dict(size=self.fontsize)
         
-        ax.add_artist(grid)
+        for key, ax in plots.items():
+            ax.set_title(key)
+
+            grid = legend.Grid(
+                self.data,
+                transpose=self.transpose,
+                mode=self.modes[0],
+                align=self.aligns[0],
+                prop=props)
+            ax.add_artist(grid)
         
         await self.put()
-
+        del fig
 
 
     
@@ -67,7 +69,7 @@ words = np.array(words)
 words = words[:cols * cols].reshape(cols, cols)
 print(words)
 
-data = 'abc;abd;abe'
+data = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
 foo = pyplot.subplot_mosaic(data)
 print(foo)
 
