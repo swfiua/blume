@@ -26,20 +26,37 @@ class Legend(magic.Ball):
         self.fontsize = 6
         self.transpose = True
         self.modes = deque(['fixed', 'equal', 'expand'])
-        self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baselinee'])
-        self.carpet = legend.Carpet()
+        self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baseline'])
+
+        self.mosaics = deque([
+            'aaeee;bbbcc;zyxwv',
+            [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]])
 
 
     async def run(self):
 
-        mosaic = 'aaeee;bbbcc;zyxwv'
-        mosaic = [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]
-        plots = self.carpet.set_mosaic(mosaic)
+        #mosaic = 'aaeee;bbbcc;zyxwv'
+        #mosaic = [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]
 
+        mosaic = self.mosaics[0]
+        self.mosaics.rotate()
+        
+        self.carpet = legend.Carpet()
+        plots, oldplots = self.carpet.set_mosaic(mosaic)
+
+        print(f'number of axes: {len(oldplots)}')
+        print(plots.keys())
+        print(oldplots.keys())
+        
+        
+        #fig = pyplot.figure()
+        #plots = fig.subplot_mosaic(mosaic)
         props = dict(size=self.fontsize)
         
         for key, ax in plots.items():
             ax.set_title(key)
+
+            #print(ax.get_subplotspec())
 
             grid = legend.Grid(
                 self.data,
@@ -48,6 +65,8 @@ class Legend(magic.Ball):
                 align=self.aligns[0],
                 prop=props)
             ax.add_artist(grid)
+
+            ax.plot(range(10))
         
         await self.put()
 
@@ -72,8 +91,8 @@ words = words[:cols * cols].reshape(cols, cols)
 print(words)
 
 data = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
-foo = pyplot.subplot_mosaic(data)
-print(foo)
+#foo = pyplot.subplot_mosaic(data)
+#print(foo)
 
 leg = Legend(words)
 

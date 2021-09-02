@@ -214,17 +214,44 @@ class LayoutGrid(layoutgrid.LayoutGrid):
         super().draw(renderer)
 
 
-class Carpet(figure.Figure):
+class Carpet:
     """ A figure to manage a bunch of axes in a mosaic.
     """
+    def __init__(self):
+
+        self.fig = pyplot.figure()
+        self.gs = self.fig.add_gridspec(1,1)
+        self.axes = {}
+
+        
     def set_mosaic(self, mosaic, axes=None):
         """ Set the figures mosaic 
 
         Aim to do this in a way we can keep track of the axes.
         """
-        axes = self.subplot_mosaic(mosaic)
 
-        print(axes)
+        fig = self.fig
+        
+        # delete what is there
+        for ax in fig.axes:
+            fig.delaxes(ax)
+        
+        new_axes = fig.subplot_mosaic(mosaic)
 
-        return axes
+        newones = {}
+        for key, nax in new_axes.items():
+            ax = self.axes.get(key)
+
+            if ax:
+                ax.set_subplotspec(nax.get_subplotspec())
+
+                fig.delaxes(nax)
+                fig.add_subplot(ax)
+            else:
+                self.axes[key] = nax
+                newones[key] = nax
+
+        print(f'number of axes: {len(self.axes)}')
+        
+        return newones, self.axes
     
