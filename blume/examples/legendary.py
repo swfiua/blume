@@ -6,7 +6,8 @@ packers from `offsetbox` interact.
 After digging into the whole issue of `matplolib.transforms` I
 happened across the LayoutGrid.
 
-
+Now I would like to be able to change the mosaics without losing all
+the axes in the process.
 
 """
 from collections import deque
@@ -25,14 +26,15 @@ class Legend(magic.Ball):
         self.fontsize = 6
         self.transpose = True
         self.modes = deque(['fixed', 'equal', 'expand'])
-        self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baseline'])
+        self.aligns = deque(['center', 'left', 'top', 'right', 'bottom', 'baselinee'])
+        self.carpet = legend.Carpet()
+
 
     async def run(self):
 
         mosaic = 'aaeee;bbbcc;zyxwv'
-        mosaic = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
-        fig = pyplot.figure()
-        fig, plots = pyplot.subplot_mosaic(mosaic)
+        mosaic = [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]
+        plots = self.carpet.set_mosaic(mosaic)
 
         props = dict(size=self.fontsize)
         
@@ -48,7 +50,7 @@ class Legend(magic.Ball):
             ax.add_artist(grid)
         
         await self.put()
-        del fig
+
 
 
     

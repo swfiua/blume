@@ -583,7 +583,8 @@ def fig2data(fig=None, background='grey'):
        
     fig.savefig(image, facecolor=facecolor, dpi=200)
     try:
-        fig.close()
+        #fig.close()
+        pass
     except AttributeError:
         print('cannot close figure')
 

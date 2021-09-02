@@ -62,13 +62,25 @@ It can save a lot of work over the current table, constantly measuring
 text.
 
 Presumably we can add the fontsize into the whole thing as a
-constraint of some sort.
+constraint of some sort?
 
 In short, I think I have another module to take a look at.
 
+Update: the subplot_mosaic code has some great ideas.
+
+It is very much focussed on axes.
+
+Nested mosaic's of axes open up a lot of interesting opportunities,
+here's hoping we can transform these mosaics and keep track of all the
+axes.
+
+`subplot_mosaic` gives us a figure and a dictionary of axes.
+
+
+
 """
 
-from matplotlib import offsetbox, pyplot, artist, transforms
+from matplotlib import offsetbox, pyplot, artist, transforms, figure
 from matplotlib import _layoutgrid as layoutgrid
 
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
@@ -200,3 +212,19 @@ class LayoutGrid(layoutgrid.LayoutGrid):
         print(renderer.dpi)
         print(f'{bbox}')
         super().draw(renderer)
+
+
+class Carpet(figure.Figure):
+    """ A figure to manage a bunch of axes in a mosaic.
+    """
+    def set_mosaic(self, mosaic, axes=None):
+        """ Set the figures mosaic 
+
+        Aim to do this in a way we can keep track of the axes.
+        """
+        axes = self.subplot_mosaic(mosaic)
+
+        print(axes)
+
+        return axes
+    
