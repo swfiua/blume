@@ -12,7 +12,7 @@ the axes in the process.
 """
 from collections import deque
 
-from matplotlib import pyplot, transforms
+from matplotlib import pyplot, transforms, _layoutgrid
 
 from blume import legend, magic, farm
 
@@ -30,23 +30,33 @@ class Legend(magic.Ball):
 
         self.mosaics = deque([
             'aaeee;bbbcc;zyxwv',
-            [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]])
+            'abc'])
+            #[[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]])
 
+        self.carpet = legend.Carpet()
+        
 
     async def run(self):
 
         #mosaic = 'aaeee;bbbcc;zyxwv'
         #mosaic = [[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]
 
+        #self.carpet = legend.Carpet()
+
         mosaic = self.mosaics[0]
         self.mosaics.rotate()
-        
-        self.carpet = legend.Carpet()
+        #for xx in self.carpet.fig._localaxes.as_list():
+        #    print(id(xx))
+            
         plots, oldplots = self.carpet.set_mosaic(mosaic)
 
+        print(len(self.carpet.fig._localaxes))
+
         print(f'number of axes: {len(oldplots)}')
+        print(f'number of new axes: {len(plots)}')
+        fig = self.carpet.fig
+        #print(fig._layoutgrid.nrows, fig._layoutgrid.ncols)
         print(plots.keys())
-        print(oldplots.keys())
         
         
         #fig = pyplot.figure()
@@ -67,8 +77,9 @@ class Legend(magic.Ball):
             ax.add_artist(grid)
 
             ax.plot(range(10))
-        
-        await self.put()
+
+        print('FINAL DRAW', len(fig._localaxes))
+        await self.put(magic.fig2data(fig))
 
 
 

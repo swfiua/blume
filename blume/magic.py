@@ -580,7 +580,7 @@ def fig2data(fig=None, background='grey'):
 
     # no renderer without this
     image = io.BytesIO()
-       
+
     fig.savefig(image, facecolor=facecolor, dpi=200)
     try:
         fig.close()
