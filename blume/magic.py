@@ -193,7 +193,8 @@ class Interact(Ball):
 
         super().__init__()
         
-        self.ball = ball
+        self.history = deque()
+        self.set_ball(ball)
 
         self.add_filter('0', self.toggle)
         self.add_filter('1', self.add_one)
@@ -210,16 +211,34 @@ class Interact(Ball):
 
         self.add_filter(' ', self.next_attr)
         self.add_filter('\b', self.prev_attr)
+        self.add_filter('\r', self.re_interact)
+        self.add_filter('Left', self.back)
 
         self.add_filter('i', self.interact)
 
 
     def set_ball(self, ball):
 
-        self.ball = ball
-        self.attrs = deque(sorted(vars(ball).keys()))
+        try:
+            self.attrs = deque(sorted(vars(ball).keys()))
+        except:
+            print('oops no can interact')
+            return
 
+        self.ball = ball
+
+
+
+    async def back(self):
+        """ pop back in history """
+
+        if not self.history:
+            return
         
+        ball = self.history.pop()
+        self.set_ball(ball)
+
+
     async def interact(self):
         """ Go into interactive mode 
         
@@ -237,6 +256,22 @@ class Interact(Ball):
         self.show_current()
         print()
 
+
+    async def re_interact(self):
+        """ Recursively interact mode 
+        
+        hmm.... bigger worm can time
+
+        Idea is to interact on current attribute of whatever current is
+        """
+        
+        current = self.current()
+        obj = getattr(self.ball, current)
+
+        self.set_ball(obj)
+        self.show_current()
+
+        
     def show_current(self):
         
         attr = self.current()
@@ -721,6 +756,7 @@ class Shepherd(Ball):
 
         await self.interaction.interact()
 
+        
     def current(self):
 
         return self.path[-1]
@@ -781,7 +817,7 @@ class Shepherd(Ball):
 
         # nobody cares :(
         try:
-            print('nobody cares :(', key, ord(key))
+            print('nobody cares :(', key, ord(key), type(key))
         except:
             print(key)
         return False

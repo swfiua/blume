@@ -43,28 +43,21 @@ class Legend(magic.Ball):
 
         #self.carpet = legend.Carpet()
 
-        mosaic = self.mosaics[0]
         self.mosaics.rotate()
+        mosaic = self.mosaics[0]
         #for xx in self.carpet.fig._localaxes.as_list():
         #    print(id(xx))
-            
+
         plots, oldplots = self.carpet.set_mosaic(mosaic)
 
-        print(len(self.carpet.fig._localaxes))
-
-        print(f'number of axes: {len(oldplots)}')
-        print(f'number of new axes: {len(plots)}')
         fig = self.carpet.fig
-        #print(fig._layoutgrid.nrows, fig._layoutgrid.ncols)
-        print(plots.keys())
+        #print('gridspecs', len(fig._gridspecs))
         
-        
-        #fig = pyplot.figure()
-        #plots = fig.subplot_mosaic(mosaic)
         props = dict(size=self.fontsize)
         
         for key, ax in plots.items():
             ax.set_title(key)
+            ax.text(.5,.5, str(key))
 
             #print(ax.get_subplotspec())
 
@@ -78,7 +71,7 @@ class Legend(magic.Ball):
 
             ax.plot(range(10))
 
-        print('FINAL DRAW', len(fig._localaxes))
+        #print('FINAL DRAW', len(fig._localaxes))
         await self.put(magic.fig2data(fig))
 
 

@@ -225,9 +225,12 @@ class Carpet:
 
         
     def set_mosaic(self, mosaic, axes=None):
-        """ Set the figures mosaic 
+        """Set the figures mosaic 
 
         Aim to do this in a way we can keep track of the axes.
+
+        Returns a dictionary of newly added axes and the (updated)
+        existing dictionary of all axes.
         """
 
         fig = self.fig
@@ -235,33 +238,24 @@ class Carpet:
         # delete what is there
         for ax in fig.axes:
             fig.delaxes(ax)
-            print(len(fig._localaxes))
 
-        #fig._gridspecs = []
+        fig._gridspecs = []
         new_axes = fig.subplot_mosaic(mosaic)
-        print('xxxxxxx', len(fig._localaxes))
-
-        # TEMP DEBUG
-        #self.axes = new_axes
-        #return new_axes, self.axes
-
-        print(fig._gridspecs)
 
         newones = {}
         for key, nax in new_axes.items():
             ax = self.axes.get(key)
 
             if ax:
-                print('switching old to new spec', key)
-                #ax.set_subplotspec(nax.get_subplotspec())
+                #print('switching old to new spec', key)
+                ax.set_subplotspec(nax.get_subplotspec())
 
                 fig.delaxes(nax)
                 fig.add_subplot(ax)
-                ax.stale = True
             else:
                 self.axes[key] = nax
                 newones[key] = nax
 
         
-        return newones, self.axes
+        return newones,  self.axes
     
