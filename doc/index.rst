@@ -24,16 +24,13 @@ Welcome to blume's documentation!
    godel.rst
    waves.rst
    why.rst
-
-   magic.rst
    dry.rst
+   types.rst
+
    issues.rst
-   metagit.rst
    notes.rst
    status.rst
-   types.rst
    success.rst
-   taybell.rst
    gardening.rst
 
 
@@ -42,15 +39,20 @@ Welcome to blume's documentation!
 Blume modules
 =============
 
-.. automodule:: blume.legend
-   :members:
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
 
-Metagit
-=======
-
-.. automodule:: blume.metagit
-   :members:
-
+   legend.rst
+   magic.rst
+   farm.rst
+   mb.rst
+   mclock2.rst
+   eggshow.rst
+   metagit.rst
+   teakhat.rst
+   taybell.rst
+   console.rst
 
 
 Indices and tables

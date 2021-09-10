@@ -1,0 +1,3 @@
+
+..automodule: blume.console::
+    :members:

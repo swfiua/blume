@@ -1,0 +1,3 @@
+
+..automodule: blume.legend::
+    :members:

@@ -72,3 +72,11 @@ If farm graph is a tree?
 Queue names as `pathlib.Path` 
 
 *stdin*, *stdout*, *stderr* ?
+
+And finally...
+==============
+
+**Here's the docs from the `blume.farm` module.**
+
+.. automodule: blume.farm
+   :members:
