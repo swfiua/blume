@@ -1,7 +1,10 @@
 
 =======
-Straight from the code for ${module}
+Simple display via tk
 =======
 
-..automodule: blume.${module}::
+
+.. automodule:: blume.teakhat
     :members:
+
+

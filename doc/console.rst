@@ -1,7 +1,10 @@
 
 =======
-Straight from the code for ${module}
+An async console would be nice
 =======
 
-..automodule: blume.${module}::
+
+.. automodule:: blume.console
     :members:
+
+

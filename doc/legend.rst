@@ -1,7 +1,10 @@
 
 =======
-Straight from the code for ${module}
+The Legendary Legend
 =======
 
-..automodule: blume.${module}::
+
+.. automodule:: blume.legend
     :members:
+
+
