@@ -5,9 +5,13 @@ import sys
 module = sys.argv[1]
 
 ss = """
-..automodule: blume.%s::
+=======
+Straight from the code for ${module}
+=======
+
+..automodule: blume.${module}::
     :members:
 """
 
 with open(f'{module}.rst', 'w') as f:
-    f.write(ss % module)
+    f.write(ss % dict(module=module))
