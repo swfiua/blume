@@ -76,34 +76,34 @@ class Legend(magic.Ball):
 
 
 
-    
-import argparse
-from blume import farm as land
-import numpy as np
+if __name__ == '__main__':    
+    import argparse
+    from blume import farm as land
+    import numpy as np
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--cols', type=int, default=6)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cols', type=int, default=6)
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-cols = args.cols
+    cols = args.cols
 
-words = [x.strip() for x in legend.__doc__.split()]
+    words = [x.strip() for x in legend.__doc__.split()]
 
-words = np.array(words)
-words = words[:cols * cols].reshape(cols, cols)
-print(words)
+    words = np.array(words)
+    words = words[:cols * cols].reshape(cols, cols)
+    print(words)
 
-data = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
-#foo = pyplot.subplot_mosaic(data)
-#print(foo)
+    data = [[1,2,3],[1,[[4,5], [6,5]],10], [7,8,9]]
+    #foo = pyplot.subplot_mosaic(data)
+    #print(foo)
 
-leg = Legend(words)
+    leg = Legend(words)
 
-farm = land.Farm()
+    farm = land.Farm()
 
-farm.add(leg)
+    farm.add(leg)
 
-farm.shep.path.append(leg)
+    farm.shep.path.append(leg)
 
-magic.run(land.start_and_run(farm))
+    magic.run(land.start_and_run(farm))
