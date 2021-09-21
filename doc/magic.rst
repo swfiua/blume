@@ -107,9 +107,9 @@ second, as well as taking a picture once a minute.
 And finally..
 =============
 
-**Here's the docs from the `blume.magic` module.**
+Here's the docs from the `blume.magic` module.
 
-.. automodule: blume.magic
+.. automodule:: blume.magic
    :members:
 
 

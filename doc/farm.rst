@@ -78,5 +78,5 @@ And finally...
 
 **Here's the docs from the `blume.farm` module.**
 
-.. automodule: blume.farm
+.. automodule:: blume.farm
    :members:
