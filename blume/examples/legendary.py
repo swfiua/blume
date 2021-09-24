@@ -105,5 +105,8 @@ if __name__ == '__main__':
     farm.add(leg)
 
     farm.shep.path.append(leg)
-
-    magic.run(land.start_and_run(farm))
+    print(type(magic.run))
+    foo = land.start_and_run(farm)
+    print('cooroutine', foo)
+    magic.run(foo)
+    #magic.run(land.start_and_run(farm))
