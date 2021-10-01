@@ -299,7 +299,6 @@ class Cod(magic.Ball):
             key = self.fields[0]
 
             if self.filter and self.filter in key:
-                print('skip', key)
                 self.fields.rotate()
                 continue
 

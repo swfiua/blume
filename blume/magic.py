@@ -153,6 +153,7 @@ class Ball:
         """
         return getattr(self.radii, attr)
 
+
     def update(self, args):
         """ Update attributes as per args 
 
@@ -166,17 +167,17 @@ class Ball:
         for key, value in vars(args).items():
             setattr(self, key, value)
 
-    async def sleepy(self):
+    def sleepy(self):
         """ Sleep more between updates """
         self.sleep *= 2
         print(f'sleepy {self.sleep}')
 
-    async def wakey(self):
+    def wakey(self):
         """ Sleep less between updates """
         self.sleep /= 2
         print(f'wakey {self.sleep}')
 
-    async def toggle_pause(self):
+    def toggle_pause(self):
         """ Toggle pause flag """
         print('toggle pause')
         self.paused = not self.paused
@@ -309,20 +310,20 @@ class Interact(Ball):
 
         print(f'{key}: {value}')
 
-    async def double(self):
+    def double(self):
         """ i double """
         self.operate(operator.mul, 2) 
         
-    async def half(self):
+    def half(self):
         """ i half """
         self.operate(operator.mul, 1/2)
 
-    async def tenx(self):
+    def tenx(self):
         """ i ten x """
 
         self.operate(operator.mul, 10)
         
-    async def tenth(self):
+    def tenth(self):
         """ i one tenth """
 
         self.operate(operator.mul, 1/10)
@@ -332,20 +333,20 @@ class Interact(Ball):
 
         self.operate(operator.add, 1)
 
-    async def add_m(self):
+    def add_m(self):
         """ i one thousand more """
 
         self.operate(operator.add, 1000)
 
-    async def sub_one(self):
+    def sub_one(self):
         """ i one less """
         self.operate(operator.add, -1)
 
-    async def toggle(self):
+    def toggle(self):
         """ i toggle """
         self.operate(operator.not_, None)
         
-    async def flipsign(self):
+    def flipsign(self):
         """ i flip """
         self.operate(operator.mul, -1)
 
@@ -367,15 +368,15 @@ class Interact(Ball):
             except:
                 print('no cycle for you', howmuch)
 
-    async def cycle(self):
+    def cycle(self):
         """ i cycle """
         self.acycle()
         
-    async def rcycle(self):
+    def rcycle(self):
         """ i cycle back """
         self.acycle(-1)
 
-    async def shorten(self):
+    def shorten(self):
 
         key = self.current()
         
@@ -526,15 +527,18 @@ class GeeFarm(Ball):
         """ Turn graph into a running farm """
         super().__init__()
         self.pause = True
-        self.hub = hub or nx.DiGraph()
+        hub = hub or nx.DiGraph()
 
-        self.hub.add_nodes_from(nodes or set())
-        self.hub.add_edges_from(edges or set())
+        hub.add_nodes_from(nodes or set())
+        hub.add_edges_from(edges or set())
 
+        print('OK to here')
+        self.hub = hub
         self.shep = Shepherd()
 
         # register quit event with shepherd
         self.shep.add_filter('q', self.quit)
+        print('OK to here2')
 
 
     def __getattr__(self, attr):
@@ -542,6 +546,7 @@ class GeeFarm(Ball):
 
         self.hub is a directed graph, so we're a Ball that is a graph
         """
+        #print(f'farm looking for {attr}')
         return getattr(self.hub, attr)
 
     def status(self):
@@ -563,6 +568,7 @@ class GeeFarm(Ball):
         """
 
         # Tell the shepherd what to look after
+        print('starting sheperd')
         self.shep.flock = self.hub
 
         print('starting shep')
@@ -573,7 +579,7 @@ class GeeFarm(Ball):
         # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
         print('start superdog', self.superdog)
-        await self.shep.toggle_pause()
+        self.shep.toggle_pause()
 
 
     async def run(self):
@@ -808,7 +814,12 @@ class Shepherd(Ball):
             #print('whistle', sheep, lu)
             if key in lu.keys():
                 try:
-                    await lu[key]()
+
+                    result = lu[key]()
+
+                    if inspect.iscoroutine(result):
+                        await result
+                    
                 except:
                     print_exc()
 

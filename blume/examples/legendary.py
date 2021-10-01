@@ -76,7 +76,7 @@ class Legend(magic.Ball):
 
 
 
-if __name__ == '__main__':    
+def main():
     import argparse
     from blume import farm as land
     import numpy as np
@@ -110,3 +110,7 @@ if __name__ == '__main__':
     print('cooroutine', foo)
     magic.run(foo)
     #magic.run(land.start_and_run(farm))
+
+if __name__ == '__main__':
+    main()
+    

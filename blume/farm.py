@@ -209,8 +209,6 @@ class Carpet(Ball):
         sz = self.size
 
         if self.image is None:
-            qq = self.select('stdin')
-
             width, height = ball.width, ball.height
             self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
 
