@@ -1047,6 +1047,20 @@ class Table:
         
         """
 
+class Carpet(Ball):
+
+    def __init__(self):
+
+        super().__init__()
+
+        self.fig = plt.figure(layout='constrained')
+
+    def __getattr__(self, attr):
+
+        return getattr(self.fig)
+
+    
+
 async def canine(ball):
     """ A sheep dog, something to control when it pauses and sleeps
 

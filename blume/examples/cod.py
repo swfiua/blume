@@ -283,7 +283,10 @@ class Cod(magic.Ball):
         # Make dates on X-axis pretty
         locator = mdates.AutoDateLocator()
         formatter = mdates.ConciseDateFormatter(locator)
-        ax = plt.gca()
+
+        print('waiting for axes')
+        ax = await self.get('axes')
+        print('cod got axes', ax)
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 

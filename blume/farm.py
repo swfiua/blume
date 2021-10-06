@@ -63,7 +63,7 @@ from matplotlib import pyplot as plt
 
 import networkx as nx
 
-from .teakhat import Hat, Help
+from .mosaic import Carpet
 
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
@@ -76,22 +76,19 @@ class Farm(GeeFarm):
         super().__init__()
 
         # start a farm going
-        hat = Hat()
         carpet = Carpet()
         self.carpet = carpet
 
         clock = GuidoClock()
 
-        self.add_node(carpet, background=True)
-
-        self.add_node(hat, hat=True)
+        self.add_node(carpet, background=True, hat=True)
 
         self.add(self.shep)
 
         self.add(clock)
 
         # connections
-        self.add_edge(carpet, hat)
+        #self.add_edge(carpet, hat)
         
         # sheperd looking after gfarm.hub, which it is itself part of.
         self.shep.set_flock(self.hub)
@@ -105,7 +102,7 @@ class Farm(GeeFarm):
         self.add_edge(item, self.carpet)
         
 
-class Carpet(Ball):
+class XCarpet(Ball):
     """ FIXME This should of course be in the magic module.
         I Can't remember why it needed to be here - probably worth
         moving it back there, but that requires making it magic!
