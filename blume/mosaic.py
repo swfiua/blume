@@ -31,7 +31,7 @@ class Carpet(Ball):
         plt.show()
         self.fig = plt.figure(layout='constrained')
 
-        self.sleep = 0.01
+        self.sleep = 0.1
 
         # create initial axes
         self.generate_mosaic()
@@ -72,14 +72,22 @@ class Carpet(Ball):
         print(mosaic)
         self.axes = self.fig.subplot_mosaic(mosaic)
         print(self.axes)
+        self.figure.clear()
+        
         
         
     def keypress(self, event):
         """ Take keypress events put them out there """
 
-        print('mosaic carpet handling', event)
+        #print('mosaic carpet handling', event)
+        # use select here to get actual magic curio queue
+        # where put can magically be a coroutine or a function according
+        # to context.
         self.select('stdout').put(event.key)
 
+    def draw(self, key=None):
+
+        self.fig.draw_idle()
 
     async def poll(self):
         """ Gui Loop """

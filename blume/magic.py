@@ -146,7 +146,12 @@ class Ball:
         self.radii.add_filter('s', self.sleepy)
         self.radii.add_filter('w', self.wakey)
         self.radii.add_filter(' ', self.toggle_pause)
+        self.radii.add_filter('W', self.dump_roundabout)
 
+    def dump_roundabout(self):
+
+        print('DUMPING ROUNDABOUT')
+        print(self.radii.counts)
 
     def __getattr__(self, attr):
         """ Delegate to roundabout
@@ -546,7 +551,9 @@ class GeeFarm(Ball):
 
         self.hub is a directed graph, so we're a Ball that is a graph
         """
-        #print(f'farm looking for {attr}')
+        print(f'farm looking for {attr}')
+        if attr == 'hub':
+            raise AttributeError
         return getattr(self.hub, attr)
 
     def status(self):
@@ -916,6 +923,7 @@ class Shepherd(Ball):
         # u/d/p/n up down previous next
 
     async def watch_roundabouts(self):
+        """ Set up a bunch of relays between roundabouts """
 
         print('watching roundabouts')
 
@@ -927,7 +935,6 @@ class Shepherd(Ball):
             bridge = await curio.spawn(relay(a, b))
             self.relays[(a, b)] = bridge
 
-            
         
     async def next(self):
         """ Move focus to next """
@@ -1102,7 +1109,7 @@ async def relay(a, b):
 
     while True:
         value = await a.get('stdout')
-        #print('relay', type(value), 'from', type(a), 'to', type(b))
+        print('relay', type(value), 'from', type(a), 'to', type(b))
         
         await b.put(value, 'stdin')
 

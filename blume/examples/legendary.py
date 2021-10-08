@@ -33,8 +33,6 @@ class Legend(magic.Ball):
             'abc'])
             #[[1,2,3],[1,[[11,12], [6,5]],10], [7,8,9]]])
 
-        self.carpet = legend.Carpet()
-        
 
     async def run(self):
 
@@ -48,31 +46,31 @@ class Legend(magic.Ball):
         #for xx in self.carpet.fig._localaxes.as_list():
         #    print(id(xx))
 
-        plots, oldplots = self.carpet.set_mosaic(mosaic)
+        # ask for a mosaic of axes?
+        # wish i knew the set of keys
+        await self.put(mosaic, 'mosaic')
 
-        fig = self.carpet.fig
-        #print('gridspecs', len(fig._gridspecs))
-        
         props = dict(size=self.fontsize)
+
+        ax = await self.get('axes')
+
+        ax.set_title(key)
+        ax.text(.5,.5, str(key))
+
+        #print(ax.get_subplotspec())
         
-        for key, ax in plots.items():
-            ax.set_title(key)
-            ax.text(.5,.5, str(key))
-
-            #print(ax.get_subplotspec())
-
-            grid = legend.Grid(
-                self.data,
-                transpose=self.transpose,
-                mode=self.modes[0],
-                align=self.aligns[0],
-                prop=props)
-            ax.add_artist(grid)
-
-            ax.plot(range(10))
+        grid = legend.Grid(
+            self.data,
+            transpose=self.transpose,
+            mode=self.modes[0],
+            align=self.aligns[0],
+            prop=props)
+        ax.add_artist(grid)
+        
+        ax.plot(range(10))
 
         #print('FINAL DRAW', len(fig._localaxes))
-        await self.put(magic.fig2data(fig))
+        await self.put('draw')
 
 
 
