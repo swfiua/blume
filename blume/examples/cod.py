@@ -235,6 +235,7 @@ class Cod(magic.Ball):
         super().__init__()
         self.spell = None
         self.fields = None
+        self.filtered = set()
 
     def get_data(self, commit):
 
@@ -302,6 +303,8 @@ class Cod(magic.Ball):
             key = self.fields[0]
 
             if self.filter and self.filter in key:
+
+                self.filtered.add(key)
                 self.fields.rotate()
                 continue
 
@@ -321,10 +324,10 @@ class Cod(magic.Ball):
                 index = [x[spell.datekey] for x in results]
 
                 # not sure what this was about ???
-                for ii in index:
-                    # fixme 2: let's use matplotlib's mdates.
-                    if type(index) == mdates.datetime:
-                        print('date oops')
+                #for ii in index:
+                #    # fixme 2: let's use matplotlib's mdates.
+                #    if type(index) == mdates.datetime:
+                #        print('date oops')
                 
 
                 try:

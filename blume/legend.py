@@ -239,9 +239,6 @@ class Carpet:
         for ax in fig.axes:
             fig.delaxes(ax)
 
-        # temp debug
-        self.axes = {}
-
         fig._gridspecs = []
         new_axes = fig.subplot_mosaic(mosaic)
 
