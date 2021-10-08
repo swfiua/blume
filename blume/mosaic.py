@@ -72,7 +72,7 @@ class Carpet(Ball):
         print(mosaic)
         self.axes = self.fig.subplot_mosaic(mosaic)
         print(self.axes)
-        self.figure.clear()
+        self.fig.clear()
         
         
         
@@ -115,7 +115,7 @@ class Carpet(Ball):
 
         for key, ax in self.axes.items():
             print('giving away', ax)
-            await self.put(ax, 'axes')
+            await self.put(ax, dict(type='axes', key=key))
 
 
     async def start(self):
