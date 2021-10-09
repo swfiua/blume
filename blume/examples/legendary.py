@@ -48,12 +48,13 @@ class Legend(magic.Ball):
 
         # ask for a mosaic of axes?
         # wish i knew the set of keys
-        await self.put(mosaic, 'mosaic')
+        #await self.put(mosaic, 'mosaic')
 
         props = dict(size=self.fontsize)
 
         print('getting axes')
         ax = await self.get('axes')
+        print(ax)
 
         ax.set_title(key)
         ax.text(.5,.5, str(key))
