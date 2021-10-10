@@ -551,7 +551,7 @@ class GeeFarm(Ball):
 
         self.hub is a directed graph, so we're a Ball that is a graph
         """
-        print(f'farm looking for {attr}')
+        #print(f'farm looking for {attr}')
         if attr == 'hub':
             raise AttributeError
         return getattr(self.hub, attr)
@@ -575,17 +575,16 @@ class GeeFarm(Ball):
         """
 
         # Tell the shepherd what to look after
-        print('starting sheperd')
         self.shep.flock = self.hub
 
-        print('starting shep')
         result = self.shep.start()
         if inspect.iscoroutine(result):
             await result
 
         # create a task which is a dog watching the shepherd
         self.superdog = await curio.spawn(canine(self.shep))
-        print('start superdog', self.superdog)
+
+        # set the shepherd to pause 
         self.shep.toggle_pause()
 
 
@@ -657,9 +656,12 @@ class RoundAbout:
         self.qsize = random.randint(30, 50)
         self.qs = {}
         self.infos = defaultdict(set)
-        self.add_queue()
+        #self.add_queue()
+
+        self.outputs = curio.UniversalQueue()
         self.counts = Counter()
         self.filters = defaultdict(dict)
+
 
     def select(self, name=None, create=True):
         """ pick a q 
@@ -675,12 +677,14 @@ class RoundAbout:
 
         return qq
 
-    async def put(self, value=None, name='stdout'):
+    async def put(self, value=None, name=None):
 
         self.counts.update([('put', name)])
-        await self.select(name).put(value or fig2data(plt))
+        value = value or fig2data(plt)
+        await self.outputs.put(dict(value=value, name=name))
+        #await self.select(name).put(value or fig2data(plt))
 
-    async def get(self, name='stdin'):
+    async def get(self, name=None):
 
         self.counts.update([('get', name)])
         return await self.select(name).get()
@@ -1106,12 +1110,22 @@ async def canine(ball):
 
 
 async def relay(a, b):
+    """ Relay messages from A to B
+
+    pull things from A and despatch them
+    to B's queues.
+    """
 
     while True:
-        value = await a.get('stdout')
-        print('relay', type(value), 'from', type(a), 'to', type(b))
+
+        data = await a.outputs.get()
+        value = data['value']
+        name = data['name']
+        print('relay', type(value),
+              'channel:', name,
+              'from', type(a), 'to', type(b))
         
-        await b.put(value, 'stdin')
+        await b.put(value, name)
 
 async def runme():
 

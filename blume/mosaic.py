@@ -115,7 +115,7 @@ class Carpet(Ball):
 
         for key, ax in self.axes.items():
             print('giving away', ax)
-            await self.put(ax, dict(type='axes', key=key))
+            await self.put(ax, 'axes')
 
 
     async def start(self):

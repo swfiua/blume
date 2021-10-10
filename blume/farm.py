@@ -100,6 +100,7 @@ class Farm(GeeFarm):
     def add(self, item):
 
         self.add_edge(item, self.carpet)
+        self.add_edge(self.carpet, item)
         
 
 class XCarpet(Ball):
