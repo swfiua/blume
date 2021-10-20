@@ -122,7 +122,7 @@ from PIL import Image
 
 import matplotlib
 
-from matplotlib import figure
+from matplotlib import figure, artist
 
 from matplotlib import pyplot as plt
 
@@ -130,9 +130,11 @@ import networkx as nx
 
 Parser = argparse.ArgumentParser
 
-class Ball:
+class Ball(artist.Artist):
     
     def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
 
         self.paused = False
         self.sleep = .3
