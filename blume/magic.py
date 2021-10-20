@@ -678,14 +678,13 @@ class RoundAbout:
         return qq
 
     async def put(self, value=None, name=None):
-
+        """ Output a value """
         self.counts.update([('put', name)])
-        value = value or fig2data(plt)
-        await self.outputs.put(dict(value=value, name=name))
+        await self.outputs.put(dict(value=value or self, name=name))
         #await self.select(name).put(value or fig2data(plt))
 
     async def get(self, name=None):
-
+        """ Get a value """
         self.counts.update([('get', name)])
         return await self.select(name).get()
 
@@ -726,7 +725,34 @@ class RoundAbout:
 
 
 class Shepherd(Ball):
-    """ Watches things nobody else is watching """
+    """Watches things nobody else is watching 
+
+    This currently sets up all the message handling and
+    runs everything.
+
+    To route messages between balls it is seems to be necessary to
+    have access to the graph of relationships.
+
+    In the current setup this is GeeFarm, but this leaves everything to 
+    the Shepherd.
+
+    The Shepherd in turn does it's work by setting up relays for each
+    edge in the graph, watching all the roundabout queues and passing
+    messages along.
+
+    There is one relay per edge in the graph and it just connects the
+    output and input queues of objects along that edge.
+
+    There is a whole other chunk of code dealing with passing keyboard
+    events along a path of objects, and all the related key binding fun.
+
+    Again, the roundabout holds the data and every Ball has a Roundabout.
+    
+    It might be good to have just one RoundAbout, managed by the Shepherd.
+
+    Dynamic graph?
+
+    """
 
     def __init__(self):
 
@@ -1118,7 +1144,7 @@ async def relay(a, b):
 
     while True:
 
-        data = await a.outputs.get()
+        data = await a.get()
         value = data['value']
         name = data['name']
         print('relay', type(value),
