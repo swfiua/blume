@@ -60,7 +60,7 @@ This is precisely where *matplotlib* stores bindings between keyboard
 events and functions to call.
 
 Separating this from the code could be a really good step.  I am sure
-there are some hidden gems here that can be of use.
+there are some more hidden gems that can be of use.
 
 
 async
@@ -98,9 +98,23 @@ maybe with three or four layers, for red, green, blue and alpha.
 
 Now, `ax.imshow` more than handles this for us.
 
-The original `magic.Carpet` just lays images in square grids.
-`blume.mosaic` has the beginnings of a new approach.
+The next layer, a `magic.Carpet` just lays images in square grids.
+`blume.mosaic` has the beginnings of a new approach, using the
+subplot_mosaic.
 
+I'm also experimenting with constrained layout, which I am hoping to
+co-opt at some point to layout tables.   Maybe even tables where every
+cell is a set of axes.
+
+And that it shouldn't be too hard to write something to do that given
+another backend.
+
+One *backend* I am thinking about is a pixel grid such as a sense hat
+on a raspberry pi.  The Sense Hat, or `astro pi`_ also has a joystick
+which can generate events to control everything.  This was another
+reason I am trying to avoid specifying what events do what.
+
+Which brings me back to magic roundabouts and event routing.
 
 2021/09/01
 ==========
