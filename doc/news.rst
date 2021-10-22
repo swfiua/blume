@@ -4,7 +4,119 @@
 
 What's happening with the `blume.table.Table`?
 
-2021/01/01
+2021/10/21
+==========
+
+tldr: matplotlib already has a solution to everything.
+
+For the last few weeks I have been working on trying to simplify the
+`blume.magic` module.
+
+I use the word *magic*, not because it is, but it contains parts of
+the code put together with just enough to boot-strap some sort of
+interface that I can start to experiment with.
+
+The idea was to have a bunch of objects, not knowing too much about
+each other, passing messages between each, other, asynchronously.
+
+Using matplotlib to create images.
+
+I have decided to take the plunge and switch things around a little.
+In particular, to just use the built in *FigureCanvas* from matplotlib
+to display images.
+
+At the same time I am experimenting with simply making `magic.Ball`,
+inherit from `matplotlib.artist.Artist`.
+
+This opens up a lot of existing `matplotlib` infrastructure.  One area
+I plan to explore at some point is the *rc* setting infrastructure.
+
+Meanwhile, the part I have been focussing is on is the passing of
+messages between artists.
+
+Up to now *blume* each object has only had two queues that the system
+manages, *stdin* for incoming messages and *stdout* for outgoing.
+
+This has all been achieved by `magic.RoundAbout` with a lot of help
+from a `Shepherd` and friends.  There is some code that allows for
+arbitrary named queues, but the `Shepherd` does not watch those.
+
+My plan is to have a network of objects for each queue name.  Each
+edge being a queue.  
+
+I'm aiming to have a networks of objects for each class of messages.
+
+You can see some of this in the *GeeFarm* and *Shepherd* which both
+have graphs (from *networkx*, actually the same graph).
+
+The Shepherd also has a *path* attribute, that is a list of *artists*
+to which to send keyboard input to.  This is all managed by the magic
+roundabout, in so far as that is where each object stores the
+dictionary of keyboard events and corresponding functions or
+coroutines to call when that event happens.
+
+This gives me another reason to re-visit the *matplotlibrc* handling.
+This is precisely where *matplotlib* stores bindings between keyboard
+events and functions to call.
+
+Separating this from the code could be a really good step.  I am sure
+there are some more hidden gems that can be of use.
+
+
+async
+-----
+
+The magic part of the project has been an exploration of using
+python's relatively recent (3.6?), *async* features.
+
+At the core,  is David Beazley's `curio`_.  In particular, the
+`UniversalQueue`, which has some genuine magic that allows it to
+bridge the *async* and normal worlds.
+
+In other words, you can pass the same UniversalQueue to this function
+and co-routine and they both successfully put 100 on the queue.
+
+::
+   def func(uq):
+       return uq.put(100)
+       
+   async def coro(uq):
+
+       return uq.put(100) 
+     
+The joys and trials of backends
+-------------------------------
+
+This may sound ironic, but one of the reasons I originally went with a
+*Tk* backend is I wanted it to be easy to support other back ends.
+
+The `blume.teakhat` module is a simple *Tk* window that just displays
+images and passes keyboard events to a function of my choosing.
+
+The idea was that at this level, `blume` just needs grids of numbers,
+maybe with three or four layers, for red, green, blue and alpha.
+
+Now, `ax.imshow` more than handles this for us.
+
+The next layer, a `magic.Carpet` just lays images in square grids.
+`blume.mosaic` has the beginnings of a new approach, using the
+subplot_mosaic.
+
+I'm also experimenting with constrained layout, which I am hoping to
+co-opt at some point to layout tables.   Maybe even tables where every
+cell is a set of axes.
+
+And that it shouldn't be too hard to write something to do that given
+another backend.
+
+One *backend* I am thinking about is a pixel grid such as a sense hat
+on a raspberry pi.  The Sense Hat, or `astro pi`_ also has a joystick
+which can generate events to control everything.  This was another
+reason I am trying to avoid specifying what events do what.
+
+Which brings me back to magic roundabouts and event routing.
+
+2021/09/01
 ==========
 
 I have been on a bit of a tour of parts of matplotlib that are
