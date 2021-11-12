@@ -135,7 +135,8 @@ class Ball:
     def __init__(self, **kwargs):
 
 
-        self.update(kwargs)
+        if kwargs:
+            self.update(kwargs)
         
         self.paused = False
         self.sleep = .3
@@ -1098,6 +1099,10 @@ class Carpet(Ball):
     def __getattr__(self, attr):
 
         return getattr(self.fig)
+
+    async def run(self):
+
+        await self.put(self)
 
     
 

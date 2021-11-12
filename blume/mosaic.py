@@ -1,6 +1,25 @@
+"""Discovery of the day is matplotlib.cbook.CallbackRegistry
+
+I think this can be at the heart of the magic roundabout.
+
+It simply allows you to connect up signals as well as to send them.
+
+So it is a whole event driven framework, with some magic to let the
+backend event loop manage things.
+
+Digging deeper (unrelated matplotlib.cbook.__init__.py is a good read) ...
+
+As far as I can tell, the only (?) places there are calls to process
+events is in backend event handling code.
+
+For example, to handle key events, backends can just call the
+backend_base handler for a key event directly, there is no need to 
+
+"""
+
 
 from matplotlib import pyplot as plt
-import numpy
+import numpy as np
 
 from .magic import Ball
 
@@ -28,7 +47,6 @@ class Carpet(Ball):
 
         self.size = 2
 
-        plt.show()
         self.fig = plt.figure(layout='constrained')
 
         self.sleep = 0.1
@@ -38,10 +56,12 @@ class Carpet(Ball):
 
         # Connect canvas key events
         self.fig.canvas.mpl_connect('key_press_event', self.keypress)
+        self.fig.canvas.mpl_connect('draw_event', self.draw)
 
         # start the event loop and display the figure.
         #plt.show(block=False)
         print('Showing figure window')
+        self.axes[1].plot(range(10))
         plt.show(block=False)
 
         self.add_filter('+', self.more)
@@ -63,12 +83,16 @@ class Carpet(Ball):
 
         mosaic = []
         n = 1
-        for row in range(self.size):
-            arow = []
-            mosaic.append(arow)
-            for col in range(self.size):
-                arow.append(n)
-                n += 1
+        mosaic = np.arange(self.size * self.size)
+        print(mosaic)
+        mosaic = mosaic.reshape((self.size, self.size))
+        print(mosaic)
+        #for row in range(self.size):
+        #    arow = []
+        #    mosaic.append(arow)
+        #    for col in range(self.size):
+        #        arow.append(n)
+        #        n += 1
         print(mosaic)
         self.axes = self.fig.subplot_mosaic(mosaic)
         print(self.axes)
@@ -83,11 +107,15 @@ class Carpet(Ball):
         # use select here to get actual magic curio queue
         # where put can magically be a coroutine or a function according
         # to context.
+        print('key press event', event)
         self.select('stdout').put(event.key)
 
     def draw(self, key=None):
 
-        self.fig.draw_idle()
+        canvas = self.fig.canvas
+        #canvas.draw_idle()
+        canvas.flush_events()
+        canvas.start_event_loop(self.sleep)
 
     async def poll(self):
         """ Gui Loop """
@@ -128,9 +156,10 @@ class Carpet(Ball):
 
     async def run(self):
 
-        await self.tasks.join()
+        while True:
+            image = await self.get()
 
-        print("Event loop over and out")
+            
 
 
 
