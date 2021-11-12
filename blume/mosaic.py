@@ -157,10 +157,18 @@ class Carpet(Ball):
     async def run(self):
 
         while True:
-            image = await self.get()
+            for key, ax in self.axes.items():
+                ax.plot([x * key for x in range(10)])
+                
+
+        self.fig.canvas.process('draw_event')
 
             
 
+if __name__ == '__main__':
 
+    carpet = Carpet()
+
+    curio.run(carpet.run)
 
         
