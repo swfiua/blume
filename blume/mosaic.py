@@ -21,7 +21,7 @@ backend_base handler for a key event directly, there is no need to
 from matplotlib import pyplot as plt
 import numpy as np
 
-from .magic import Ball
+from blume.magic import Ball, canine
 
 from curio import TaskGroup
 import curio
@@ -51,6 +51,8 @@ class Carpet(Ball):
 
         self.sleep = 0.1
 
+        self.count = 0
+
         # create initial axes
         self.generate_mosaic()
 
@@ -59,10 +61,10 @@ class Carpet(Ball):
         self.fig.canvas.mpl_connect('draw_event', self.draw)
 
         # start the event loop and display the figure.
-        #plt.show(block=False)
         print('Showing figure window')
         self.axes[1].plot(range(10))
-        plt.show(block=False)
+        #plt.show(block=False)
+
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
@@ -72,6 +74,7 @@ class Carpet(Ball):
         #self.add_filter(']', self.history_forward)
         
         #self.add_filter('S', self.save)
+        self.renderer = False
 
     async def more(self):
 
@@ -94,9 +97,9 @@ class Carpet(Ball):
         #        arow.append(n)
         #        n += 1
         print(mosaic)
+        self.fig.clear()
         self.axes = self.fig.subplot_mosaic(mosaic)
         print(self.axes)
-        self.fig.clear()
         
         
         
@@ -112,10 +115,11 @@ class Carpet(Ball):
 
     def draw(self, key=None):
 
+        #self.fig.draw_artist(self.axes[0])
         canvas = self.fig.canvas
-        #canvas.draw_idle()
         canvas.flush_events()
-        canvas.start_event_loop(self.sleep)
+        canvas.draw_idle()
+        #canvas.start_event_loop(0.1)
 
     async def poll(self):
         """ Gui Loop """
@@ -156,19 +160,26 @@ class Carpet(Ball):
 
     async def run(self):
 
-        while True:
-            for key, ax in self.axes.items():
-                ax.plot([x * key for x in range(10)])
-                
+        for key, ax in self.axes.items():
+            ax.plot([x * key for x in range(10)])
+            ax.set_title(str(self.count))
+            self.count += 1
 
-        self.fig.canvas.process('draw_event')
-
+        if not self.renderer:
+            plt.show(block=False)
+            self.renderer = True
             
+        print('draw canvas')
+        self.fig.canvas.callbacks.process('draw_event')
+
+async def run():
+
+    c = Carpet()
+    await canine(c)
+        
 
 if __name__ == '__main__':
 
-    carpet = Carpet()
-
-    curio.run(carpet.run)
+    curio.run(run())
 
         
