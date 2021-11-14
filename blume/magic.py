@@ -152,6 +152,10 @@ class Ball:
         self.radii.add_filter(' ', self.toggle_pause)
         self.radii.add_filter('W', self.dump_roundabout)
 
+    def connect(self, key, fn):
+        pass
+        
+
     def dump_roundabout(self):
 
         print('DUMPING ROUNDABOUT')
@@ -600,7 +604,8 @@ class GeeFarm(Ball):
         print('MAGIC TREE FARM')
 
         # wait for the super dog
-        await self.superdog.wait()
+        tg = curio.TaskGroup[self.superdog, self.shep.tasks]
+        await tg.join()
 
     async def quit(self):
         """ quit the farm """
@@ -830,10 +835,11 @@ class Shepherd(Ball):
         self.path = path or [self]
 
     async def whistler(self, queue, name='keys'):
-        """ Send out whistles fromm a queue """
+        """ Send out whistles from a queue """
+        print('creating whistler for:', queue)
         while True:
             key = await queue.get()
-            #print('WOOOHOO whistle time', key)
+            print('WOOOHOO whistle time', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -848,7 +854,7 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
-        #print('whsitle', key, name)
+        print('whsitle', key, name)
         
         for sheep in reversed(self.path):
             lu = sheep.radii.filters[name]
@@ -934,10 +940,9 @@ class Shepherd(Ball):
 
             if info.get('hat'):
                 # set task to whistle out output
-                whistle = await curio.spawn(
-                    self.whistler(sheep.select('stdout')))
-
-                self.whistlers[sheep] = whistle
+                qq = sheep.select('keys')
+                print('XXXXX', sheep, id(qq))
+                self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
         await self.watch_roundabouts()
@@ -955,6 +960,15 @@ class Shepherd(Ball):
         # R for run
         # S for stop
         # u/d/p/n up down previous next
+
+    async def add_whistler(self, queue):
+
+        print('adding whistler', id(queue))
+        whistle = await curio.spawn(
+            self.whistler(queue))
+
+        self.whistlers[sheep] = whistle
+        
 
     async def watch_roundabouts(self):
         """ Set up a bunch of relays between roundabouts """
@@ -1027,7 +1041,6 @@ class Shepherd(Ball):
         #print('SHEPHERD RUN')
         # delegated to hub
         print('shepstart')
-        fig = plt.figure()
         #nx.draw(self.flock)
         colours = []
         for sheep in self.flock:
@@ -1042,9 +1055,11 @@ class Shepherd(Ball):
 
             colours.append(c)
             
-        nx.draw_networkx(self.flock, node_color=colours)
+        ax = await self.get()
+        
+        nx.draw_networkx(self.flock, node_color=colours, ax=ax)
 
-        await self.put()
+        #await self.put()
         #print(self.radii.counts)
         
         #print(self.radii)

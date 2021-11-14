@@ -286,8 +286,9 @@ class Cod(magic.Ball):
 
         print('waiting for axes')
         ax = await self.get('axes')
-        fig = plt.figure()
-        ax = fig.subplots()
+        #fig = plt.figure()
+        #ax = fig.subplots()
+        ax = await self.get()
         print('cod got axes', ax)
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
@@ -366,7 +367,7 @@ class Cod(magic.Ball):
                 # that is this plot finished
                 break
                 
-        await self.put()
+        ax.fig.draw_artist(ax)
 
 def drange(data):
 
