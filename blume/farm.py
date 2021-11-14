@@ -114,7 +114,7 @@ class Carpet(Ball):
 
         super().__init__()
 
-        self.sleep = 0
+        self.sleep = 0.01
 
         # grid related
         self.size = 4
@@ -161,7 +161,10 @@ class Carpet(Ball):
         self._update_pos()
         self.generate_mosaic()
         await self.rewind_history()
+
         print(f'more {self.size}')
+        for ax in self.axes.values():
+            await self.put(ax)
 
     async def less(self):
         """ Show fewer pictures """
@@ -230,10 +233,11 @@ class Carpet(Ball):
 
         # start some tasks to keep things ticking along
         #watch_task = await curio.spawn(self.watch())
+        print("carpet starting tasks")
         poll_task = await curio.spawn(self.poll())
 
         self.tasks = curio.TaskGroup([poll_task])
-
+        print("DONE STARTED carpet")
 
     def generate_mosaic(self):
 
@@ -253,18 +257,15 @@ class Carpet(Ball):
         self.axes = self.image.subplot_mosaic(mosaic)
         print(self.axes)
 
+
     async def run(self):
 
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
+        print('PLEASE carpet is running')
+        await self.tasks.join()
 
-        print(self.axes[self.pos])
-        await self.put(self.axes[self.pos])
-        ps = self.pos
-        self._update_pos()
-
-        #self.history.append()
         
 
     def _update_pos(self):

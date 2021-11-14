@@ -604,13 +604,15 @@ class GeeFarm(Ball):
         print('MAGIC TREE FARM')
 
         # wait for the super dog
-        tg = curio.TaskGroup[self.superdog, self.shep.tasks]
-        await tg.join()
+        self.tg = curio.TaskGroup(
+            [self.superdog] +
+            list(self.shep.whistlers.values()))
+        await self.tg.join()
 
     async def quit(self):
         """ quit the farm """
 
-        await self.superdog.cancel()
+        await self.tg.cancel()
 
 
 modes = deque(['grey', 'white', 'black'])
@@ -942,7 +944,7 @@ class Shepherd(Ball):
                 # set task to whistle out output
                 qq = sheep.select('keys')
                 print('XXXXX', sheep, id(qq))
-                self.add_whistler(qq)
+                await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
         await self.watch_roundabouts()
@@ -967,7 +969,7 @@ class Shepherd(Ball):
         whistle = await curio.spawn(
             self.whistler(queue))
 
-        self.whistlers[sheep] = whistle
+        self.whistlers[id(queue)] = whistle
         
 
     async def watch_roundabouts(self):
@@ -1035,6 +1037,8 @@ class Shepherd(Ball):
 
         Pass messages along.
         """
+        
+        
         #for sheep in self.flock:
             #print(f'shepherd running {sheep in self.running} {sheep}')
             #print(f'   {sheep.status()}')

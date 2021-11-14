@@ -395,7 +395,9 @@ async def run(args):
     farm.add(fish)
     farm.shep.path.append(fish)
 
+    print('FARM STARTING')
     await farm.start()
+    print('FARM RUNNING')
     await farm.run()
 
 
