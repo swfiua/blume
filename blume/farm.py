@@ -264,7 +264,11 @@ class Carpet(Ball):
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
         print('PLEASE carpet is running')
-        await self.tasks.join()
+
+        for ax in self.axes.values():
+            self.put(ax)
+            
+        #await self.tasks.join()
 
         
 
