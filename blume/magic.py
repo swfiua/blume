@@ -130,12 +130,14 @@ import networkx as nx
 
 Parser = argparse.ArgumentParser
 
-class Ball(artist.Artist):
+class Ball:
     
     def __init__(self, **kwargs):
 
-        super().__init__(**kwargs)
 
+        if kwargs:
+            self.update(kwargs)
+        
         self.paused = False
         self.sleep = .3
 
@@ -335,7 +337,7 @@ class Interact(Ball):
 
         self.operate(operator.mul, 1/10)
         
-    async def add_one(self):
+    def add_one(self):
         """ i one more """
 
         self.operate(operator.add, 1)
@@ -1097,6 +1099,10 @@ class Carpet(Ball):
     def __getattr__(self, attr):
 
         return getattr(self.fig)
+
+    async def run(self):
+
+        await self.put(self)
 
     
 
