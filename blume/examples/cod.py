@@ -286,9 +286,7 @@ class Cod(magic.Ball):
         formatter = mdates.ConciseDateFormatter(locator)
 
         print('waiting for axes')
-        ax = await self.get('axes')
-        fig = plt.figure()
-        ax = fig.subplots()
+        ax = await self.get()
         print('cod got axes', ax)
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
@@ -368,8 +366,9 @@ class Cod(magic.Ball):
 
                 # that is this plot finished
                 break
-                
-        await self.put()
+
+        # need to figure something to make it draw!
+        ax.draw_artist(ax)
 
 def drange(data):
 
@@ -397,7 +396,9 @@ async def run(args):
     farm.add(fish)
     farm.shep.path.append(fish)
 
+    print('FARM STARTING')
     await farm.start()
+    print('FARM RUNNING')
     await farm.run()
 
 
@@ -493,7 +494,7 @@ if __name__ == '__main__':
         repo.index.commit('latest data')
         
     import curio
-    curio.run(run(args))
+    curio.run(run(args), with_monitor=True)
     
             
 

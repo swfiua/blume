@@ -63,7 +63,7 @@ from matplotlib import pyplot as plt
 
 import networkx as nx
 
-from .mosaic import Carpet
+#from .mosaic import Carpet
 
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
@@ -83,7 +83,7 @@ class Farm(GeeFarm):
 
         self.add_node(carpet, background=True, hat=True)
 
-        self.add(self.shep)
+        self.add_node(self.shep)
 
         self.add(clock)
 
@@ -99,11 +99,11 @@ class Farm(GeeFarm):
 
     def add(self, item):
 
-        self.add_edge(item, self.carpet)
+        #self.add_edge(item, self.carpet)
         self.add_edge(self.carpet, item)
         
 
-class XCarpet(Ball):
+class Carpet(Ball):
     """ FIXME This should of course be in the magic module.
         I Can't remember why it needed to be here - probably worth
         moving it back there, but that requires making it magic!
@@ -114,10 +114,10 @@ class XCarpet(Ball):
 
         super().__init__()
 
-        self.sleep = 0
+        self.sleep = 0.01
 
         # grid related
-        self.size = 1
+        self.size = 4
         self.pos = 0
 
         self.history = deque(maxlen=random.randint(20, 50))
@@ -133,6 +133,20 @@ class XCarpet(Ball):
         
         self.add_filter('S', self.save)
 
+    def keypress(self, event):
+        """ Take keypress events put them out there """
+
+        #print('mosaic carpet handling', event)
+        # use select here to get actual magic curio queue
+        # where put can magically be a coroutine or a function according
+        # to context.
+        print('key press event', event, event.key)
+        self.dump_roundabout()
+        qq = self.select('keys')
+        qq.put(event.key)
+        print(qq.qsize(), id(qq))
+        
+
     async def save(self):
         """ Save current image
 
@@ -145,16 +159,19 @@ class XCarpet(Ball):
         """ Show more pictures """
         self.size += 1
         self._update_pos()
-        self.image = None
+        self.generate_mosaic()
         await self.rewind_history()
+
         print(f'more {self.size}')
+        for ax in self.axes.values():
+            await self.put(ax)
 
     async def less(self):
         """ Show fewer pictures """
         if self.size > 1:
             self.size -= 1
         self._update_pos()
-        self.image = None
+        self.generate_mosaic()
         await self.rewind_history()
         print(f'less {self.size}', id(self))
 
@@ -173,7 +190,7 @@ class XCarpet(Ball):
         
         self.history.rotate(n)
         
-        await self.put(self.history.pop(), 'stdin')
+        #await self.put(self.history.pop(), 'stdin')
 
 
     async def rewind_history(self):
@@ -181,55 +198,79 @@ class XCarpet(Ball):
         for x in range(len(self.history)):
             await self.put(self.history.popleft(), 'stdin')
 
+    async def poll(self):
+        """ Gui Loop """
+
+        # Experiment with sleep to keep gui responsive
+        # but not a cpu hog.
+        event = 0
+
+        nap = 0.05
+        canvas = self.image.canvas
+        while True:
+            
+            canvas.draw_idle()
+            canvas.flush_events()
+            canvas.start_event_loop(self.sleep)
+
+            # Would be good to find a Tk file pointer that
+            # can be used as a source of events
+
+            await curio.sleep(self.sleep)
+
     async def start(self):
         
-        pass
+            
+        if self.image is None:
+            #width, height = ball.width, ball.height
+            self.image = plt.figure()
+            self.generate_mosaic()
+            plt.show(block=False)
 
-    async def erun(self):
-        """ Run the farm forever """
+            # keyboard handling
+            self.image.canvas.mpl_connect('key_press_event', self.keypress)
+                
 
-        # loop forever, calling self.arun()
-        while True:
+        # start some tasks to keep things ticking along
+        #watch_task = await curio.spawn(self.watch())
+        print("carpet starting tasks")
+        poll_task = await curio.spawn(self.poll())
 
-            await self.arun()
+        self.tasks = curio.TaskGroup([poll_task])
+        print("DONE STARTED carpet")
+
+    def generate_mosaic(self):
+
+        mosaic = []
+        n = 1
+        mosaic = np.arange(self.size * self.size)
+        print(mosaic)
+        mosaic = mosaic.reshape((self.size, self.size))
+        print(mosaic)
+        #for row in range(self.size):
+        #    arow = []
+        #    mosaic.append(arow)
+        #    for col in range(self.size):
+        #        arow.append(n)
+        #        n += 1
+        print(mosaic)
+        self.axes = self.image.subplot_mosaic(mosaic)
+        print(self.axes)
+
 
     async def run(self):
 
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
+        print('PLEASE carpet is running')
 
+        for ax in self.axes.values():
+            print('output', ax)
+            await self.put(ax)
+            
+        #await self.tasks.join()
 
-        ball = await self.get()
-        if ball is None:
-            return
-
-        sz = self.size
-
-        if self.image is None:
-            width, height = ball.width, ball.height
-            self.image = Image.new(mode='RGB', size=(width * sz, height * sz))
-
-        width = int(self.image.width / sz)
-        height = int(self.image.height / sz)
-
-        #print('WWW', width, ball.width)
-        #print('HHH', height, ball.height)
-
-        # now paste current image in according to self.pos and size
-        ps = self.pos
-        self._update_pos()
-        xx = ps // self.size
-        yy = ps % self.size
-        offx = xx * width
-        offy = yy * height
-        self.image.paste(ball.resize((width, height)),
-                         (offx,  offy, offx + width, offy + height))
-
-        # put out in queue for displays
-        await self.put(self.image)
-
-        self.history.append(ball)
         
 
     def _update_pos(self):
