@@ -612,7 +612,7 @@ class GeeFarm(Ball):
     async def quit(self):
         """ quit the farm """
 
-        await self.tg.cancel()
+        await self.tg.cancel_remaining()
 
 
 modes = deque(['grey', 'white', 'black'])
@@ -688,13 +688,13 @@ class RoundAbout:
 
         return qq
 
-    async def put(self, value=None, name=None):
+    async def put(self, value=None, name='stdout'):
         """ Output a value """
         self.counts.update([('put', name)])
         await self.outputs.put(dict(value=value or self, name=name))
         #await self.select(name).put(value or fig2data(plt))
 
-    async def get(self, name=None):
+    async def get(self, name='stdin'):
         """ Get a value """
         self.counts.update([('get', name)])
         return await self.select(name).get()
@@ -1171,14 +1171,12 @@ async def relay(a, b):
 
     while True:
 
-        data = await a.get()
-        value = data['value']
-        name = data['name']
-        print('relay', type(value),
+        data = await a.select('stdout').get()
+        print('relay', type(data),
               'channel:', name,
               'from', type(a), 'to', type(b))
         
-        await b.put(value, name)
+        await b.put(value, 'stdin')
 
 async def runme():
 
