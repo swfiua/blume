@@ -83,7 +83,7 @@ class Farm(GeeFarm):
 
         self.add_node(carpet, background=True, hat=True)
 
-        self.add(self.shep)
+        self.add_node(self.shep)
 
         self.add(clock)
 
@@ -99,7 +99,7 @@ class Farm(GeeFarm):
 
     def add(self, item):
 
-        self.add_edge(item, self.carpet)
+        #self.add_edge(item, self.carpet)
         self.add_edge(self.carpet, item)
         
 
@@ -266,7 +266,8 @@ class Carpet(Ball):
         print('PLEASE carpet is running')
 
         for ax in self.axes.values():
-            self.put(ax)
+            print('output', ax)
+            await self.put(ax)
             
         #await self.tasks.join()
 

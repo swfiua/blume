@@ -669,7 +669,6 @@ class RoundAbout:
         self.infos = defaultdict(set)
         #self.add_queue()
 
-        self.outputs = curio.UniversalQueue()
         self.counts = Counter()
         self.filters = defaultdict(dict)
 
@@ -691,7 +690,7 @@ class RoundAbout:
     async def put(self, value=None, name='stdout'):
         """ Output a value """
         self.counts.update([('put', name)])
-        await self.outputs.put(dict(value=value or self, name=name))
+        await self.select(name).put(value)
         #await self.select(name).put(value or fig2data(plt))
 
     async def get(self, name='stdin'):
@@ -979,11 +978,13 @@ class Shepherd(Ball):
 
         for a, b in self.flock.edges:
             print('xxx', a, b)
-            print(a.radii.qs.keys())
-            print(b.radii.qs.keys())
+            #print(a.radii.qs.keys())
+            #print(b.radii.qs.keys())
 
             bridge = await curio.spawn(relay(a, b))
             self.relays[(a, b)] = bridge
+            bridge = await curio.spawn(relay(b, a))
+            self.relays[(b, a)] = bridge
 
         
     async def next(self):
@@ -1173,10 +1174,9 @@ async def relay(a, b):
 
         data = await a.select('stdout').get()
         print('relay', type(data),
-              'channel:', name,
               'from', type(a), 'to', type(b))
         
-        await b.put(value, 'stdin')
+        await b.put(data, 'stdin')
 
 async def runme():
 

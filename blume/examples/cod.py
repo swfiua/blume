@@ -365,7 +365,7 @@ class Cod(magic.Ball):
                 break
 
         # need to figure something to make it draw!
-        ax.fig.draw_artist(ax)
+        ax.draw_artist(ax)
 
 def drange(data):
 
