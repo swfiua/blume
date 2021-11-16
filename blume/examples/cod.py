@@ -342,7 +342,7 @@ class Cod(magic.Ball):
                         index = [x for x in index if x >= start]
                         data = data[-len(index):]
                         
-                    plt.plot(index, data, label=key)
+                    ax.plot(index, data, label=key)
                 except Exception as e:
                     print(f'oopsie plotting {key} {commit}')
                     import traceback
@@ -350,8 +350,8 @@ class Cod(magic.Ball):
                     print(f'{e}') 
 
                 #plt.legend(loc=0)
-                plt.title(self.fields[0])
-                plt.grid(True)
+                ax.set_title(self.fields[0])
+                ax.grid(True)
 
             self.commits.rotate()
             if self.commits[0] is self.master:
@@ -369,6 +369,7 @@ class Cod(magic.Ball):
                 break
 
         # need to figure something to make it draw!
+        print('drawing', ax)
         ax.draw_artist(ax)
 
 def drange(data):

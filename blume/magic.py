@@ -130,6 +130,8 @@ import networkx as nx
 
 Parser = argparse.ArgumentParser
 
+from .magic2 import RoundAbout
+
 class Ball:
     
     def __init__(self, **kwargs):
@@ -650,7 +652,7 @@ def fig2data(fig=None, background='grey'):
     return Image.open(image)
 
 
-class RoundAbout:
+class xRoundAbout:
     """ 
     A magic queue switch.
 
@@ -859,10 +861,11 @@ class Shepherd(Ball):
         
         for sheep in reversed(self.path):
             lu = sheep.radii.filters[name]
+            print(sheep)
             #print('whistle', sheep, lu)
             if key in lu.keys():
                 try:
-
+                    print(key, lu[key])
                     result = lu[key]()
 
                     if inspect.iscoroutine(result):
@@ -975,6 +978,8 @@ class Shepherd(Ball):
         """ Set up a bunch of relays between roundabouts """
 
         print('watching roundabouts')
+
+        return 
 
         for a, b in self.flock.edges:
             print('xxx', a, b)

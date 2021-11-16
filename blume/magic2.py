@@ -54,18 +54,26 @@ At the same time
 
 """
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from matplotlib import artist, figure, pyplot
 
+import curio
+
+import random
+
+def random_queue():
+
+    return curio.UniversalQueue(maxsize=random.randint(5,30))
+
 class Ball:
     """  
-
+    
     
     """
 
     def __init__(self):
-
+        pass
         
 
 class Borg:
@@ -73,7 +81,10 @@ class Borg:
     _shared_state = {}
     def __init__(self):
 
-        self.__dict__ = self.shared_state
+        self.__dict__ = self._shared_state
+
+
+        
 
 class RoundAbout(Borg):
     """ Pass self around.
@@ -83,10 +94,40 @@ class RoundAbout(Borg):
 
         super().__init__()
 
-        self.queues = defaultdict(curio.UniversalQueue)
+        if not hasattr(self, 'queues'):
+            self.queues = defaultdict(random_queue)
+            self.filters = defaultdict(dict)
+
+        self.counts = Counter()
+        
     
     async def put(self, item, name=None):
 
         qq = self.queues[name]
 
-        await 
+        await qq.put(item)
+
+    async def get(self, name=None):
+
+        qq = self.queues[name]
+
+        result = await qq.get()
+
+        return result
+
+
+    def add_filter(self, key, coro, name='keys'):
+
+        self.filters[name][key] = coro
+
+
+    def select(self, name=None, create=True):
+        """ pick a q 
+        
+        create: if True, create if missing -- actually seems to create
+        regardless, why not?
+        """
+        return self.queues[name]
+
+
+
