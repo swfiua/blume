@@ -287,6 +287,7 @@ class Cod(magic.Ball):
 
         print('waiting for axes')
         ax = await self.get()
+        ax.clear()
         print('cod got axes', ax)
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
