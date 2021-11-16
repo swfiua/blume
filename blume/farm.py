@@ -85,7 +85,7 @@ class Farm(GeeFarm):
 
         self.add_node(self.shep)
 
-        self.add(clock)
+        #self.add(clock)
 
         # connections
         #self.add_edge(carpet, hat)
