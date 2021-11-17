@@ -158,19 +158,20 @@ class Carpet(Ball):
 
         self.tasks = TaskGroup([watch_task, poll_task])
 
-    async def run(self):
-
-        for key, ax in self.axes.items():
-            ax.plot([x * key for x in range(10)])
-            ax.set_title(str(self.count))
-            self.count += 1
-
         if not self.renderer:
             plt.show(block=False)
             self.renderer = True
             
         print('draw canvas')
-        self.fig.canvas.callbacks.process('draw_event')
+
+    async def run(self):
+
+        #for key, ax in self.axes.items():
+        #    ax.plot([x * key for x in range(10)])
+        #    ax.set_title(str(self.count))
+        #    self.count += 1
+
+        # self.fig.canvas.callbacks.process('draw_event')
 
 async def run():
 

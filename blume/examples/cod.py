@@ -350,7 +350,7 @@ class Cod(magic.Ball):
                     print(f'{e}') 
 
                 #plt.legend(loc=0)
-                ax.set_title(self.fields[0])
+                #ax.set_title(self.fields[0])
                 ax.grid(True)
 
             self.commits.rotate()

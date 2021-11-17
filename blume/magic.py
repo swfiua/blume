@@ -149,14 +149,17 @@ class Ball:
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
         # let shepherd control things?
-        self.radii.add_filter('s', self.sleepy)
-        self.radii.add_filter('w', self.wakey)
-        self.radii.add_filter(' ', self.toggle_pause)
-        self.radii.add_filter('W', self.dump_roundabout)
-
-    def connect(self, key, fn):
-        pass
+        self.filters = defaultdict(dict)
         
+        self.add_filter('s', self.sleepy)
+        self.add_filter('w', self.wakey)
+        self.add_filter(' ', self.toggle_pause)
+        self.add_filter('W', self.dump_roundabout)
+
+    def add_filter(self, key, coro, name='keys'):
+
+        self.filters[name][key] = coro
+
 
     def dump_roundabout(self):
 
@@ -860,7 +863,7 @@ class Shepherd(Ball):
         print('whsitle', key, name)
         
         for sheep in reversed(self.path):
-            lu = sheep.radii.filters[name]
+            lu = sheep.filters[name]
             print(sheep)
             #print('whistle', sheep, lu)
             if key in lu.keys():
@@ -896,7 +899,7 @@ class Shepherd(Ball):
         keys = set()
         for sheep in reversed(self.path):
             #msg += repr(sheep) + '\n'
-            lu = sheep.radii.filters[name]
+            lu = sheep.filters[name]
         
             for key, value in lu.items():
                 if key in keys: continue
@@ -949,7 +952,7 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
-        await self.watch_roundabouts()
+        #await self.watch_roundabouts()
 
         # figure out current path
         #current = None

@@ -160,11 +160,9 @@ class Carpet(Ball):
         self.size += 1
         self._update_pos()
         self.generate_mosaic()
-        await self.rewind_history()
+        #await self.rewind_history()
 
         print(f'more {self.size}')
-        for ax in self.axes.values():
-            await self.put(ax)
 
     async def less(self):
         """ Show fewer pictures """
@@ -172,7 +170,7 @@ class Carpet(Ball):
             self.size -= 1
         self._update_pos()
         self.generate_mosaic()
-        await self.rewind_history()
+        #await self.rewind_history()
         print(f'less {self.size}', id(self))
 
     async def history_back(self):
@@ -256,7 +254,7 @@ class Carpet(Ball):
         print(mosaic)
         self.axes = self.image.subplot_mosaic(mosaic)
         print(self.axes)
-
+        #self.image.clear()
 
     async def run(self):
 
@@ -265,11 +263,9 @@ class Carpet(Ball):
         # the inner loop?
         print('PLEASE carpet is running')
 
-        for ax in self.axes.values():
-            print('output', ax)
-            await self.put(ax)
-            
-        #await self.tasks.join()
+        await self.put(self.axes[self.pos])
+
+        self._update_pos()
 
         
 
