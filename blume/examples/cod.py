@@ -426,6 +426,7 @@ if __name__ == '__main__':
     parser.add_argument('--filename', default='data.csv')
     parser.add_argument('--rotate', action='store_true')
     parser.add_argument('--hint', action='store_true')
+    parser.add_argument('--monitor', action='store_true')
     parser.add_argument('--sniff', type=int, default=10)
     parser.add_argument('--days', type=int, default=100)
     parser.add_argument('--history', type=int, default=14)
@@ -496,7 +497,7 @@ if __name__ == '__main__':
         repo.index.commit('latest data')
         
     import curio
-    curio.run(run(args), with_monitor=True)
+    curio.run(run(args), with_monitor=args.monitor)
     
             
 

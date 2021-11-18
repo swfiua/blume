@@ -117,7 +117,7 @@ class Carpet(Ball):
         self.sleep = 0.01
 
         # grid related
-        self.size = 4
+        self.size = 1
         self.pos = 0
 
         self.history = deque(maxlen=random.randint(20, 50))
@@ -160,7 +160,8 @@ class Carpet(Ball):
         self.size += 1
         self._update_pos()
         self.generate_mosaic()
-        #await self.rewind_history()
+        
+        await self.rewind_history()
 
         print(f'more {self.size}')
 
@@ -170,7 +171,7 @@ class Carpet(Ball):
             self.size -= 1
         self._update_pos()
         self.generate_mosaic()
-        #await self.rewind_history()
+        await self.rewind_history()
         print(f'less {self.size}', id(self))
 
     async def history_back(self):
@@ -187,15 +188,30 @@ class Carpet(Ball):
             return
         
         self.history.rotate(n)
+
+        # we want to replace the current axes with the value we pop
+        ax = self.history.pop()
+
+        self.add_axis(ax)
+
+    def add_axis(self, nax):
+
+        fig = self.image
+        ax = self.axes[self.pos]
+        self._update_pos()
+        print(nax, 'NNNNN')
+        nax.set_subplotspec(ax.get_subplotspec())
+
+        fig.delaxes(ax)
+        fig.add_subplot(nax)
+        nax.draw_artist(nax)
         
-        #await self.put(self.history.pop(), 'stdin')
 
-
-    async def rewind_history(self):
+    def rewind_history(self):
         
-        for x in range(len(self.history)):
-            await self.put(self.history.popleft(), 'stdin')
-
+        for ax in self.history:
+            self.add_axis(ax)
+            
     async def poll(self):
         """ Gui Loop """
 
@@ -254,6 +270,7 @@ class Carpet(Ball):
         print(mosaic)
         self.axes = self.image.subplot_mosaic(mosaic)
         print(self.axes)
+        print(self.image.axes)
         #self.image.clear()
 
     async def run(self):
@@ -263,16 +280,18 @@ class Carpet(Ball):
         # the inner loop?
         print('PLEASE carpet is running')
 
-        await self.put(self.axes[self.pos])
+        ax = self.axes[self.pos]
+
+        await self.put(ax)
+        self.history.append(ax)
 
         self._update_pos()
-
-        
 
     def _update_pos(self):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
+            self.generate_mosaic()
             self.pos = 0
     
 

@@ -45,7 +45,7 @@ class Carpet(Ball):
 
         super().__init__()
 
-        self.size = 2
+        self.size = 6
 
         self.fig = plt.figure(layout='constrained')
 
@@ -85,17 +85,12 @@ class Carpet(Ball):
     def generate_mosaic(self):
 
         mosaic = []
-        n = 1
+
         mosaic = np.arange(self.size * self.size)
         print(mosaic)
         mosaic = mosaic.reshape((self.size, self.size))
         print(mosaic)
-        #for row in range(self.size):
-        #    arow = []
-        #    mosaic.append(arow)
-        #    for col in range(self.size):
-        #        arow.append(n)
-        #        n += 1
+
         print(mosaic)
         self.fig.clear()
         self.axes = self.fig.subplot_mosaic(mosaic)
