@@ -976,25 +976,6 @@ class Shepherd(Ball):
 
         self.whistlers[id(queue)] = whistle
         
-
-    async def watch_roundabouts(self):
-        """ Set up a bunch of relays between roundabouts """
-
-        print('watching roundabouts')
-
-        return 
-
-        for a, b in self.flock.edges:
-            print('xxx', a, b)
-            #print(a.radii.qs.keys())
-            #print(b.radii.qs.keys())
-
-            bridge = await curio.spawn(relay(a, b))
-            self.relays[(a, b)] = bridge
-            bridge = await curio.spawn(relay(b, a))
-            self.relays[(b, a)] = bridge
-
-        
     async def next(self):
         """ Move focus to next """
         print(f'what is next?: {self.path}')
@@ -1170,21 +1151,6 @@ async def canine(ball):
 
         await curio.sleep(ball.sleep)
 
-
-async def relay(a, b):
-    """ Relay messages from A to B
-
-    pull things from A and despatch them
-    to B's queues.
-    """
-
-    while True:
-
-        data = await a.select('stdout').get()
-        print('relay', type(data),
-              'from', type(a), 'to', type(b))
-        
-        await b.put(data, 'stdin')
 
 async def runme():
 

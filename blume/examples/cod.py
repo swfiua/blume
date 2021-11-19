@@ -285,10 +285,9 @@ class Cod(magic.Ball):
         locator = mdates.AutoDateLocator()
         formatter = mdates.ConciseDateFormatter(locator)
 
-        print('waiting for axes')
         ax = await self.get()
         ax.clear()
-        print('cod got axes', ax)
+        print(ax.get_visible())
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 
@@ -350,7 +349,7 @@ class Cod(magic.Ball):
                     print(f'{e}') 
 
                 #plt.legend(loc=0)
-                #ax.set_title(self.fields[0])
+                ax.set_title(self.fields[0])
                 ax.grid(True)
 
             self.commits.rotate()
@@ -369,7 +368,7 @@ class Cod(magic.Ball):
                 break
 
         # need to figure something to make it draw!
-        print('drawing', ax)
+        print('drawing', ax, id(ax.figure), ax.figure.axes)
         ax.draw_artist(ax)
 
 def drange(data):

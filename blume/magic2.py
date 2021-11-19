@@ -77,7 +77,16 @@ class Ball:
         
 
 class Borg:
+    """ There shal only be one! 
 
+    or thereabouts!
+
+    If you inherit from this, be careful with __init__.
+
+    Anything it does will happen each time a new Borg() is created.
+
+    Better not to init
+    """
     _shared_state = {}
     def __init__(self):
 
@@ -90,16 +99,10 @@ class RoundAbout(Borg):
     """ Pass self around.
 
     """
-    def __init__(self):
 
-        super().__init__()
-
-        if not hasattr(self, 'queues'):
-            self.queues = defaultdict(random_queue)
-            self.filters = defaultdict(dict)
-
-        self.counts = Counter()
-        
+    # There is only one, initialise attributes as class attributes
+    queues = defaultdict(random_queue)
+    counts = Counter()
     
     async def put(self, item, name=None):
 
@@ -114,11 +117,6 @@ class RoundAbout(Borg):
         result = await qq.get()
 
         return result
-
-
-    def add_filter(self, key, coro, name='keys'):
-
-        self.filters[name][key] = coro
 
 
     def select(self, name=None, create=True):

@@ -206,20 +206,27 @@ class Carpet(Ball):
 
         fig = self.image
         ax = self.axes[self.pos]
+        self.axes[self.pos] = nax
         self._update_pos()
         print(nax, 'NNNNN')
         nax.set_subplotspec(ax.get_subplotspec())
         ax.set_visible(False)
-        nax.set_visible(True)
-        #fig.delaxes(ax)
+        print(fig.axes)
+        if ax in fig.axes:
+            fig.delaxes(ax)
+        else:
+            print(ax, 'AWOL')
         fig.add_subplot(nax)
+        nax.set_visible(True)
         nax.draw_artist(nax)
         
 
     def rewind_history(self):
-        
+
         for ax in self.history:
             self.add_axis(ax)
+
+        print('axes after rewind', self.image.axes)
             
     async def poll(self):
         """ Gui Loop """
@@ -258,29 +265,16 @@ class Carpet(Ball):
         for ax in self.axes.values():
             ax.set_visible(False)
 
-        # and try and retrieve axes in output queue
-        qq = self.select()
-        while not qq.empty():
-            print('draining', qq.qsize())
-            qq.get()
-
         mosaic = []
-        n = 1
         mosaic = np.arange(self.size * self.size)
-        print(mosaic)
         mosaic = mosaic.reshape((self.size, self.size))
-        print(mosaic)
-        #for row in range(self.size):
-        #    arow = []
-        #    mosaic.append(arow)
-        #    for col in range(self.size):
-        #        arow.append(n)
-        #        n += 1
+        self.pos = 0
+
         print(mosaic)
         self.axes = self.image.subplot_mosaic(mosaic)
         print(self.axes)
-        print(self.image.axes)
-        self.image.clear()
+        print('III', id(self.image), self.image.axes)
+        #self.image.clear()
         self.rewind_history()
 
     async def run(self):
@@ -290,6 +284,10 @@ class Carpet(Ball):
         # the inner loop?
         ax = self.axes[self.pos]
 
+        # nobody waiting for axes, don't add to the queue
+        if self.select().qsize() > 0:
+            return
+        
         print(self.pos, ax)
         await self.put(ax)
         self.history.append(ax)
@@ -300,7 +298,7 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            #self.generate_mosaic()
+            self.generate_mosaic()
             self.pos = 0
     
 
