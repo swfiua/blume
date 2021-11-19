@@ -201,9 +201,9 @@ class Carpet(Ball):
         # we want to replace the current axes with the value we pop
         ax = self.history.pop()
 
-        self.add_axis(ax)
+        await self.add_axis(ax)
 
-    def add_axis(self, nax):
+    async def add_axis(self, nax):
 
         self._update_pos()
 
@@ -229,10 +229,10 @@ class Carpet(Ball):
         nax.draw_artist(nax)
 
 
-    def rewind_history(self):
+    async def rewind_history(self):
 
         for ax in self.history:
-            self.add_axis(ax)
+            await self.add_axis(ax)
 
         print('axes after rewind', self.image.axes)
             
@@ -300,16 +300,38 @@ class Carpet(Ball):
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
             return
-        
-        if self.pos in self.showing:
-            self.showing[self.pos].set_visible(False)
 
-        print(self.pos, ax)
-        await self.put(ax)
-        self.showing[self.pos] = ax
+        # fade to this new axis, give a chanc for something to draw
+        await self.fade(ax)
+
         self.history.append(ax)
 
         self._update_pos()
+
+    async  def fade(self, ax):
+        """ Fade in new axis ?"""
+        
+        if self.pos not in self.showing:
+            # just make ax visible
+            ax.set_visible(True)
+            self.showing[self.pos] = ax
+            return
+
+        # hand out the axis
+        await self.put(ax)
+
+        # give it a chance for something to take it
+        await curio.sleep(0.1)
+        
+        # ok so need to fade from what's in showing to ax
+        ax.set_visible(True)
+        
+        await curio.sleep(0.1)
+        self.showing[self.pos].set_visible(False)
+
+        # record what's now showing
+        self.showing[self.pos] = ax
+        
 
     def _update_pos(self):
 
