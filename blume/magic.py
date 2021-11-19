@@ -155,6 +155,7 @@ class Ball:
         self.add_filter('w', self.wakey)
         self.add_filter(' ', self.toggle_pause)
         self.add_filter('W', self.dump_roundabout)
+        self.add_filter('j', self.status)
 
     def add_filter(self, key, coro, name='keys'):
 

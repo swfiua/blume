@@ -94,9 +94,6 @@ class Borg:
         """
         self.__dict__ = self._shared_state
 
-
-        
-
 class RoundAbout(Borg):
     """ Pass self around.
     
@@ -142,7 +139,8 @@ class RoundAbout(Borg):
 
     def status(self):
         """ Show some stats """
-        for name, qq in self.queues():
+        print("Queue Stats")
+        for name, qq in self.queues.items():
             print(name)
             print(qq.qsize(), qq.maxsize)
 

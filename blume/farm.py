@@ -123,6 +123,7 @@ class Carpet(Ball):
         self.history = deque(maxlen=random.randint(20, 50))
 
         self.axes = {}
+        self.showing = {}
 
         #width, height = ball.width, ball.height
         self.image = plt.figure()
@@ -204,22 +205,29 @@ class Carpet(Ball):
 
     def add_axis(self, nax):
 
+        self._update_pos()
+
         fig = self.image
         ax = self.axes[self.pos]
+
         self.axes[self.pos] = nax
-        self._update_pos()
+        
         print(nax, 'NNNNN')
         nax.set_subplotspec(ax.get_subplotspec())
-        ax.set_visible(False)
+
         print(fig.axes)
         if ax in fig.axes:
             fig.delaxes(ax)
         else:
             print(ax, 'AWOL')
+            
         fig.add_subplot(nax)
+
+        ax.set_visible(False)
         nax.set_visible(True)
+
         nax.draw_artist(nax)
-        
+
 
     def rewind_history(self):
 
@@ -261,35 +269,44 @@ class Carpet(Ball):
 
     def generate_mosaic(self):
 
-        # first hide existing axes
-        for ax in self.axes.values():
-            ax.set_visible(False)
-
+        # set up the square mosaic for current size
         mosaic = []
         mosaic = np.arange(self.size * self.size)
         mosaic = mosaic.reshape((self.size, self.size))
+
+        # position within the mosaic
         self.pos = 0
 
         print(mosaic)
+
+        # first hide existing axes
+        #for ax in self.axes.values():
+        #    ax.set_visible(False)
+
+
         self.axes = self.image.subplot_mosaic(mosaic)
+        # hide all the axes
+        for ax in self.axes.values():
+            ax.set_visible(False)
+
         print(self.axes)
         print('III', id(self.image), self.image.axes)
         #self.image.clear()
-        self.rewind_history()
 
     async def run(self):
 
-        # hmm. need to re-think what belongs where
-        # also maybe this method is "runner" and "run" is just
-        # the inner loop?
         ax = self.axes[self.pos]
 
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
             return
         
+        if self.pos in self.showing:
+            self.showing[self.pos].set_visible(False)
+
         print(self.pos, ax)
         await self.put(ax)
+        self.showing[self.pos] = ax
         self.history.append(ax)
 
         self._update_pos()
