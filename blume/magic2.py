@@ -62,34 +62,36 @@ import curio
 
 import random
 
+from . import magic
+
 def random_queue():
+    """Return a universal queue of random max size 
 
-    return curio.UniversalQueue(maxsize=random.randint(5,30))
-
-class Ball:
-    """  
+    Whilst this may seem a little strange, it means every run is a
+    little different.  
     
-    
+    Probably could do with a debug over-ride.
     """
+    return curio.UniversalQueue(maxsize=random.randint(1,5))
 
-    def __init__(self):
-        pass
-        
 
 class Borg:
     """ There shal only be one! 
 
     or thereabouts!
 
-    If you inherit from this, be careful with __init__.
-
-    Anything it does will happen each time a new Borg() is created.
-
-    Better not to init
     """
     _shared_state = {}
     def __init__(self):
+        """ 
 
+        If you inherit from this, best not to over-ride __init__.
+
+        Anything it does will happen each time a new Borg() is created.
+
+        If you need to initialise some variables, make them class
+        attributes.
+        """
         self.__dict__ = self._shared_state
 
 
@@ -97,10 +99,21 @@ class Borg:
 
 class RoundAbout(Borg):
     """ Pass self around.
+    
+    Just a collection of random queues that everyone shares.
 
+    For maximal information sharing, I'm curious what happens when 
+    objects with the roundabout do something like:
+
+    await self.put(self)
+
+    The magic roundabout just looks after the queues.
     """
 
     # There is only one, initialise attributes as class attributes
+
+    # default queue is whatever random_queue serves up.
+    # 
     queues = defaultdict(random_queue)
     counts = Counter()
     
@@ -126,6 +139,12 @@ class RoundAbout(Borg):
         regardless, why not?
         """
         return self.queues[name]
+
+    def status(self):
+        """ Show some stats """
+        for name, qq in self.queues():
+            print(name)
+            print(qq.qsize(), qq.maxsize)
 
 
 
