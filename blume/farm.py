@@ -122,7 +122,15 @@ class Carpet(Ball):
 
         self.history = deque(maxlen=random.randint(20, 50))
 
-        self.image = None
+        self.axes = {}
+
+        #width, height = ball.width, ball.height
+        self.image = plt.figure()
+        self.generate_mosaic()
+        plt.show(block=False)
+
+        # keyboard handling
+        self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
@@ -161,7 +169,7 @@ class Carpet(Ball):
         self._update_pos()
         self.generate_mosaic()
         
-        await self.rewind_history()
+        self.rewind_history()
 
         print(f'more {self.size}')
 
@@ -171,7 +179,7 @@ class Carpet(Ball):
             self.size -= 1
         self._update_pos()
         self.generate_mosaic()
-        await self.rewind_history()
+        self.rewind_history()
         print(f'less {self.size}', id(self))
 
     async def history_back(self):
@@ -201,8 +209,9 @@ class Carpet(Ball):
         self._update_pos()
         print(nax, 'NNNNN')
         nax.set_subplotspec(ax.get_subplotspec())
-
-        fig.delaxes(ax)
+        ax.set_visible(False)
+        nax.set_visible(True)
+        #fig.delaxes(ax)
         fig.add_subplot(nax)
         nax.draw_artist(nax)
         
@@ -235,16 +244,6 @@ class Carpet(Ball):
     async def start(self):
         
             
-        if self.image is None:
-            #width, height = ball.width, ball.height
-            self.image = plt.figure()
-            self.generate_mosaic()
-            plt.show(block=False)
-
-            # keyboard handling
-            self.image.canvas.mpl_connect('key_press_event', self.keypress)
-                
-
         # start some tasks to keep things ticking along
         #watch_task = await curio.spawn(self.watch())
         print("carpet starting tasks")
@@ -254,6 +253,16 @@ class Carpet(Ball):
         print("DONE STARTED carpet")
 
     def generate_mosaic(self):
+
+        # first hide existing axes
+        for ax in self.axes.values():
+            ax.set_visible(False)
+
+        # and try and retrieve axes in output queue
+        qq = self.select()
+        while not qq.empty():
+            print('draining', qq.qsize())
+            qq.get()
 
         mosaic = []
         n = 1
@@ -271,17 +280,17 @@ class Carpet(Ball):
         self.axes = self.image.subplot_mosaic(mosaic)
         print(self.axes)
         print(self.image.axes)
-        #self.image.clear()
+        self.image.clear()
+        self.rewind_history()
 
     async def run(self):
 
         # hmm. need to re-think what belongs where
         # also maybe this method is "runner" and "run" is just
         # the inner loop?
-        print('PLEASE carpet is running')
-
         ax = self.axes[self.pos]
 
+        print(self.pos, ax)
         await self.put(ax)
         self.history.append(ax)
 
@@ -291,7 +300,7 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            self.generate_mosaic()
+            #self.generate_mosaic()
             self.pos = 0
     
 
