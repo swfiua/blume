@@ -170,7 +170,7 @@ class Carpet(Ball):
         self._update_pos()
         self.generate_mosaic()
         
-        self.rewind_history()
+        await self.rewind_history()
 
         print(f'more {self.size}')
 
@@ -180,7 +180,7 @@ class Carpet(Ball):
             self.size -= 1
         self._update_pos()
         self.generate_mosaic()
-        self.rewind_history()
+        await self.rewind_history()
         print(f'less {self.size}', id(self))
 
     async def history_back(self):
@@ -209,6 +209,16 @@ class Carpet(Ball):
 
         fig = self.image
         ax = self.axes[self.pos]
+
+        # zap it's children
+        ax._children = []
+            
+        for art in nax:
+            art.axes = None
+            ax.add_artist(art)
+
+        return
+        #END temp fix
 
         self.axes[self.pos] = nax
         
@@ -247,14 +257,14 @@ class Carpet(Ball):
         canvas = self.image.canvas
         while True:
             
-            canvas.draw_idle()
+            #canvas.draw_idle()
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
             # Would be good to find a Tk file pointer that
             # can be used as a source of events
 
-            await curio.sleep(self.sleep)
+            await curio.sleep(self.sleep * 10)
 
     async def start(self):
         
@@ -283,11 +293,11 @@ class Carpet(Ball):
         #for ax in self.axes.values():
         #    ax.set_visible(False)
 
-
-        self.axes = self.image.subplot_mosaic(mosaic)
+        keys = dict(visible=True)
+        self.axes = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
         # hide all the axes
-        for ax in self.axes.values():
-            ax.set_visible(False)
+        #for ax in self.axes.values():
+        #    ax.set_visible(False)
 
         print(self.axes)
         print('III', id(self.image), self.image.axes)
@@ -304,17 +314,18 @@ class Carpet(Ball):
         # fade to this new axis, give a chanc for something to draw
         await self.fade(ax)
 
-        self.history.append(ax)
+        self.history.append(ax.get_children())
 
         self._update_pos()
 
     async  def fade(self, ax):
         """ Fade in new axis ?"""
-        
-        if self.pos not in self.showing:
+
+        pos = self.pos
+        if pos not in self.showing:
             # just make ax visible
             ax.set_visible(True)
-            self.showing[self.pos] = ax
+            self.showing[pos] = ax
             return
 
         # hand out the axis
@@ -326,18 +337,21 @@ class Carpet(Ball):
         # ok so need to fade from what's in showing to ax
         ax.set_visible(True)
         
-        await curio.sleep(0.1)
-        self.showing[self.pos].set_visible(False)
+        #await curio.sleep(0.1)
+
+        # this needs a re-think, self.pos might have changed
+        if pos in self.showing:
+            self.showing[pos].set_visible(False)
 
         # record what's now showing
-        self.showing[self.pos] = ax
+        self.showing[pos] = ax
         
 
     def _update_pos(self):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            self.generate_mosaic()
+            #self.generate_mosaic()
             self.pos = 0
     
 

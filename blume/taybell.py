@@ -32,8 +32,8 @@ For example, as table.describe() does for `pandas` tables.
 """
 
 import numpy as np
-from .table import table as mpl_table
-from .table import Cell as mpl_Cell
+from . import table as mpl_table
+#from . import Cell as mpl_Cell
 
 class Cell:
     pass

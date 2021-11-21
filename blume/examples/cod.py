@@ -349,7 +349,12 @@ class Cod(magic.Ball):
                     print(f'{e}') 
 
                 #plt.legend(loc=0)
-                ax.set_title(self.fields[0])
+
+                from blume import taybell
+
+                title = taybell.shortify([self.fields[0]], maxlen=20)[0]
+                
+                ax.set_title(title)
                 ax.grid(True)
 
             self.commits.rotate()
@@ -370,7 +375,6 @@ class Cod(magic.Ball):
         # need to figure something to make it draw!
         print('drawing', ax, id(ax.figure), ax.figure.axes)
         #ax.set_visible(True)
-
         ax.draw_artist(ax)
 
 def drange(data):
