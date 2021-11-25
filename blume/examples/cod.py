@@ -287,7 +287,7 @@ class Cod(magic.Ball):
 
         ax = await self.get()
         ax.clear()
-        print(ax.get_visible())
+        print('got axis, visible=', ax.get_visible())
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 

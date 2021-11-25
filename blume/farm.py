@@ -168,8 +168,8 @@ class Carpet(Ball):
         """ Show more pictures """
         self.size += 1
         self._update_pos()
+        self.hideall()
         self.generate_mosaic()
-        
         await self.rewind_history()
 
         print(f'more {self.size}')
@@ -179,9 +179,15 @@ class Carpet(Ball):
         if self.size > 1:
             self.size -= 1
         self._update_pos()
+        self.hideall()
         self.generate_mosaic()
         await self.rewind_history()
         print(f'less {self.size}', id(self))
+
+    def hideall(self):
+
+        for ax in self.axes.values():
+            ax.set_visible(False)
 
     async def history_back(self):
 
@@ -247,7 +253,7 @@ class Carpet(Ball):
         canvas = self.image.canvas
         while True:
             
-            #canvas.draw_idle()
+            canvas.draw_idle()
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
@@ -331,6 +337,7 @@ class Carpet(Ball):
 
         # this needs a re-think, self.pos might have changed
         if pos in self.showing:
+            print('hiding', pos)
             self.showing[pos].set_visible(False)
 
         # record what's now showing
@@ -341,7 +348,7 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            #self.generate_mosaic()
+            self.generate_mosaic()
             self.pos = 0
     
 
