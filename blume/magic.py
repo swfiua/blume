@@ -611,14 +611,15 @@ class GeeFarm(Ball):
 
         # wait for the super dog
         self.tg = curio.TaskGroup(
-            [self.superdog] +
-            list(self.shep.whistlers.values()))
+            [self.superdog])
         await self.tg.join()
 
     async def quit(self):
         """ quit the farm """
 
-        await self.tg.cancel_remaining()
+        await self.shep.quit()
+
+        await self.superdog.cancel()
 
 
 modes = deque(['grey', 'white', 'black'])
@@ -1070,10 +1071,7 @@ class Shepherd(Ball):
         for task in self.running.values():
             await task.cancel()
 
-        print('Cancelling whistlers')
-        print(self.whistlers)
-        for task in self.whistlers.values():
-            await task.cancel()
+        # don't cancel whistlers, cos we are likely running in one.
 
     def __str__(self):
 

@@ -210,16 +210,6 @@ class Carpet(Ball):
         fig = self.image
         ax = self.axes[self.pos]
 
-        # zap it's children
-        ax._children = []
-            
-        for art in nax:
-            art.axes = None
-            ax.add_artist(art)
-
-        return
-        #END temp fix
-
         self.axes[self.pos] = nax
         
         print(nax, 'NNNNN')
@@ -314,7 +304,7 @@ class Carpet(Ball):
         # fade to this new axis, give a chanc for something to draw
         await self.fade(ax)
 
-        self.history.append(ax.get_children())
+        self.history.append(ax)
 
         self._update_pos()
 
