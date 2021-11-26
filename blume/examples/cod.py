@@ -162,31 +162,12 @@ from blume import farm as fm
 import git
 from dateutil.utils import today
 
-class River(magic.Ball):
-    """ Like a river that """
+def save_data(data, filename='data.csv'):
 
-    def __init__(self):
+    #path = Path(str(datetime.datetime.now()) + self.format)
+    path = Path(filename)
+    path.write_text(data)
 
-        super().__init__()
-        p = Path('.')
-        self.format = '.csv'
-        
-        data = p.glob(f'*{self.format}')
-        
-        self.files = deque(sorted(data))
-        
-
-    async def xstart(self):
-        pass
-
-
-    def save(self, data, filename='data.csv'):
-
-        #path = Path(str(datetime.datetime.now()) + self.format)
-        path = Path(filename)
-        path.write_text(data)
-        self.files.append(path)
-        
 
 BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
 ITEM_IDS = [
@@ -198,11 +179,6 @@ ITEM_IDS = [
     'ae347819064d45489ed732306f959a7e',
 ]
 
-def get_response(url):
-    
-    return requests.get(url)
-
-
 def data_to_rows(data):
     
     # figure out what we have
@@ -213,9 +189,6 @@ def data_to_rows(data):
     for row in csv.DictReader(data[1:], keys):
         yield row
     
-
-                      
-
 
 class Cod(magic.Ball):
     """ Ottawa COD data viewer 
@@ -308,16 +281,6 @@ class Cod(magic.Ball):
                 self.fields.rotate()
                 continue
 
-            try:
-                cases = sum(x[key] for x in results)
-                if last_cases and last_cases < cases:
-                    print(f"Total cases: {cases} New today: {cases-last_dcases:5}")
-
-                last_cases = cases
-
-            except:
-                pass
-
             if results:
                 # fixme: give spell an index
                 spell = self.spell
@@ -352,29 +315,26 @@ class Cod(magic.Ball):
 
                 from blume import taybell
 
-                title = taybell.shortify_line(self.fields[0])
+                title = taybell.shortify_line(self.fields[0], 15)
                 
                 ax.set_title(title)
                 ax.grid(True)
 
             self.commits.rotate()
             if self.commits[0] is self.master:
-                if self.rotate:
-                    self.load_commits()
-                    keytype = str
-                    while keytype not in (float, int):
-                        self.fields.rotate()
-                        key = self.fields[0]
-                        keytype = self.spell.casts[key]
-                else:
+                self.load_commits()
+                keytype = str
+                while keytype not in (float, int):
+                    self.fields.rotate()
                     key = self.fields[0]
-
+                    keytype = self.spell.casts[key]
+                    
                 # that is this plot finished
                 break
 
         # need to figure something to make it draw!
         print('drawing', ax, id(ax.figure), ax.figure.axes)
-        ax.set_visible(True)
+        #ax.set_visible(True)
         ax.draw_artist(ax)
 
 def drange(data):
@@ -481,7 +441,7 @@ if __name__ == '__main__':
 
     url = BASE_URL + itemid + '/data' 
 
-    resp = get_response(url)
+    resp = requests.get(url)
 
     repo = git.Repo(search_parent_directories=True)
 
@@ -490,12 +450,12 @@ if __name__ == '__main__':
 
     print(args.filename)
     print(itemid)
-    River().save(resp.text, args.filename)
+    save_data(resp.text, args.filename)
     
     if args.filename in repo.untracked_files:
         print(f"Add {args.filename} to git repo to track")
         sys.exit(0)
-        
+
     if diff:=repo.index.diff(None):
         print('New data, updating git repo')
         repo.index.add(diff[0].a_path)
