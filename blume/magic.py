@@ -445,11 +445,7 @@ class Spell:
         self.sniff = 10
         
         
-        # i don't think this bit is implemented yet -- see comment above
-        self.cache = deque(maxlen=cache)
-
-
-    def spell(self, data, sniff=10):
+    def spell(self, data):
         """ Apply casts to data
         
         Would like this to be dynamic, updating the casts as we go """
@@ -468,7 +464,7 @@ class Spell:
         
         upcast = self.upcast
         
-        for row in data[self.sniff:]:
+        for row in data[-self.sniff:]:
             for key in keys:
                 value = row[key].strip()
                 if value:
