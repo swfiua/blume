@@ -997,6 +997,11 @@ class Shepherd(Ball):
 
         succ = list(self.flock.predecessors(current))
 
+        if not succ:
+            succ = list(self.flock.nodes)
+            
+        print('SSSSSSSS', succ)
+            
         if succ:
             self.path.append(random.choice(succ))
 

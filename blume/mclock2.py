@@ -16,8 +16,6 @@ import math
 import time
 import curio
 
-from matplotlib import pyplot as plt
-
 from .magic import Ball, fig2data
 
 MINUTES_TO_MIDNIGHT = -5.0
@@ -137,11 +135,12 @@ class GuidoClock(Ball):
 
     async def run(self):
 
+        self.ax = await self.get()
+
         #print('GUIDOCLOCK run')
         self.redraw()
-
-        # blit the image to the canvas
-        await self.put(fig2data(plt))
+        self.ax.show()
+        self.ax.please_draw()
 
             
     def redraw(self):
@@ -155,7 +154,7 @@ class GuidoClock(Ball):
 
     def draw(self, hh, mm, ss, colors=(0, 1, 2)):
 
-        plt.cla()
+        self.ax.cla()
         self.set_radius()
         radius = self.radius
         bigsize = self.bigsize
@@ -182,7 +181,7 @@ class GuidoClock(Ball):
         
         # Draw the text
         if self.showtext:
-            t = plt.text(
+            t = self.ax.text(
                 xx - bigsize, yy + bigsize,
                 text="%02d:%02d:%02d" % (hh, mm, ss),
                 fill="white")
@@ -197,12 +196,12 @@ class GuidoClock(Ball):
         
         xx = yy = 0.0
         
-        plt.plot(
+        self.ax.plot(
             [xx, xx + length*math.cos(angler)],
             [yy, yy + length*math.sin(angler)],
             linewidth=width * 1.2, color='black')
 
-        plt.plot(
+        self.ax.plot(
             [xx, xx + length*math.cos(angler)],
             [yy, yy + length*math.sin(angler)],
             linewidth=width, color=color)
@@ -252,5 +251,6 @@ class GuidoClock(Ball):
                 colors.append("#%02x%02x%02x" % tuple(fill))
                 wedges.append(extent)
 
-        plt.pie(wedges, colors=colors, radius=1.5,
+        self.ax.pie(wedges, colors=colors, radius=1.5,
                 startangle=0, counterclock=False)
+        
