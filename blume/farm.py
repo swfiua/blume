@@ -167,10 +167,10 @@ class Carpet(Ball):
     async def more(self):
         """ Show more pictures """
         self.size += 1
-        self._update_pos()
+        self.pos = 0
         self.hideall()
         self.generate_mosaic()
-        await self.rewind_history()
+        await self.replay_history()
 
         print(f'more {self.size}')
 
@@ -178,10 +178,10 @@ class Carpet(Ball):
         """ Show fewer pictures """
         if self.size > 1:
             self.size -= 1
-        self._update_pos()
+        self.pos = 0
         self.hideall()
         self.generate_mosaic()
-        await self.rewind_history()
+        await self.replay_history()
         print(f'less {self.size}', id(self))
 
     def hideall(self):
@@ -207,11 +207,9 @@ class Carpet(Ball):
         # we want to replace the current axes with the value we pop
         ax = self.history.pop()
 
-        await self.add_axis(ax)
+        await self.fade(ax)
 
     async def add_axis(self, nax):
-
-        self._update_pos()
 
         fig = self.image
         ax = self.axes[self.pos]
@@ -219,26 +217,37 @@ class Carpet(Ball):
         self.axes[self.pos] = nax
         
         print(nax, 'NNNNN')
+        # set the sublotspec to match the one we are replacing
         nax.set_subplotspec(ax.get_subplotspec())
 
         print(fig.axes)
         if ax in fig.axes:
+            # make the old one go away
+            ax.set_visible(False)
             fig.delaxes(ax)
+
+            # see if it has really gone
+            assert ax not in fig.axes
+            
         else:
             print(ax, 'AWOL')
             
         fig.add_subplot(nax)
 
-        ax.set_visible(False)
         nax.set_visible(True)
 
+        # draw the axis
         nax.draw_artist(nax)
 
 
-    async def rewind_history(self):
+    async def replay_history(self):
 
-        for ax in self.history:
+        # take a copy of the current history
+        hh = list(self.history)
+        
+        for ax in hh:
             await self.add_axis(ax)
+            self._update_pos()
 
         print('axes after rewind', self.image.axes)
             
@@ -314,7 +323,7 @@ class Carpet(Ball):
 
         self._update_pos()
 
-    async  def fade(self, ax):
+    async def fade(self, ax):
         """ Fade in new axis ?"""
 
         pos = self.pos
