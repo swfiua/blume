@@ -150,11 +150,8 @@ class Carpet(Ball):
         # where put can magically be a coroutine or a function according
         # to context.
         print('key press event', event, event.key)
-        self.dump_roundabout()
         qq = self.select('keys')
         qq.put(event.key)
-        print(qq.qsize(), id(qq))
-        
 
     async def save(self):
         """ Save current image
@@ -172,8 +169,6 @@ class Carpet(Ball):
         self.generate_mosaic()
         await self.replay_history()
 
-        print(f'more {self.size}')
-
     async def less(self):
         """ Show fewer pictures """
         if self.size > 1:
@@ -182,7 +177,6 @@ class Carpet(Ball):
         self.hideall()
         self.generate_mosaic()
         await self.replay_history()
-        print(f'less {self.size}', id(self))
 
     def hideall(self):
 
@@ -207,7 +201,7 @@ class Carpet(Ball):
         # we want to replace the current axes with the value we pop
         ax = self.history.pop()
 
-        await self.fade(ax)
+        await self.add_axis(ax)
 
     async def add_axis(self, nax):
 
@@ -223,6 +217,7 @@ class Carpet(Ball):
         print(fig.axes)
         if ax in fig.axes:
             # make the old one go away
+            print('deleting', ax)
             ax.set_visible(False)
             fig.delaxes(ax)
 
@@ -242,6 +237,7 @@ class Carpet(Ball):
 
     async def replay_history(self):
 
+        return
         # take a copy of the current history
         hh = list(self.history)
         
@@ -301,6 +297,7 @@ class Carpet(Ball):
         keys = dict(visible=True)
         self.axes = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
         # hide all the axes
+        self.hideall()
         #for ax in self.axes.values():
         #    ax.set_visible(False)
 
@@ -340,7 +337,7 @@ class Carpet(Ball):
         await curio.sleep(0.1)
         
         # ok so need to fade from what's in showing to ax
-        ax.set_visible(True)
+        #ax.set_visible(True)
         
         #await curio.sleep(0.1)
 
@@ -357,7 +354,10 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            self.generate_mosaic()
+            axes = self.generate_mosaic()
+
+            # hide the new axes
+            self.hideall()
             self.pos = 0
     
 

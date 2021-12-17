@@ -315,7 +315,7 @@ class Cod(magic.Ball):
 
                 from blume import taybell
 
-                title = taybell.shortify_line(self.fields[0], 15)
+                title = taybell.shortify_line(self.fields[0], 50)
                 
                 ax.set_title(title)
                 ax.grid(True)
@@ -334,7 +334,7 @@ class Cod(magic.Ball):
 
         # need to figure something to make it draw!
         print('drawing', ax, id(ax.figure), ax.figure.axes)
-        #ax.set_visible(True)
+        ax.set_visible(True)
         ax.draw_artist(ax)
 
 def drange(data):
