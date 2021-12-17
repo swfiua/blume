@@ -68,6 +68,53 @@ import networkx as nx
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 
+class Axe:
+    """ A matplotlib axis that has some extra methods 
+
+    The idea is to hand these out to anyone looking for an axis.
+    
+    By wrapping the axis object we can carry around some meta data
+    that might come in useful.
+
+    But mostly I want an Axis that I can show and hide from the figure
+    and change its layout.
+
+    I would like to just go with show and hide, but suspect I might need 
+    draw too.
+    """
+
+    def __init__(self, delegate):
+
+        self.delegate = delegate
+
+    def __getattr__(self, attr):
+
+        try:
+            return getattr(self.delegate, attr)
+        except AttributeError as e:
+            # fixme:
+            raise e
+            #raise AttributeError()
+
+    def show(self):
+        """ Show the axes """
+        self.set_visible(True)
+
+    def hide(self):
+        """ Hide the axes """
+        self.set_visible(False)
+
+    def please_draw(self):
+        """ Try to force a draw of the axes """
+        self.draw_artist(self)
+
+    def projection(self, name):
+        """ Set the projection 
+
+        Not sure if this is possible.
+        """
+        pass
+        
 
 class Farm(GeeFarm):
 
@@ -127,7 +174,6 @@ class Carpet(Ball):
 
         #width, height = ball.width, ball.height
         self.image = plt.figure()
-        self.generate_mosaic()
         plt.show(block=False)
 
         # keyboard handling
@@ -294,47 +340,51 @@ class Carpet(Ball):
         #for ax in self.axes.values():
         #    ax.set_visible(False)
 
-        keys = dict(visible=True)
-        self.axes = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
-        # hide all the axes
-        self.hideall()
-        #for ax in self.axes.values():
-        #    ax.set_visible(False)
+        keys = dict(visible=False)
 
-        print(self.axes)
-        print('III', id(self.image), self.image.axes)
+        picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
+
+        for key, ax in picture.items():
+            self.axes[key] = Axe(ax)
+        
+        print('III', id(self.image), self.size, len(self.image.axes))
         #self.image.clear()
 
-    async def run(self):
+        #assert len(self.image.axes) == self.size * self.size
 
-        ax = self.axes[self.pos]
+    async def run(self):
 
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
             return
+
+        self._update_pos()
+
+        ax = self.axes[self.pos]
+
+        ax.meta = dict(key=self.pos)
 
         # fade to this new axis, give a chanc for something to draw
         await self.fade(ax)
 
         self.history.append(ax)
 
-        self._update_pos()
 
     async def fade(self, ax):
         """ Fade in new axis ?"""
 
-        pos = self.pos
+        pos = ax.meta['key']
         if pos not in self.showing:
             # just make ax visible
             ax.set_visible(True)
             self.showing[pos] = ax
-            return
+            #return
 
         # hand out the axis
         await self.put(ax)
 
         # give it a chance for something to take it
-        await curio.sleep(0.1)
+        #await curio.sleep(0.1)
         
         # ok so need to fade from what's in showing to ax
         #ax.set_visible(True)
@@ -354,11 +404,8 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            axes = self.generate_mosaic()
+            self.generate_mosaic()
 
-            # hide the new axes
-            self.hideall()
-            self.pos = 0
     
 
 
