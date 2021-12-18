@@ -333,9 +333,11 @@ class Cod(magic.Ball):
                 break
 
         # need to figure something to make it draw!
-        print('drawing', ax, id(ax.figure), ax.figure.axes)
-        ax.set_visible(True)
-        ax.draw_artist(ax)
+        #print('drawing', ax, id(ax.figure), ax.figure.axes)
+        ax.show()
+        ax.please_draw()
+        #ax.set_visible(True)
+        #ax.draw_artist(ax)
 
 def drange(data):
 

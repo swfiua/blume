@@ -83,9 +83,10 @@ class Axe:
     draw too.
     """
 
-    def __init__(self, delegate):
+    def __init__(self, delegate, carpet):
 
         self.delegate = delegate
+        self.carpet = carpet
 
     def __getattr__(self, attr):
 
@@ -93,16 +94,21 @@ class Axe:
             return getattr(self.delegate, attr)
         except AttributeError as e:
             # fixme:
-            raise e
-            #raise AttributeError()
+            #raise e
+            raise AttributeError('woopsie')
+
+    def position(self, target):
+        """ Set position to that of target """
+        self.set_subplotspec(target.get_subplotspec())
 
     def show(self):
         """ Show the axes """
-        self.set_visible(True)
+        self.carpet.show(self)
 
     def hide(self):
         """ Hide the axes """
         self.set_visible(False)
+        self.carpet.hide(self)
 
     def please_draw(self):
         """ Try to force a draw of the axes """
@@ -170,6 +176,7 @@ class Carpet(Ball):
         self.history = deque(maxlen=random.randint(20, 50))
 
         self.axes = {}
+
         self.showing = {}
 
         #width, height = ball.width, ball.height
@@ -227,7 +234,10 @@ class Carpet(Ball):
     def hideall(self):
 
         for ax in self.axes.values():
-            ax.set_visible(False)
+            print('hiding', type(ax), id(ax))
+            ax.hide()
+
+        print('after hideall showing', len(self.showing))
 
     async def history_back(self):
 
@@ -248,39 +258,26 @@ class Carpet(Ball):
         ax = self.history.pop()
 
         await self.add_axis(ax)
+        self._update_pos()
 
     async def add_axis(self, nax):
 
         fig = self.image
         ax = self.axes[self.pos]
 
+        print('adding axis', type(nax))
         self.axes[self.pos] = nax
         
         print(nax, 'NNNNN')
+
         # set the sublotspec to match the one we are replacing
-        nax.set_subplotspec(ax.get_subplotspec())
+        nax.position(ax)
 
-        print(fig.axes)
-        if ax in fig.axes:
-            # make the old one go away
-            print('deleting', ax)
-            ax.set_visible(False)
-            fig.delaxes(ax)
+        # hide the old axis
+        ax.hide()
 
-            # see if it has really gone
-            assert ax not in fig.axes
-            
-        else:
-            print(ax, 'AWOL')
-            
-        fig.add_subplot(nax)
-
-        nax.set_visible(True)
-
-        # draw the axis
-        nax.draw_artist(nax)
-
-
+        nax.show()
+        
     async def replay_history(self):
 
         return
@@ -345,8 +342,10 @@ class Carpet(Ball):
         picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
 
         for key, ax in picture.items():
-            self.axes[key] = Axe(ax)
-        
+            axe = Axe(ax, self)
+            axe.meta = dict(key=key)
+            self.axes[key] = axe
+
         print('III', id(self.image), self.size, len(self.image.axes))
         #self.image.clear()
 
@@ -358,46 +357,18 @@ class Carpet(Ball):
         if self.select().qsize() > 0:
             return
 
-        self._update_pos()
-
+        if not self.axes:
+            self.generate_mosaic()
+            self.pos=0
+            
         ax = self.axes[self.pos]
 
-        ax.meta = dict(key=self.pos)
-
         # fade to this new axis, give a chanc for something to draw
-        await self.fade(ax)
+        await self.put(ax)
 
         self.history.append(ax)
 
-
-    async def fade(self, ax):
-        """ Fade in new axis ?"""
-
-        pos = ax.meta['key']
-        if pos not in self.showing:
-            # just make ax visible
-            ax.set_visible(True)
-            self.showing[pos] = ax
-            #return
-
-        # hand out the axis
-        await self.put(ax)
-
-        # give it a chance for something to take it
-        #await curio.sleep(0.1)
-        
-        # ok so need to fade from what's in showing to ax
-        #ax.set_visible(True)
-        
-        #await curio.sleep(0.1)
-
-        # this needs a re-think, self.pos might have changed
-        if pos in self.showing:
-            print('hiding', pos)
-            self.showing[pos].set_visible(False)
-
-        # record what's now showing
-        self.showing[pos] = ax
+        self._update_pos()
         
 
     def _update_pos(self):
@@ -406,7 +377,27 @@ class Carpet(Ball):
         if self.pos >= self.size * self.size:
             self.generate_mosaic()
 
-    
+    def show(self, axe):
+
+        key = axe.meta['key']
+
+        current = self.showing.get(key, axe)
+
+        if current is not axe:
+            current.hide()
+
+        axe.set_visible(True)
+        
+        self.showing[key] = axe
+        
+    def hide(self, axe):
+
+        key = axe.meta['key']
+        axe.set_visible(False)
+
+        if key in self.showing:
+            del self.showing[key]
+        
 
 
 # example below ignore for now
