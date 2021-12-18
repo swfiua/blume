@@ -67,6 +67,7 @@ import networkx as nx
 
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
+from .rcparms import Params
 
 class Axe:
     """ A matplotlib axis that has some extra methods 
@@ -95,7 +96,7 @@ class Axe:
         except AttributeError as e:
             # fixme:
             #raise e
-            raise AttributeError('woopsie')
+            raise AttributeError
 
     def position(self, target):
         """ Set position to that of target """
@@ -139,6 +140,7 @@ class Farm(GeeFarm):
         self.add_node(self.shep)
 
         self.add(clock)
+        self.add(Params())
 
         # connections
         #self.add_edge(carpet, hat)

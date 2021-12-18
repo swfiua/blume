@@ -787,7 +787,7 @@ class Shepherd(Ball):
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
 
-        self.add_filter('T', self.status)
+        self.add_filter('x', self.status)
 
         self.add_filter('i', self.interact)
 
@@ -820,15 +820,21 @@ class Shepherd(Ball):
 
     async def status(self):
 
+        for item in self.flock.nodes:
+            print(item)
+            if item is not self:
+                try:
+                    stat = item.status()
+                    if inspect.iscoroutine(stat):
+                        await stat
+                except:
+                    pass
+            print()
+
         print('PATH')
         for item in self.path:
             print(item)
 
-        for item in self.flock.nodes:
-            print(item)
-            if item is not self:
-                await item.status()
-            print()
 
     def set_flock(self, flock):
         """  Supply the flock to be watched """
@@ -921,7 +927,10 @@ class Shepherd(Ball):
 
 
     async def start(self):
-        """ Start things going """
+        """ Start things going 
+
+        FIXME: make it simple
+        """
         print('STARTING SHEPHERD')
         for sheep in self.flock:
             if sheep is self:
@@ -967,6 +976,10 @@ class Shepherd(Ball):
         # u/d/p/n up down previous next
 
     async def add_whistler(self, queue):
+        """ Add a whistler
+        
+        FIXME: figure out what a whistler does
+        """
 
         print('adding whistler', id(queue))
         whistle = await curio.spawn(
@@ -975,13 +988,41 @@ class Shepherd(Ball):
         self.whistlers[id(queue)] = whistle
         
     async def next(self):
-        """ Move focus to next """
+        """ Move focus to next 
+
+        path management.
+        """
         print(f'what is next?: {self.path}')
-        print(self.current())
+        current = self.current()
+        nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
+
+        if nodes:
+            
+            del self.path[-1]
+            ix = nodes.index(current)
+            if len(nodes) == ix + 1:
+                ix = -1
+            
+            self.path.append(nodes[ix + 1])
+        
+            print(self.current())
 
     async def previous(self):
         """ Move focus to previous """
         print(f'what is previous?: {self.path}')
+        current = self.current()
+        nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
+
+        if nodes:
+            
+            del self.path[-1]
+            ix = nodes.index(current)
+            if ix == 0:
+                ix = len(nodes)
+            
+            self.path.append(nodes[ix-1])
+
+            print(self.current())
 
     async def up(self):
         """ Move up path """
