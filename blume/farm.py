@@ -68,6 +68,7 @@ import networkx as nx
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 from .rcparms import Params
+from .blitting import BlitManager
 
 class Axe:
     """ A matplotlib axis that has some extra methods 
@@ -104,6 +105,7 @@ class Axe:
 
     def show(self):
         """ Show the axes """
+        self.set_visible(True)
         self.carpet.show(self)
 
     def hide(self):
@@ -184,6 +186,7 @@ class Carpet(Ball):
         #width, height = ball.width, ball.height
         self.image = plt.figure()
         plt.show(block=False)
+        self.bm = BlitManager(self.image.canvas)
 
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
@@ -259,10 +262,16 @@ class Carpet(Ball):
         # we want to replace the current axes with the value we pop
         ax = self.history.pop()
 
+        print(ax.get_visible(), 'vis')
+        self.hideall()
+        ax.set_visible('True')
         await self.add_axis(ax)
         self._update_pos()
 
     async def add_axis(self, nax):
+
+        self.bm.update(nax)
+        return
 
         fig = self.image
         ax = self.axes[self.pos]
@@ -303,7 +312,7 @@ class Carpet(Ball):
         canvas = self.image.canvas
         while True:
             
-            canvas.draw_idle()
+            #canvas.draw_idle()
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
@@ -365,7 +374,7 @@ class Carpet(Ball):
             
         ax = self.axes[self.pos]
 
-        # fade to this new axis, give a chanc for something to draw
+        # put out the axis
         await self.put(ax)
 
         self.history.append(ax)
@@ -381,6 +390,9 @@ class Carpet(Ball):
 
     def show(self, axe):
 
+        self.bm.update(axe)
+        return
+        
         key = axe.meta['key']
 
         current = self.showing.get(key, axe)
@@ -395,7 +407,7 @@ class Carpet(Ball):
     def hide(self, axe):
 
         key = axe.meta['key']
-        axe.set_visible(False)
+        #axe.set_visible(False)
 
         if key in self.showing:
             del self.showing[key]
