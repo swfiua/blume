@@ -62,6 +62,7 @@ uses blitting to accelerate rendering
 
 import matplotlib.pyplot as plt
 
+from matplotlib.transforms import Bbox
 
 class BlitManager:
     def __init__(self, canvas, animated_artists=()):
@@ -141,7 +142,15 @@ class BlitManager:
                 # draw the axis
                 print(fig.bbox.bounds)
                 print(ax.bbox.bounds)
-                cv.restore_region(self._base, ax.bbox, (100,100))
+
+                full_bbox = self.get_full_bbox(ax)
+                print(full_bbox)
+                ss = ax.get_subplotspec()
+                print(ss)
+                cv.restore_region(
+                    self._base,
+                    full_bbox,
+                    (full_bbox.xmin, full_bbox.ymin))
                 fig.draw_artist(ax)
             else:
                 # draw all of the animated artists
@@ -154,3 +163,18 @@ class BlitManager:
         # let the GUI event loop process anything it has to do
         cv.flush_events()
 
+    def get_full_bbox(self, ax):
+
+        ss = ax.get_subplotspec()
+        fig = self.canvas.figure
+        fbbox = fig.bbox
+        
+        rows, cols, row, col = ss.get_geometry()
+
+        width = fbbox.width / cols
+        height = fbbox.height / rows
+
+        xpos = width * col
+        ypos = height * row
+
+        return Bbox([[xpos, ypos], [xpos+width, xpos+height]])

@@ -111,7 +111,7 @@ class Axe:
     def hide(self):
         """ Hide the axes """
         self.set_visible(False)
-        self.carpet.hide(self)
+        #self.carpet.hide(self)
 
     def please_draw(self):
         """ Try to force a draw of the axes """
@@ -122,7 +122,7 @@ class Axe:
 
         Not sure if this is possible.
         """
-        pass
+        raise NotImplemented
         
 
 class Farm(GeeFarm):
@@ -181,10 +181,8 @@ class Carpet(Ball):
 
         self.axes = {}
 
-        self.showing = {}
-
         #width, height = ball.width, ball.height
-        self.image = plt.figure()
+        self.image = plt.figure(constrained_layout=True, facecolor='grey')
         plt.show(block=False)
         self.bm = BlitManager(self.image.canvas)
 
@@ -217,7 +215,7 @@ class Carpet(Ball):
         This one saves the current data, not the PIL file
         so can be used to make transforms along the way.
         """
-        self.image.save(f'carpet{datetime.datetime.now()}.png')
+        self.image.savefig(f'carpet{datetime.datetime.now()}.png')
         
     async def more(self):
         """ Show more pictures """
@@ -238,11 +236,10 @@ class Carpet(Ball):
 
     def hideall(self):
 
-        for ax in self.axes.values():
+        for ax in self.image.axes:
             print('hiding', type(ax), id(ax))
-            ax.hide()
+            ax.set_visible(False)
 
-        print('after hideall showing', len(self.showing))
 
     async def history_back(self):
 
@@ -262,7 +259,6 @@ class Carpet(Ball):
         # we want to replace the current axes with the value we pop
         ax = self.history.pop()
 
-        print(ax.get_visible(), 'vis')
         self.hideall()
         ax.set_visible('True')
         await self.add_axis(ax)
@@ -276,11 +272,8 @@ class Carpet(Ball):
         fig = self.image
         ax = self.axes[self.pos]
 
-        print('adding axis', type(nax))
         self.axes[self.pos] = nax
         
-        print(nax, 'NNNNN')
-
         # set the sublotspec to match the one we are replacing
         nax.position(ax)
 
@@ -357,7 +350,6 @@ class Carpet(Ball):
             axe.meta = dict(key=key)
             self.axes[key] = axe
 
-        print('III', id(self.image), self.size, len(self.image.axes))
         #self.image.clear()
 
         #assert len(self.image.axes) == self.size * self.size
@@ -390,28 +382,13 @@ class Carpet(Ball):
 
     def show(self, axe):
 
-        self.bm.update(axe)
-        return
-        
-        key = axe.meta['key']
-
-        current = self.showing.get(key, axe)
-
-        if current is not axe:
-            current.hide()
-
         axe.set_visible(True)
+        self.bm.update(axe)
         
-        self.showing[key] = axe
         
     def hide(self, axe):
 
-        key = axe.meta['key']
-        #axe.set_visible(False)
-
-        if key in self.showing:
-            del self.showing[key]
-        
+        axe.set_visible(False)
 
 
 # example below ignore for now

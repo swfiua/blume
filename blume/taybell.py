@@ -114,7 +114,6 @@ def shortify_line(value, maxlen=None, ellipsis=None, squash=None):
 
     # and if there is a spare character, take it at the beginning
     spare = maxlen - ((2*sluglen) + elen)
-    print(size, ncut, sluglen, spare)
     return value[:sluglen+spare] + ellipsis + value[-sluglen:]
 
 def taybell(ax, cells):
