@@ -86,9 +86,15 @@ class BlitManager:
             self.add_artist(a)
         # grab the background on every draw
         self.cid = canvas.mpl_connect("draw_event", self.on_draw)
+        self.rid = canvas.mpl_connect("resize_event", self.on_resize)
 
+    def on_resize(self, event):
+
+        print('RESIZE', event)
+        
     def on_draw(self, event):
         """Callback to register with 'draw_event'."""
+        print('DRAW EVENT', event)
         cv = self.canvas
         if event is not None:
             if event.canvas != cv:
@@ -99,6 +105,7 @@ class BlitManager:
 
     def set_background(self, bg=None):
 
+        print('BBBBACKGROUND', self._bg)
         cv = self.canvas
         self._bg = bg or cv.copy_from_bbox(cv.figure.bbox)
         if self._base is None:
@@ -151,6 +158,10 @@ class BlitManager:
                     self._base,
                     full_bbox,
                     (full_bbox.xmin, full_bbox.ymin))
+                #cv.restore_region(
+                #    self._base,
+                #    fig.bbox, (0, 0))
+
                 fig.draw_artist(ax)
             else:
                 # draw all of the animated artists
