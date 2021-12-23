@@ -80,7 +80,7 @@ class BlitManager:
         self.canvas = canvas
         self._bg = None
         self._base = None
-        self._artists = []
+        self._artists = {}
 
         for a in animated_artists:
             self.add_artist(a)
@@ -90,7 +90,62 @@ class BlitManager:
 
     def on_resize(self, event):
 
-        print('RESIZE', event)
+        # tile the figure with current base
+        self._tile(self._base)
+
+        # now take a snapshot of the figure
+        cv = self.canvas
+        self._base = cv.copy_from_bbox(cv.figure.bbox)
+        self._bg = self._base
+
+    def clear(self):
+
+        self._bg = self._base
+        self._artists.clear()
+
+    def filter(self, keepers):
+
+        keep = [tuple(k.get_subplotspec().get_position(k.figure).extents)
+                for k in keepers]
+
+        print('FILTER')
+        for k in keep:
+            print(k)
+        
+        for key in list(self._artists.keys()):
+            if key not in keep:
+                print('removing', key)
+                del self._artists[key]
+        
+
+    def _tile(self, base):
+        """ Use base to tile the canvas """
+        x1, y1, x2, y2 = self._base.get_extents()
+
+        bwidth= x2 - x1
+        bheight = y2 - y1
+
+        # capture a new base background
+        cv = self.canvas
+        width, height = cv.get_width_height()
+
+        xpos = 0
+        while xpos < width:
+            ypos = 0
+
+            while ypos < height:
+                twidth = min(bwidth, width-xpos)
+                theight = min(bheight, height-ypos)
+            
+                bbox = Bbox([[0, 0], [xpos+twidth, xpos+theight]])
+            
+                cv.restore_region(self._base, bbox, (xpos, ypos))
+                print('TILE', bbox)
+
+                ypos += bheight
+                
+            xpos += bwidth
+            
         
     def on_draw(self, event):
         """Callback to register with 'draw_event'."""
@@ -111,7 +166,7 @@ class BlitManager:
         if self._base is None:
             self._base = self._bg
 
-    def add_artist(self, art):
+    def add_artist(self, art, key=None):
         """
         Add an artist to be managed.
 
@@ -124,15 +179,23 @@ class BlitManager:
             the canvas this class is managing.
 
         """
+
+        key = key or tuple(art.get_subplotspec().get_position(art.figure).extents)
+        
         if art.figure != self.canvas.figure:
             raise RuntimeError
         art.set_animated(True)
-        self._artists.append(art)
+        self._artists[key] = art
 
+    def forget_artist(self, artist):
+
+        if artist in self._artists:
+            self._artists.remove(artist)
+        
     def _draw_animated(self):
         """Draw all of the animated artists."""
         fig = self.canvas.figure
-        for a in self._artists:
+        for a in self._artists.values():
             fig.draw_artist(a)
 
     def update(self, ax=None):
@@ -144,16 +207,16 @@ class BlitManager:
             self.on_draw(None)
         else:
             # restore the background
-            cv.restore_region(self._bg)
             if ax:
+                cv.restore_region(self._bg)
                 # draw the axis
-                print(fig.bbox.bounds)
-                print(ax.bbox.bounds)
+                #print(fig.bbox.bounds)
+                #print(ax.bbox.bounds)
 
                 full_bbox = self.get_full_bbox(ax)
-                print(full_bbox)
+                #print(full_bbox)
                 ss = ax.get_subplotspec()
-                print(ss)
+                #print(ss)
                 cv.restore_region(
                     self._base,
                     full_bbox,
@@ -164,12 +227,14 @@ class BlitManager:
 
                 fig.draw_artist(ax)
             else:
+                cv.restore_region(self._base)
                 # draw all of the animated artists
+                print('animated', len(self._artists))
                 self._draw_animated()
 
             # update the GUI state
             cv.blit(fig.bbox)
-            self._bg = cv.copy_from_bbox(fig.bbox)
+            #self._bg = cv.copy_from_bbox(fig.bbox)
 
         # let the GUI event loop process anything it has to do
         cv.flush_events()

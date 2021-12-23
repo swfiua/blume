@@ -123,6 +123,11 @@ class Axe:
         Not sure if this is possible.
         """
         raise NotImplemented
+
+    def simplify(self):
+
+        self.xaxis.set_visible(False)
+        self.yaxis.set_visible(False)
         
 
 class Farm(GeeFarm):
@@ -176,6 +181,7 @@ class Carpet(Ball):
         # grid related
         self.size = 1
         self.pos = 0
+        self.simple = True
 
         self.history = deque(maxlen=random.randint(20, 50))
 
@@ -195,7 +201,7 @@ class Carpet(Ball):
 
         self.add_filter('[', self.history_back)
         self.add_filter(']', self.history_forward)
-        
+
         self.add_filter('S', self.save)
 
     def keypress(self, event):
@@ -208,6 +214,7 @@ class Carpet(Ball):
         print('key press event', event, event.key)
         qq = self.select('keys')
         qq.put(event.key)
+
 
     async def save(self):
         """ Save current image
@@ -223,7 +230,9 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
+        self.bm.clear()
         await self.replay_history()
+
 
     async def less(self):
         """ Show fewer pictures """
@@ -232,6 +241,7 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
+        self.bm.clear()
         await self.replay_history()
 
     def hideall(self):
@@ -261,12 +271,18 @@ class Carpet(Ball):
 
         self.hideall()
         ax.set_visible('True')
+
+        pos = await self.get()
+
+        ax.position(pos)
+        
         await self.add_axis(ax)
         self._update_pos()
 
     async def add_axis(self, nax):
 
-        self.bm.update(nax)
+        self.bm.add_artist(nax)
+        self.bm.update()
         return
 
         fig = self.image
@@ -347,9 +363,13 @@ class Carpet(Ball):
 
         for key, ax in picture.items():
             axe = Axe(ax, self)
+            if self.simple:
+                axe.simplify()
+                axe.grid(True)
             axe.meta = dict(key=key)
             self.axes[key] = axe
 
+        self.bm.filter(self.axes.values())
         #self.image.clear()
 
         #assert len(self.image.axes) == self.size * self.size
@@ -383,7 +403,8 @@ class Carpet(Ball):
     def show(self, axe):
 
         axe.set_visible(True)
-        self.bm.update(axe)
+        self.bm.add_artist(axe)
+        self.bm.update()
         
         
     def hide(self, axe):

@@ -209,6 +209,7 @@ class Cod(magic.Ball):
         self.spell = None
         self.fields = None
         self.filtered = set()
+        self.shorten = 100
 
     def get_data(self, commit):
 
@@ -260,7 +261,6 @@ class Cod(magic.Ball):
 
         ax = await self.get()
         #ax.clear()
-        print('ggggg', ax)
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 
@@ -315,7 +315,7 @@ class Cod(magic.Ball):
 
                 from blume import taybell
 
-                title = taybell.shortify_line(self.fields[0], 50)
+                title = taybell.shortify_line(self.fields[0], self.shorten)
                 
                 ax.set_title(title)
                 ax.grid(True)
