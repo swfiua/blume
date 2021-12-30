@@ -261,20 +261,24 @@ class Carpet(Ball):
 
     async def history_rotate(self, n=1):
 
+        print('history', len(self.history), 'rotate', n)
+
         if len(self.history) == 0:
             return
         
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        ax = self.history.pop()
+        ax = self.history[0]
 
-        self.hideall()
+        #self.hideall()
         ax.set_visible('True')
 
         pos = await self.get()
 
         ax.position(pos)
+
+        self.image.delaxes(pos.delegate)
         
         await self.add_axis(ax)
         self._update_pos()
@@ -300,15 +304,14 @@ class Carpet(Ball):
         
     async def replay_history(self):
 
+        
         return
         # take a copy of the current history
-        hh = list(self.history)
-        
-        for ax in hh:
-            await self.add_axis(ax)
-            self._update_pos()
+        hlen = len(self.history)
 
-        print('axes after rewind', self.image.axes)
+        for hh in range(hlen):
+            self.history.rotate()
+        
             
     async def poll(self):
         """ Gui Loop """

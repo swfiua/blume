@@ -229,8 +229,8 @@ class Interact(Ball):
         self.add_filter('m', self.add_m)
         self.add_filter('\177', self.shorten)
 
-        self.add_filter(' ', self.next_attr)
-        self.add_filter('\b', self.prev_attr)
+        self.add_filter('.', self.next_attr)
+        self.add_filter(',', self.prev_attr)
         self.add_filter('\r', self.re_interact)
         self.add_filter('Left', self.back)
 
@@ -994,23 +994,31 @@ class Shepherd(Ball):
         """
         print(f'what is next?: {self.path}')
         current = self.current()
+        while current not in self.flock.nodes and len(self.path) > 1:
+            del self.path[-1]
+            current = self.current()
+                
         nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
 
         if nodes:
-            
-            del self.path[-1]
+
             ix = nodes.index(current)
             if len(nodes) == ix + 1:
                 ix = -1
             
             self.path.append(nodes[ix + 1])
         
-            print(self.current())
+        print(self.current())
+
 
     async def previous(self):
         """ Move focus to previous """
-        print(f'what is previous?: {self.path}')
         current = self.current()
+        print(f'what is previous?: {self.path}')
+        while current not in self.flock.nodes and len(self.path) > 1:
+            del self.path[-1]
+            current = self.current()
+                
         nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
 
         if nodes:
@@ -1022,7 +1030,7 @@ class Shepherd(Ball):
             
             self.path.append(nodes[ix-1])
 
-            print(self.current())
+        print(self.current())
 
     async def up(self):
         """ Move up path """
