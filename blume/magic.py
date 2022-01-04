@@ -110,6 +110,8 @@ import inspect
 
 import dateutil
 
+import functools
+
 import curio
 
 sleep = curio.sleep

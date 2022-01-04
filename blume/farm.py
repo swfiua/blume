@@ -181,7 +181,7 @@ class Carpet(Ball):
         # grid related
         self.size = 1
         self.pos = 0
-        self.simple = True
+        self.simple = False
 
         self.history = deque(maxlen=random.randint(20, 50))
 

@@ -155,6 +155,7 @@ import numpy as np
 
 import traceback
 import hashlib
+import functools
 
 from blume import magic
 from blume import farm as fm
@@ -211,6 +212,8 @@ class Cod(magic.Ball):
         self.filtered = set()
         self.shorten = 100
 
+
+    @functools.cache
     def get_data(self, commit):
 
         repo.git.checkout(commit)
@@ -259,8 +262,10 @@ class Cod(magic.Ball):
         locator = mdates.AutoDateLocator()
         formatter = mdates.ConciseDateFormatter(locator)
 
+        self.scale = 'Total Active Cases by Date'
+        self.scale = '7-day Average of Newly Reported cases by Reported Date'
+
         ax = await self.get()
-        #ax.clear()
         ax.xaxis.set_major_locator(locator)
         ax.xaxis.set_major_formatter(formatter)
 
@@ -272,8 +277,13 @@ class Cod(magic.Ball):
 
             if self.fields is None:
                 self.fields = deque(self.spell.fields())
-                
+
             key = self.fields[0]
+
+            # skip data/index key
+            if key == self.spell.datekey:
+                self.fields.rotate()
+                continue
 
             if self.filter and self.filter in key:
 
@@ -285,40 +295,68 @@ class Cod(magic.Ball):
                 # fixme: give spell an index
                 spell = self.spell
                 index = [x[spell.datekey] for x in results]
+                if self.scale:
+                    scale = [x[self.scale] for x in results]
+                else:
+                    scale = np.ones(len(results))
 
                 # not sure what this was about ???
                 #for ii in index:
                 #    # fixme 2: let's use matplotlib's mdates.
                 #    if type(index) == mdates.datetime:
                 #        print('date oops')
-                
 
                 try:
-                    data = [x[key] for x in results]
-                    xy = sorted(zip(index, data))
-                    index = [foo[0] for foo in xy]
-                    data = [foo[1] for foo in xy]
+                    data = np.array([x[key] for x in results])
+
+                    # sort according to index
+                    xyz = sorted(zip(index, data, scale))
+                    index = [foo[0] for foo in xyz]
+                    data = np.array([foo[1] for foo in xyz])
+                    scale = np.array([foo[2] for foo in xyz])
+
+
+                    try:
+                        factor = np.nanmean(data) / np.nanmean(scale)
+                        expected = scale * factor
+                        print('means',
+                              np.nanmean(data),
+                              np.nanmean(expected), np.nanmean(scale))
+                    except Exception as e:
+                        print('cannot scale', key)
+                        print(e)
+                        print(type(data[0]), type(scale[0]))
+                        print(data[0], scale[0])
+                        expected = data
+
                     if self.days:
                         # only keep data later than self.days ago
                         start = today() - datetime.timedelta(days=self.days)
+                                    
                         index = [x for x in index if x >= start]
                         data = data[-len(index):]
+                        expected = expected[-len(index):]        
                         
-                    ax.plot(index, data, label=key)
+                    # plot the data for this key on the axes
+                    ax.plot(index, data, label='observed')
+                    ax.plot(index, expected, label='expected')
+
+                    if self.history == 1:
+                        ax.legend()
+                    
+                    from blume import taybell
+
+                    title = taybell.shortify_line(key, self.shorten)
+           
+                    ax.set_title(title)
+                    ax.grid(True)
+
                 except Exception as e:
                     print(f'oopsie plotting {key} {commit}')
                     import traceback
                     traceback.print_exc()
                     print(f'{e}') 
 
-                #plt.legend(loc=0)
-
-                from blume import taybell
-
-                title = taybell.shortify_line(self.fields[0], self.shorten)
-                
-                ax.set_title(title)
-                ax.grid(True)
 
             self.commits.rotate()
             if self.commits[0] is self.master:
@@ -329,15 +367,12 @@ class Cod(magic.Ball):
                     key = self.fields[0]
                     keytype = self.spell.casts[key]
                     
-                # that is this plot finished
+                # that is these plots finished
                 break
 
-        # need to figure something to make it draw!
-        #print('drawing', ax, id(ax.figure), ax.figure.axes)
         ax.show()
         ax.please_draw()
-        #ax.set_visible(True)
-        #ax.draw_artist(ax)
+        print('drawing', key)
 
 def drange(data):
 

@@ -108,13 +108,8 @@ class BlitManager:
         keep = [tuple(k.get_subplotspec().get_position(k.figure).extents)
                 for k in keepers]
 
-        print('FILTER')
-        for k in keep:
-            print(k)
-        
         for key in list(self._artists.keys()):
             if key not in keep:
-                print('removing', key)
                 del self._artists[key]
         
 
