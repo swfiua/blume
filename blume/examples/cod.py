@@ -211,7 +211,7 @@ class Cod(magic.Ball):
         self.fields = None
         self.filtered = set()
         self.shorten = 100
-
+        self.fudges = [3, 5, 10, 20]
 
     @functools.cache
     def get_data(self, commit):
@@ -340,6 +340,8 @@ class Cod(magic.Ball):
                     # plot the data for this key on the axes
                     ax.plot(index, data, label='observed')
                     ax.plot(index, expected, label='expected')
+                    for fudge in self.fudges:
+                        ax.plot(index, expected/fudge, label=f'expected/{fudge}')
 
                     if self.history == 1:
                         ax.legend()
