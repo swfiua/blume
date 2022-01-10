@@ -122,7 +122,14 @@ class Axe:
 
         Not sure if this is possible.
         """
-        raise NotImplemented
+        ax = self.delegate
+        parms = dict(projection=name, visible = False)
+
+        pax = ax.figure.subplots(subplot_kw=parms)
+
+        self.delegate = pax
+        self.position(ax)
+
 
     def simplify(self):
 

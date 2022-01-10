@@ -207,6 +207,7 @@ class Cod(magic.Ball):
     def __init__(self):
 
         super().__init__()
+        self.sleep *= 3
         self.spell = None
         self.fields = None
         self.filtered = set()
