@@ -312,8 +312,6 @@ class Carpet(Ball):
         
     async def replay_history(self):
 
-        
-        return
         # take a copy of the current history
         hlen = len(self.history)
 
