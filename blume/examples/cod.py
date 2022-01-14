@@ -320,9 +320,9 @@ class Cod(magic.Ball):
                     try:
                         factor = np.nanmean(data) / np.nanmean(scale)
                         expected = scale * factor
-                        print('means',
-                              np.nanmean(data),
-                              np.nanmean(expected), np.nanmean(scale))
+                        #print('means',
+                        #      np.nanmean(data),
+                        #      np.nanmean(expected), np.nanmean(scale))
                     except Exception as e:
                         print('cannot scale', key)
                         print(e)

@@ -276,18 +276,19 @@ class Carpet(Ball):
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        ax = self.history[0]
+        for axx in self.history:
+            print('hist', axx.title)
 
+        ax = self.history.popleft()
+        print('popping', ax.title)
         #self.hideall()
-        ax.set_visible('True')
-
         pos = await self.get()
 
         ax.position(pos)
+        ax.show()
+        print("history len", len(self.history))
 
         self.image.delaxes(pos.delegate)
-        
-        await self.add_axis(ax)
         self._update_pos()
 
     async def add_axis(self, nax):
@@ -399,8 +400,6 @@ class Carpet(Ball):
         # put out the axis
         await self.put(ax)
 
-        self.history.append(ax)
-
         self._update_pos()
         
 
@@ -413,6 +412,8 @@ class Carpet(Ball):
     def show(self, axe):
 
         axe.set_visible(True)
+        self.history.appendleft(axe)
+
         self.bm.add_artist(axe)
         self.bm.update()
         
