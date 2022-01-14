@@ -341,6 +341,7 @@ class Cod(magic.Ball):
                     # plot the data for this key on the axes
                     ax.plot(index, data, label='observed')
                     ax.plot(index, expected, label='expected')
+                    self.fudges = []
                     for fudge in self.fudges:
                         ax.plot(index, expected/fudge, label=f'expected/{fudge}')
 

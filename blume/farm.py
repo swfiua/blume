@@ -289,7 +289,7 @@ class Carpet(Ball):
         print("history len", len(self.history))
 
         self.image.delaxes(pos.delegate)
-        self._update_pos()
+        #self._update_pos()
 
     async def add_axis(self, nax):
 
