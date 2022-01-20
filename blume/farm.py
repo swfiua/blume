@@ -360,7 +360,6 @@ class Carpet(Ball):
         # position within the mosaic
         self.pos = 0
 
-        print(mosaic)
 
         # first hide existing axes
         #for ax in self.axes.values():
