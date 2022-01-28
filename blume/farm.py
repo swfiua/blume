@@ -447,12 +447,12 @@ class MagicPlot(Ball):
 
     async def run(self):
 
-        ax = self.ax
+        ax = await self.get()
         ax.clear()
         data = np.random.randint(50, size=100)
         ax.plot(data)
 
-        await self.put(fig2data(self.fig))
+        ax.show()
 
 
             
@@ -479,6 +479,10 @@ async def start_and_run(farm):
     print('starting farm')
     await farm.start()
 
+    mp = MagicPlot()
+    farm.add(mp)
+    farm.shep.path.append(mp)
+    
     print('running farm')
     runner = await farm.run()
 

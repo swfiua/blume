@@ -9,7 +9,7 @@
 
 from matplotlib import rcParams
 
-from collections import defaultdict
+from collections import defaultdict, deque
 
 from .magic import Ball
 
@@ -20,7 +20,11 @@ class Params(Ball):
 
         super().__init__()
         self.params = rcParams
+        self.groups = {}
+        self.group_names = deque()
+
         self.groups = self._groups()
+        self.add_filter('G', self.show_group)
 
     def __getitem__(self, item):
 
@@ -32,11 +36,17 @@ class Params(Ball):
         
         for k in self.params.keys():
             path = k.split('.')
-            groups[path[0]].append(k)
+            key = path[0]
+            groups[key].append(k)
+
+            if key not in self.group_names:
+                self.group_names.append(key)
 
         return groups
 
-    def show_group(self, name):
+    def show_group(self):
+
+        name = self.group_names[0]
 
         for x in self.groups[name]:
             print(x, self[x])
