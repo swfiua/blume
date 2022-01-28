@@ -53,11 +53,11 @@ class Legend(magic.Ball):
         props = dict(size=self.fontsize)
 
         print('getting axes')
-        ax = await self.get('axes')
+        ax = await self.get()
         print(ax)
 
-        ax.set_title(key)
-        ax.text(.5,.5, str(key))
+        #ax.set_title(key)
+        #ax.text(.5,.5, str(key))
 
         #print(ax.get_subplotspec())
         
@@ -72,7 +72,7 @@ class Legend(magic.Ball):
         ax.plot(range(10))
 
         #print('FINAL DRAW', len(fig._localaxes))
-        await self.put('draw')
+        ax.show()
 
 
 
