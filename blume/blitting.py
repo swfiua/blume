@@ -226,7 +226,7 @@ class BlitManager:
             else:
                 cv.restore_region(self._base)
                 # draw all of the animated artists
-                print('animated', len(self._artists))
+                #print('animated', len(self._artists))
                 self._draw_animated()
 
             # update the GUI state
