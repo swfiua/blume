@@ -821,7 +821,7 @@ class Shepherd(Ball):
 
 
     async def status(self):
-
+        """ Show current status of object graph """
         for item in self.flock.nodes:
             print(item)
             if item is not self:

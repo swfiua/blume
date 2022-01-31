@@ -463,6 +463,7 @@ def run(farm=None, dump=False):
 
         magic_plotter = MagicPlot()
         farm.add(magic_plotter)
+        farm.shep.path.append(magic_plotter)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     #farm.setup()
@@ -479,10 +480,6 @@ async def start_and_run(farm):
     print('starting farm')
     await farm.start()
 
-    mp = MagicPlot()
-    farm.add(mp)
-    farm.shep.path.append(mp)
-    
     print('running farm')
     runner = await farm.run()
 
