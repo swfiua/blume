@@ -233,8 +233,8 @@ class Interact(Ball):
 
         self.add_filter('.', self.next_attr)
         self.add_filter(',', self.prev_attr)
-        self.add_filter('Enter', self.re_interact)
-        self.add_filter('Left', self.back)
+        self.add_filter('enter', self.re_interact)
+        self.add_filter('left', self.back)
 
         self.add_filter('i', self.interact)
 
@@ -242,11 +242,18 @@ class Interact(Ball):
     def set_ball(self, ball):
 
         try:
-            self.attrs = deque(sorted(vars(ball).keys()))
-        except:
-            print('oops no can interact')
+            attrs = deque(sorted(vars(ball).keys()))
+            if len(attrs) == 0:
+                print(vars(ball))
+                print(f'{ellipsis(repr(ball))} has no attributes to interact with')
+                return
+            
+        except Exception as e:
+            #print(e)
+            print('oops no can interact', ball)
             return
 
+        self.attrs = attrs
         self.ball = ball
 
 
@@ -269,9 +276,7 @@ class Interact(Ball):
 
         from pprint import pprint
         for key, value in sorted(vars(self.ball).items()):
-            rep = repr(value)
-            if len(rep) > 200:
-                rep = rep[:10] + ' ... ' + rep[-10:]
+            rep = ellipsis(repr(value))
             print(key, rep, type(value))
 
         print()
@@ -286,7 +291,7 @@ class Interact(Ball):
 
         Idea is to interact on current attribute of whatever current is
         """
-        
+        print('XXXXX re_interact')
         current = self.current()
         obj = getattr(self.ball, current)
 
@@ -298,8 +303,8 @@ class Interact(Ball):
     def show_current(self):
         
         attr = self.current()
-        print(attr, getattr(self.ball, attr))
-
+        value = repr(getattr(self.ball, attr))
+        print(attr, ellipsis(value, keep=60))
 
     def current(self):
         """ Return current attr """
@@ -1223,7 +1228,13 @@ async def runme():
 def random_colour():
     """ Pick a random matplotlib colormap """
     return random.choice(plt.colormaps())
+
+def ellipsis(string, maxlen=200, keep=10):
     
+    if len(string) > maxlen:
+        string = string[:keep] + ' ... ' + string[-keep:]
+
+    return string
 
 if __name__ == '__main__':
     

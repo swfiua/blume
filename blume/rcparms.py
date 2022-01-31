@@ -25,10 +25,16 @@ class Params(Ball):
 
         self.groups = self._groups()
         self.add_filter('G', self.show_group)
+        self.add_filter('N', self.next_group)
 
     def __getitem__(self, item):
 
         return self.params[item]
+
+    def __setitem__(self, item, value):
+
+        self.params[item] = value
+
     
     def _groups(self):
 
@@ -43,6 +49,10 @@ class Params(Ball):
                 self.group_names.append(key)
 
         return groups
+
+    def next_group(self):
+
+        self.groups.rotate()
 
     def show_group(self):
 
