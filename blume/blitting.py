@@ -49,6 +49,8 @@ the `.FigureCanvasBase.supports_blit` property.
    This code does not work with the OSX backend (but does work with other
    GUI backends on mac).
 
+   Update: this code now seems to work with the default OSX backend.
+
 Minimal example
 ---------------
 
