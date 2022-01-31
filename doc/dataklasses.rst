@@ -25,3 +25,9 @@ There should be a name for this sort of code exchange.
 
 Somewhere like a cheese shop, where you can sample the goods before
 comitting to a rare camembert.
+
+
+.. automodule:: blume.dataklasses
+   :members:
+
+   

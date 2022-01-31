@@ -153,7 +153,7 @@ class Ball:
         # let shepherd control things?
         self.filters = defaultdict(dict)
         
-        self.add_filter('s', self.sleepy)
+        self.add_filter('z', self.sleepy)
         self.add_filter('w', self.wakey)
         self.add_filter(' ', self.toggle_pause)
         self.add_filter('W', self.dump_roundabout)
@@ -233,7 +233,7 @@ class Interact(Ball):
 
         self.add_filter('.', self.next_attr)
         self.add_filter(',', self.prev_attr)
-        self.add_filter('\r', self.re_interact)
+        self.add_filter('Enter', self.re_interact)
         self.add_filter('Left', self.back)
 
         self.add_filter('i', self.interact)
@@ -290,6 +290,7 @@ class Interact(Ball):
         current = self.current()
         obj = getattr(self.ball, current)
 
+        self.history.append(current)
         self.set_ball(obj)
         self.show_current()
 
@@ -781,9 +782,9 @@ class Shepherd(Ball):
 
         self.interaction = Interact(self.path[-1])
 
-        self.add_filter('h', self.help)
-        self.add_filter('n', self.next)
-        self.add_filter('p', self.previous)
+        self.add_filter('h', self.show_help)
+        self.add_filter('n', self.next_ball)
+        self.add_filter('p', self.previous_ball)
         
         self.add_filter('u', self.up)
         self.add_filter('d', self.down)
@@ -893,7 +894,7 @@ class Shepherd(Ball):
             print(key)
         return False
 
-    async def help(self, name='keys'):
+    async def show_help(self, name='keys'):
         """ Show what keys do what 
 
         whistle help: these two need to be kept in sync.
@@ -989,7 +990,7 @@ class Shepherd(Ball):
 
         self.whistlers[id(queue)] = whistle
         
-    async def next(self):
+    async def next_ball(self):
         """ Move focus to next 
 
         path management.
@@ -1013,7 +1014,7 @@ class Shepherd(Ball):
         print(self.current())
 
 
-    async def previous(self):
+    async def previous_ball(self):
         """ Move focus to previous """
         current = self.current()
         print(f'what is previous?: {self.path}')
