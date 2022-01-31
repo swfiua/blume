@@ -260,11 +260,11 @@ class Carpet(Ball):
 
     async def history_back(self):
 
-        await self.history_rotate(1)
+        await self.history_rotate(-1)
 
     async def history_forward(self):
 
-        await self.history_rotate(-1)
+        await self.history_rotate(1)
 
     async def history_rotate(self, n=1):
 
