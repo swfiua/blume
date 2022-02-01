@@ -20,6 +20,7 @@ class Params(Ball):
 
         super().__init__()
         self.params = rcParams
+
         self.groups = {}
         self.group_names = deque()
 
@@ -27,6 +28,15 @@ class Params(Ball):
         self.add_filter('G', self.show_group)
         self.add_filter('N', self.next_group)
 
+        self._make_groups()
+
+        self.add_filter(' ', self.next_group)
+
+    def next_group(self):
+
+        self.group_names.rotate()
+        self.show_group(self.group_names[0])
+        
     def __getitem__(self, item):
 
         return self.params[item]
@@ -36,7 +46,7 @@ class Params(Ball):
         self.params[item] = value
 
     
-    def _groups(self):
+    def _make_groups(self):
 
         groups = defaultdict(list)
         
@@ -48,6 +58,10 @@ class Params(Ball):
             if key not in self.group_names:
                 self.group_names.append(key)
 
+        self.groups = groups
+
+        self.group_names = deque(sorted(self.groups.keys()))
+        
         return groups
 
     def next_group(self):

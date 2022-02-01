@@ -870,7 +870,6 @@ class Shepherd(Ball):
         print('creating whistler for:', queue)
         while True:
             key = await queue.get()
-            print('WOOOHOO whistle time', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -885,12 +884,9 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
-        print('whsitle', key, name)
-        
         for sheep in reversed(self.path):
             lu = sheep.filters[name]
-            print(sheep)
-            #print('whistle', sheep, lu)
+
             if key in lu.keys():
                 try:
                     print(key, lu[key])
