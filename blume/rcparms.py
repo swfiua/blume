@@ -24,11 +24,10 @@ class Params(Ball):
         self.groups = {}
         self.group_names = deque()
 
-        self.groups = self._groups()
+        self.groups = self._make_groups()
+
         self.add_filter('G', self.show_group)
         self.add_filter('N', self.next_group)
-
-        self._make_groups()
 
         self.add_filter(' ', self.next_group)
 
@@ -48,12 +47,12 @@ class Params(Ball):
     
     def _make_groups(self):
 
-        groups = defaultdict(list)
+        groups = defaultdict(dict)
         
-        for k in self.params.keys():
+        for k, v  in self.params.items():
             path = k.split('.')
             key = path[0]
-            groups[key].append(k)
+            groups[key][k] = v
 
             if key not in self.group_names:
                 self.group_names.append(key)
