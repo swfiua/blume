@@ -242,14 +242,19 @@ class Interact(Ball):
     def set_ball(self, ball):
 
         try:
-            attrs = deque(sorted(vars(ball).keys()))
+            if isinstance(ball, dict):
+                attrs = deque(ball.keys())
+                ball = Wrapper(ball)
+            else:
+                attrs = deque(sorted(vars(ball).keys()))
+                
             if len(attrs) == 0:
                 print(vars(ball))
                 print(f'{ellipsis(repr(ball))} has no attributes to interact with')
                 return
             
         except Exception as e:
-            #print(e)
+            print(e)
             print('oops no can interact', ball)
             return
 
@@ -413,6 +418,14 @@ class Interact(Ball):
             value.popleft()
             print(f'new head {value[0]}')
 
+class Wrapper:
+
+    def __init__(self, ball):
+
+        self.__dict__.update(ball)
+
+        
+            
 class Spell:
     """ A magic spell, or cast if you like, if it works
 
