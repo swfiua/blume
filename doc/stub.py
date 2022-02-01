@@ -7,9 +7,10 @@ print(module)
 print(title)
 
 ss = """
-=======
+=====================
 %s
-=======
+=====================
+
 
 
 .. automodule:: blume.%s

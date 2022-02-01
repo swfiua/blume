@@ -377,7 +377,6 @@ class Cod(magic.Ball):
 
         ax.show()
         ax.please_draw()
-        print('drawing', key)
 
 def drange(data):
 

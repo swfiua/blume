@@ -234,7 +234,7 @@ class Interact(Ball):
         self.add_filter('.', self.next_attr)
         self.add_filter(',', self.prev_attr)
         self.add_filter('enter', self.re_interact)
-        self.add_filter('left', self.back)
+        self.add_filter('escape', self.back)
 
         self.add_filter('i', self.interact)
 
@@ -300,7 +300,7 @@ class Interact(Ball):
         current = self.current()
         obj = getattr(self.ball, current)
 
-        self.history.append(current)
+        self.history.append(self.ball)
         self.set_ball(obj)
         self.show_current()
 

@@ -11,7 +11,7 @@ Press h for help.
 """
 
 
-from blume.farm import Farm, Carpet, Ball, Hat, fig2data
+from blume.farm import Farm, Ball
 
 
 from .mclock2 import GuidoClock
@@ -93,14 +93,9 @@ async def run(args):
 
     farm = Farm()
 
-    clock = GuidoClock()
-
-    # ??? 
     examples = Examples(args)
 
     farm.add(examples)
-    farm.add(clock)
-
 
     starter = await farm.start()
 

@@ -2,6 +2,19 @@
  Universal, the U in blume
 ===========================
 
+** Update: **
+
+If you are for the universe, the *U* in *blume* is still very much
+alive, as started a new project, `The Geometry of the
+Universe<https:gotu.readthedocs.org>`
+
+*blume* will focus on the core interaction with matplotlib.
+
+The *gotu* project, requires *blume*.
+
+** End Update **
+
+
 Giant black holes to galactic dust and the tides of the cosmos.
 
 Gamma ray bursts, new arrivals in our visible universe.

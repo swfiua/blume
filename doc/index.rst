@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to blume's documentation!
-=================================
+===================================
+ Welcome to blume's documentation!
+===================================
 
 .. toctree::
    :maxdepth: 2
@@ -14,28 +15,51 @@ Welcome to blume's documentation!
    news.rst
    guide.rst
    requirements.rst
-   
-   hulsetaylor.rst
-   about.rst
-   universal.rst
-   cpr.rst
-   farm.rst
+
+   matplotlib.rst
+
    tabledotpy.rst
+
+   issues.rst
+
+   notes.rst
+
+   status.rst
+
+   gallery.rst
+
+   about.rst
+
+Universe
+========
+
+.. toctree::
+
+   universal.rst
+
+   hulsetaylor.rst
+
    godel.rst
+
    waves.rst
+
+   cpr.rst
+
+Ramblings
+=========
+
+.. toctree::
+   
+   success.rst
+
+   gardening.rst
+
    why.rst
    dry.rst
    types.rst
 
-   issues.rst
-   notes.rst
-   status.rst
-   success.rst
-   gardening.rst
 
-
-   gallery.rst
-
+   
 Blume modules
 =============
 
@@ -53,7 +77,8 @@ Blume modules
    teakhat.rst
    taybell.rst
    console.rst
-
+   dataklasses.rst
+   
 
 Indices and tables
 ==================
