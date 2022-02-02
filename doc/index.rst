@@ -36,14 +36,12 @@ Universe
 .. toctree::
 
    universal.rst
-
    hulsetaylor.rst
-
    godel.rst
-
    waves.rst
-
    cpr.rst
+
+   
 
 Ramblings
 =========
@@ -70,6 +68,7 @@ Blume modules
    legend.rst
    magic.rst
    farm.rst
+   blitting.rst
    mb.rst
    mclock2.rst
    eggshow.rst

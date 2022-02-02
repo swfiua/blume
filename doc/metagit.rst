@@ -104,4 +104,5 @@ But also lets you provide your own value added meta-data, should you wish.
 Lets you move through time and space, as far as the data allows.
 
 
-
+.. automodule:: blume.metagit
+    :members:

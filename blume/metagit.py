@@ -90,7 +90,7 @@ Now let's make some meta-data so this cloud has a silver lining.
 
 # Standard library
 import argparse
-from pathlib import path
+from pathlib import Path
 
 # might as well print pretty -- hmm syntax highlighter looks confused
 from pprint import pprint as print

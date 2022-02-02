@@ -53,9 +53,9 @@ Get the latest code::
 
   git clone http://github.com/swfiua/blume
 
-Instal::
+Install::
 
-  python setup.py install
+  python3 setup.py install
 
 
 Using pip::
@@ -74,7 +74,15 @@ You can run these with python3:
     python3 -m blume.example.cpr
 
 Or you can run a folder full of examples by using `blume.eggshow`.
-    
+
+Or at least you could, until I improved things enough that scripts
+that use the *pyplot* interface no longer work.
+
+Best to run each example as standalone scripts or as follows for now::
+
+  python3 -m blume.examples.legendary
+
+Whilst I figure out what to do about eggshow.
 
 Requirements
 ============
@@ -83,6 +91,8 @@ The package will only require an *appropriate* version of matplotlib.
 
 This is to make it easy for anyone who is only here for the table.
 
+Most of the examples require other packages too.  *healpy* ?
+
 
 Universal
 =========
@@ -90,6 +100,8 @@ Universal
 The U in `blume`.
 
 This for now is the `blume.cpr` module.
+
+Update: the universe has moved to the *gotu* project.
 
 
 Testing
