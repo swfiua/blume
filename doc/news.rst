@@ -1,8 +1,72 @@
+.. _news:
+
 ==================
  Where are we at?
 ==================
 
 What's happening with the `blume.table.Table`?
+
+My adventures in *matplotlib* land continue.
+
+
+2022/4/2
+========
+
+I have now transferred the previous core to use the standard
+matplotlib figure manager to display everythng.
+
+It comes with my attempts at an interface.
+
+Think of it like an adventure game.
+
+Pressh *h* for help and check the console for what key does what.
+
+Typically examples have a number of *magic.Ball* objects added to the
+farm.
+
+The *Balls* have a run coroutine that typically waits for an
+*matplotlib* Axis object.
+
+To make everything work, these Axes are wrapped in a *blume.farm.Axe*,
+which allows all sorts of hacks, such as setting setting the Axes
+location to that of some other Axis to allow us to move things around
+as we generate new *mosaics*.
+
+Things are very much at the *throwing Axe's around and seeing what
+happens* stage, but everything is working well enough that I can get
+back to some examples where I am exploring data.
+
+There's also a plan to allow Ball's to set the mosaic and have Axe's
+turn up with meta data based on the mosaic, so a Ball could consult
+the meta data and decide accordingly what it should do with the Axe.
+
+Between the hacks and the asynchronous nature there are lots of rough
+edges, which in turn throw up some interesting images.
+
+If you press *n* it will take you to the next object in the farm.
+Check the console to see what it is.
+
+To start it running, press *R*, but before you do that you might want
+to press *i* which allows you to browse and change the attributes of
+the objects.
+
+It is sort of like a debugger if you like.
+
+I want to be able to edit *matplotlib.rcparms*.   I am still hoping
+the validators in rcsetup will prove useful here.
+
+I see ValidateInStrings has a *valid* attribute with the set of valid
+strings.  Now I just need to find a way to make it all rotate.
+
+
+But what about the table?  
+-------------------------
+
+Between Legends, Axes labels, plot titles, mosaics of axes, plot lines
+and images, there are a lot of dimensions to use to explore data.
+
+For now, my tour of matplotlib 
+
 
 2021/10/21
 ==========

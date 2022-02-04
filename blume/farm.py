@@ -135,6 +135,15 @@ class Axe:
 
         self.xaxis.set_visible(False)
         self.yaxis.set_visible(False)
+
+    def colorbar(self, mappable):
+
+        self.figure.colorbar(mappable, self)
+
+    def hide_axes(self):
+
+        self.get_xaxis().set_visible(False)
+        self.get_yaxis().set_visible(False)
         
 
 class Farm(GeeFarm):

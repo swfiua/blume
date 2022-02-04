@@ -116,9 +116,14 @@ class Dss(magic.Ball):
 
             await curio.sleep(0)
 
-        plt.imshow(img, cmap=magic.random_colour())
-        plt.colorbar()
-        await self.put(magic.fig2data(plt))
+        ax = await self.get()
+        ax.hide_axes()
+        
+        maps = ax.imshow(img, cmap=magic.random_colour())
+        #ax.colorbar(maps)
+
+        ax.show()
+
 
 async def run():
 
