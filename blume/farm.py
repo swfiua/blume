@@ -198,6 +198,7 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
         self.simple = False
+        self.expand = True
 
         self.history = deque(maxlen=random.randint(20, 50))
 
@@ -217,6 +218,7 @@ class Carpet(Ball):
 
         self.add_filter('[', self.history_back)
         self.add_filter(']', self.history_forward)
+
 
         self.add_filter('S', self.save)
 
@@ -263,7 +265,7 @@ class Carpet(Ball):
     def hideall(self):
 
         for ax in self.image.axes:
-            print('hiding', type(ax), id(ax))
+            #print('hiding', type(ax), id(ax))
             ax.set_visible(False)
 
 
@@ -404,6 +406,10 @@ class Carpet(Ball):
         ax = self.axes[self.pos]
 
         # put out the axis
+        if self.expand:
+            ax.figure.tight_layout()
+            ax.hide_axes()
+            
         await self.put(ax)
 
         self._update_pos()

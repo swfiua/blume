@@ -7,7 +7,7 @@
 
 """
 
-from matplotlib import rcParams
+from matplotlib import rcParams, rc
 
 from collections import defaultdict, deque
 

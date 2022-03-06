@@ -117,6 +117,7 @@ class Mandy(magic.Ball):
         if self.random:
             cmap = magic.random_colour()
         flip = random.random() > 0.5
+
         
         for img in self.capture():
 
@@ -129,9 +130,11 @@ class Mandy(magic.Ball):
             counts = Counter(img.flatten())
 
             if len(counts) > 1:
-                plt.imshow(img.T, cmap=cmap)
+                ax = await self.get()
+
+                ax.imshow(img.T, cmap=cmap)
         
-                await self.put(magic.fig2data(plt))
+                ax.show()
                 
             await sleep(self.sleep/self.n)
 
