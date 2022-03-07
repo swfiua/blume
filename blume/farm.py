@@ -57,7 +57,7 @@ from PIL import Image
 
 import matplotlib
 
-from matplotlib import figure
+from matplotlib import figure, rc
 
 from matplotlib import pyplot as plt
 
@@ -205,6 +205,25 @@ class Carpet(Ball):
         self.axes = {}
 
         #width, height = ball.width, ball.height
+
+        # figure resources need to be set before it is created.
+        # would be good to be able to create a new figure without killing
+        # the figure window.
+        if self.expand:
+            rc('figure.subplot',
+               left=0, right=1,
+               bottom=0, top=1,
+               hspace=0, wspace=0)
+            rc('figure',
+               titlesize=0)
+
+            rc('axes',
+               xmargin=0,
+               ymargin=0,
+               zmargin=0)
+
+            rc('image', aspect='auto')
+
         self.image = plt.figure(constrained_layout=True, facecolor='grey')
         plt.show(block=False)
         self.bm = BlitManager(self.image.canvas)
@@ -399,16 +418,18 @@ class Carpet(Ball):
         if self.select().qsize() > 0:
             return
 
+
         if not self.axes:
             self.generate_mosaic()
             self.pos=0
             
         ax = self.axes[self.pos]
 
-        # put out the axis
         if self.expand:
-            ax.figure.tight_layout()
             ax.hide_axes()
+            #ax.figure.tight_layout()
+
+        # put out the axis
             
         await self.put(ax)
 
