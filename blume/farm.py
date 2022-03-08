@@ -198,7 +198,7 @@ class Carpet(Ball):
         self.size = 1
         self.pos = 0
         self.simple = False
-        self.expand = True
+        self.expanded = None
 
         self.history = deque(maxlen=random.randint(20, 50))
 
@@ -206,23 +206,13 @@ class Carpet(Ball):
 
         #width, height = ball.width, ball.height
 
-        # figure resources need to be set before it is created.
-        # would be good to be able to create a new figure without killing
-        # the figure window.
-        if self.expand:
-            rc('figure.subplot',
-               left=0, right=1,
-               bottom=0, top=1,
-               hspace=0, wspace=0)
-            rc('figure',
-               titlesize=0)
+            #rc('figure',
+            #   titlesize=0)
 
-            rc('axes',
-               xmargin=0,
-               ymargin=0,
-               zmargin=0)
-
-            rc('image', aspect='auto')
+            #rc('axes',
+            #   xmargin=0,
+            #   ymargin=0,
+            #   zmargin=0)
 
         self.image = plt.figure(constrained_layout=True, facecolor='grey')
         plt.show(block=False)
@@ -240,6 +230,7 @@ class Carpet(Ball):
 
 
         self.add_filter('S', self.save)
+        self.add_filter('E', self.toggle_expand)
 
     def keypress(self, event):
         """ Take keypress events put them out there """
@@ -348,7 +339,27 @@ class Carpet(Ball):
         for hh in range(hlen):
             self.history.rotate()
         
+    def toggle_expand(self):
+        
+        names = ["left", "bottom", "right", "top", "wspace", "hspace"]
+
+        fig = self.image
+        if not self.expanded:
+
+            self.expanded = {}
+            for name in names:
+                self.expanded[name] = getattr(fig.subplotpars, name)
             
+            rc('image', aspect='auto')
+
+            fig.subplots_adjust(
+               left=0, right=1,
+               bottom=0, top=1,
+               hspace=0, wspace=0)
+        else:
+            fig.subplots_adjust(**self.expanded)
+            self.expanded = None
+        
     async def poll(self):
         """ Gui Loop """
 
@@ -425,11 +436,6 @@ class Carpet(Ball):
             
         ax = self.axes[self.pos]
 
-        if self.expand:
-            ax.hide_axes()
-            #ax.figure.tight_layout()
-
-        # put out the axis
             
         await self.put(ax)
 

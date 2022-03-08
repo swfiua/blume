@@ -52,9 +52,7 @@ class Legend(magic.Ball):
 
         props = dict(size=self.fontsize)
 
-        print('getting axes')
         ax = await self.get()
-        print(ax)
 
         #ax.set_title(key)
         #ax.text(.5,.5, str(key))
