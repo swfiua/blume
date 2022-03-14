@@ -770,6 +770,7 @@ class Shepherd(Ball):
         self.add_filter('u', self.up)
         self.add_filter('d', self.down)
         self.add_filter('R', self.toggle_run)
+        self.add_filter('I', self.edit_current)
 
         self.add_filter('x', self.status)
 
@@ -1049,7 +1050,21 @@ class Shepherd(Ball):
             await task.cancel()
             del self.running[sheep]
 
+    async def edit_current(self):
+        """ open code for current in idle """
 
+        sheep = self.current()
+
+        filename = inspect.getsourcefile(sheep.__class__)
+
+        idle_runner = IdleRunner(filename=filename)
+
+        sub = await curio.run_in_process(idle_runner)
+
+        # idle seems to want an _W
+        #self._w = None
+
+        
     async def run(self):
         """ run the flock 
 
@@ -1085,12 +1100,6 @@ class Shepherd(Ball):
         
         nx.draw_networkx(self.flock, node_color=colours, ax=ax)
 
-        #await self.put()
-        #print(self.radii.counts)
-        
-        #print(self.radii)
-
-        #print(self.flock)
 
 
     async def quit(self):
@@ -1107,6 +1116,18 @@ class Shepherd(Ball):
 
         return f'shepherd of flock degree {len(self.flock)}'
 
+class IdleRunner:
+
+    def __init__(self, filename):
+
+        self.filename = filename
+
+    def __call__(self):
+
+        import subprocess
+
+        subprocess.run(('idle', self.filename))
+    
 
 class Table:
     """ Magic table.

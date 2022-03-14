@@ -97,7 +97,7 @@ class BlitManager:
 
         # now take a snapshot of the figure
         cv = self.canvas
-        self._base = cv.copy_from_bbox(cv.figure.bbox)
+        #self._base = cv.copy_from_bbox(cv.figure.bbox)
         self._bg = self._base
 
     def clear(self):
