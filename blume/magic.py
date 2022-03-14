@@ -674,43 +674,6 @@ def fig2data(fig=None, background='grey'):
     return Image.open(image)
 
 
-class xRoundAbout:
-    """ 
-    A magic queue switch.
-
-    Processes waiting on something.
-
-    Input from queues.
-
-    Balls, outputs, inputs.
-
-    Time for bed, said zebedee 
-    """
-    def __init__(self):
-
-        self.qsize = random.randint(30, 50)
-        self.qs = {}
-        self.infos = defaultdict(set)
-        #self.add_queue()
-
-        self.counts = Counter()
-        self.filters = defaultdict(dict)
-
-
-    def select(self, name=None, create=True):
-        """ pick a q 
-        
-        create: if True, create if missing
-        """
-        qq = self.qs.setdefault(name)
-        if qq is None:
-            if create:
-                qq = self.add_queue(name)
-            else:
-                raise ValueError(f'no queue for {name}')
-
-        return qq
-
     async def put(self, value=None, name='stdout'):
         """ Output a value """
         self.counts.update([('put', name)])

@@ -148,6 +148,7 @@ async def run():
 
 if __name__ == '__main__':
 
+    print(help(init_printing))
     init_printing(pretty_print=True)
 
     curio.run(run(), with_monitor=True)
