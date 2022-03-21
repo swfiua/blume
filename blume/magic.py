@@ -892,19 +892,22 @@ class Shepherd(Ball):
                 keys.add(key)
                 msg += '{} {}\n'.format(
                     key,
-                    self.doc_firstline(value.__doc__))
+                    self.doc_firstline(value))
         print(msg)
         await self.put(msg, 'help')
         from blume import teakhat
         #teakhat.Help(msg)
 
 
-    def doc_firstline(self, doc):
+    def doc_firstline(self, value):
         """ Return first line of doc """
+
+        doc = value.__doc__
         if doc:
             return doc.split('\n')[0]
         else:
-            return "????"
+            return repr(value)
+            #return "????"
 
 
     async def start(self):
