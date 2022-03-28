@@ -674,52 +674,6 @@ def fig2data(fig=None, background='grey'):
     return Image.open(image)
 
 
-    async def put(self, value=None, name='stdout'):
-        """ Output a value """
-        self.counts.update([('put', name)])
-        await self.select(name).put(value)
-        #await self.select(name).put(value or fig2data(plt))
-
-    async def get(self, name='stdin'):
-        """ Get a value """
-        self.counts.update([('get', name)])
-        return await self.select(name).get()
-
-    async def status(self):
-
-        result = {}
-        result['counts'] = self.counts
-        
-        for qname, qq in self.qs.items():
-            result[qname] = qq.qsize()
-
-        from pprint import pprint
-        pprint(result)
-        return result
-
-    def add_filter(self, key, coro, name='keys'):
-
-        self.filters[name][key] = coro
-
-
-    def add_queue(self, name=None):
-
-        qq = curio.UniversalQueue(maxsize=self.qsize)
-        self.qs[name] = qq
-
-        return qq
-
-
-    async def start(self):
-        """ How do you start a magic round-a-bout? """
-        pass
-
-    async def run(self):
-        """ Run the magic roundabout """
-
-        # create an image to show what is going on?
-        pass
-
 
 class Shepherd(Ball):
     """Watches things nobody else is watching 
@@ -857,8 +811,9 @@ class Shepherd(Ball):
                     result = lu[key]()
 
                     if inspect.iscoroutine(result):
-                        await result
-                    
+                        task = await curio.spawn(result)
+                        # need to join task
+                        #await task.join()
                 except:
                     print_exc()
 
