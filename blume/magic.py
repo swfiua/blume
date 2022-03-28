@@ -714,6 +714,7 @@ class Shepherd(Ball):
         self.whistlers = {}
         self.relays = {}
         self.path = [self]
+        self.whistle_tasks = set()
 
         self.interaction = Interact(self.path[-1])
 
@@ -813,7 +814,7 @@ class Shepherd(Ball):
                     if inspect.iscoroutine(result):
                         task = await curio.spawn(result)
                         # need to join task
-                        #await task.join()
+                        self.whistle_tasks.add(task)
                 except:
                     print_exc()
 
@@ -898,6 +899,7 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
+        self.running['whistle_stop'] = await curio.spawn(self.whistle_stop)
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -913,6 +915,15 @@ class Shepherd(Ball):
         # R for run
         # S for stop
         # u/d/p/n up down previous next
+
+    async def whistle_stop(self):
+
+        while True:
+            for task in self.whistle_tasks:
+                if task.terminated:
+                    await task.join()
+            await curio.sleep(1)
+            
 
     async def add_whistler(self, queue):
         """ Add a whistler
@@ -1005,7 +1016,11 @@ class Shepherd(Ball):
             self.running[sheep] = await curio.spawn(canine(sheep))
         else:
             task = self.running[sheep]
-            await task.cancel()
+            try:
+                await task.cancel()
+            except:
+                print(task)
+                print(type(task))
             del self.running[sheep]
 
     async def edit_current(self):
