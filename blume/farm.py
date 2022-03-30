@@ -276,7 +276,11 @@ class Carpet(Ball):
 
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
-            ax.set_visible(False)
+            if ax not in self.history and not ax.get_visible():
+                # while we are at lets delete some we no longer need
+                del ax
+            else:
+                ax.set_visible(False)
 
 
     async def history_back(self):
