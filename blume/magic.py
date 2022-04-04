@@ -143,7 +143,7 @@ class Ball:
             self.update(kwargs)
         
         self.paused = False
-        self.sleep = .3
+        self.sleep = .8
 
         # let roundabouts deal with connections
         self.radii = RoundAbout()
