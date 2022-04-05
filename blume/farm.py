@@ -60,6 +60,7 @@ import matplotlib
 from matplotlib import figure, rc
 
 from matplotlib import pyplot as plt
+from matplotlib.transforms import Bbox
 
 import networkx as nx
 
@@ -68,7 +69,6 @@ import networkx as nx
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 from .rcparms import Params
-from .blitting import BlitManager
 
 class Axe:
     """ A matplotlib axis that has some extra methods 
@@ -216,10 +216,12 @@ class Carpet(Ball):
 
         self.image = plt.figure(constrained_layout=True, facecolor='grey')
         plt.show(block=False)
-        self.bm = BlitManager(self.image.canvas)
 
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
+
+        # let's see everything
+        #self.log_events()
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
@@ -231,6 +233,35 @@ class Carpet(Ball):
 
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
+
+
+    def log_events(self):
+
+        events = [
+            'button_press_event',
+            'button_release_event',
+            'draw_event',
+            'key_press_event',
+            'key_release_event',
+            'motion_notify_event',
+            'pick_event',
+            'resize_event',
+            'scroll_event',
+            'figure_enter_event',
+            'figure_leave_event',
+            'axes_enter_event',
+            'axes_leave_event',
+            'close_event']
+
+        connect = self.image.canvas.mpl_connect
+        from functools import partial
+                    
+        for event in events:
+            connect(event, partial(self.log_event, name=event))
+
+    def log_event(self, event, name=None):
+
+         print(name, event)
 
     def keypress(self, event):
         """ Take keypress events put them out there """
@@ -258,7 +289,6 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
-        self.bm.clear()
         await self.replay_history()
 
 
@@ -269,7 +299,6 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
-        self.bm.clear()
         await self.replay_history()
 
     def hideall(self):
@@ -316,25 +345,6 @@ class Carpet(Ball):
         self.image.delaxes(pos.delegate)
         #self._update_pos()
 
-    async def add_axis(self, nax):
-
-        self.bm.add_artist(nax)
-        self.bm.update()
-        return
-
-        fig = self.image
-        ax = self.axes[self.pos]
-
-        self.axes[self.pos] = nax
-        
-        # set the sublotspec to match the one we are replacing
-        nax.position(ax)
-
-        # hide the old axis
-        ax.hide()
-
-        nax.show()
-        
     async def replay_history(self):
 
         # take a copy of the current history
@@ -422,9 +432,6 @@ class Carpet(Ball):
             axe.meta = dict(key=key)
             self.axes[key] = axe
 
-        self.bm.filter(self.axes.values())
-        #self.image.clear()
-
         #assert len(self.image.axes) == self.size * self.size
 
     async def run(self):
@@ -444,6 +451,9 @@ class Carpet(Ball):
         await self.put(ax)
 
         self._update_pos()
+
+        # let the GUI event loop do it's thing.
+        self.image.canvas.flush_events()
         
 
     def _update_pos(self):
@@ -457,10 +467,38 @@ class Carpet(Ball):
         axe.set_visible(True)
         self.history.appendleft(axe)
 
-        self.bm.add_artist(axe)
-        self.bm.update()
+        self._blank(axe)
+        axe.figure.draw_artist(axe)
+        self.image.canvas.blit(self.get_full_bbox(axe))
+
+    def _blank(self, axe):
+
+        from matplotlib.patches import Rectangle
+        bb = self.get_full_bbox(axe)
+        fig = axe.figure
+        
+        rect = Rectangle(
+            bb.p0, bb.width, bb.height,
+            facecolor=fig.patch.get_facecolor() )
+        fig.draw_artist(rect)
         
         
+    def get_full_bbox(self, ax):
+
+        ss = ax.get_subplotspec()
+        fig = self.image.figure
+        fbbox = fig.bbox
+        
+        rows, cols, row, col = ss.get_geometry()
+
+        width = fbbox.width / cols
+        height = fbbox.height / rows
+
+        xpos = width * col
+        ypos = height * row
+
+        return Bbox([[xpos, ypos], [xpos+width, xpos+height]])
+
     def hide(self, axe):
 
         axe.set_visible(False)
