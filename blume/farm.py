@@ -105,16 +105,16 @@ class Axe:
 
     def show(self):
         """ Show the axes """
-        self.set_visible(True)
         self.carpet.show(self)
 
     def hide(self):
         """ Hide the axes """
         self.set_visible(False)
-        #self.carpet.hide(self)
+        self.carpet.hide(self)
 
     def please_draw(self):
         """ Try to force a draw of the axes """
+        print('politely asked to draw')
         self.draw_artist(self)
 
     def projection(self, name):
@@ -289,6 +289,8 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
+
+        print('replay history', len(self.history))
         await self.replay_history()
 
 
@@ -299,6 +301,7 @@ class Carpet(Ball):
         self.pos = 0
         self.hideall()
         self.generate_mosaic()
+        print('replay history', len(self.history))
         await self.replay_history()
 
     def hideall(self):
@@ -307,6 +310,10 @@ class Carpet(Ball):
             #print('hiding', type(ax), id(ax))
             if ax not in self.history and not ax.get_visible():
                 # while we are at lets delete some we no longer need
+                print('garbage collecting axe', ax.get_subplotspec())
+                print(len(self.axes))
+                if ax in ax.figure.axes:
+                    ax.figure.delaxes(ax)
                 del ax
             else:
                 ax.set_visible(False)
@@ -342,7 +349,8 @@ class Carpet(Ball):
         ax.show()
         print("history len", len(self.history))
 
-        self.image.delaxes(pos.delegate)
+        if ax in self.image.axes:
+            self.image.delaxes(pos.delegate)
         #self._update_pos()
 
     async def replay_history(self):
@@ -351,7 +359,7 @@ class Carpet(Ball):
         hlen = len(self.history)
 
         for hh in range(hlen):
-            self.history.rotate()
+            await self.history_rotate(1)
         
     def toggle_expand(self):
         
@@ -384,6 +392,7 @@ class Carpet(Ball):
         nap = 0.05
         canvas = self.image.canvas
         while True:
+            #print('RUNNING EVENT LOOP')
             
             #canvas.draw_idle()
             canvas.flush_events()
@@ -447,13 +456,13 @@ class Carpet(Ball):
             
         ax = self.axes[self.pos]
 
-            
+        print('putting out axis for pos', self.pos, ax.get_subplotspec())
         await self.put(ax)
 
         self._update_pos()
 
         # let the GUI event loop do it's thing.
-        self.image.canvas.flush_events()
+        #self.image.canvas.flush_events()
         
 
     def _update_pos(self):
@@ -464,12 +473,14 @@ class Carpet(Ball):
 
     def show(self, axe):
 
+        print('showing', axe.get_subplotspec())
         axe.set_visible(True)
         self.history.appendleft(axe)
 
         self._blank(axe)
         axe.figure.draw_artist(axe)
         self.image.canvas.blit(self.get_full_bbox(axe))
+        #self.image.canvas.draw_idle()
 
     def _blank(self, axe):
 
@@ -479,7 +490,12 @@ class Carpet(Ball):
         
         rect = Rectangle(
             bb.p0, bb.width, bb.height,
-            facecolor=fig.patch.get_facecolor() )
+            facecolor='skyblue')
+            #facecolor=fig.patch.get_facecolor() )
+
+        print('blanking', rect)
+
+        axe.text(0.1, 0.5, str(axe.get_subplotspec()))
         fig.draw_artist(rect)
         
         
@@ -489,19 +505,29 @@ class Carpet(Ball):
         fig = self.image.figure
         fbbox = fig.bbox
         
-        rows, cols, row, col = ss.get_geometry()
+        rows, cols, start, stop = ss.get_geometry()
 
+        assert(start == stop)
+        row = start // cols
+        col = start % cols
+
+        print('start, row, col', start, row, col)
+        
         width = fbbox.width / cols
         height = fbbox.height / rows
 
         xpos = width * col
         ypos = height * row
+        print('full_bbox', rows, cols, row, col, xpos, ypos)
 
         return Bbox([[xpos, ypos], [xpos+width, xpos+height]])
 
     def hide(self, axe):
 
-        axe.set_visible(False)
+        if axe.get_visible():
+            print('hiding', axe.get_subplotspec())
+            self._blank(axe)
+            axe.set_visible(False)
 
 
 # example below ignore for now
