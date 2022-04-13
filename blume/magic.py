@@ -850,10 +850,14 @@ class Shepherd(Ball):
                     key,
                     self.doc_firstline(value))
         print(msg)
+        # hmm -- there's a queue of help messages somewhere
+        # maybe should use that for some other display.
         await self.put(msg, 'help')
-        from blume import teakhat
-        #teakhat.Help(msg)
 
+        ax = await self.get()
+        ax.text(0, 0, msg)
+        ax.axis('off')
+        ax.show()
 
     def doc_firstline(self, value):
         """ Return first line of doc """

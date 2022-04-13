@@ -221,7 +221,7 @@ class Carpet(Ball):
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
         # let's see everything
-        #self.log_events()
+        self.log_events()
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
