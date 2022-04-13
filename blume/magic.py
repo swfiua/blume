@@ -130,6 +130,8 @@ from matplotlib import pyplot as plt
 
 import networkx as nx
 
+from .modnar import random_colour, random_queue
+
 Parser = argparse.ArgumentParser
 
 class RoundAbout:
@@ -196,7 +198,7 @@ class Ball:
         self.sleep = .8
 
         # let roundabouts deal with connections
-        self.radii = TheMagicRoundAbout()
+        self.radii = TheMagicRoundAbout
 
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
@@ -902,11 +904,20 @@ class Shepherd(Ball):
         print(msg)
         # hmm -- there's a queue of help messages somewhere
         # maybe should use that for some other display.
-        await self.put(msg, 'help')
 
+        hq = self.select('help')
+        if hq.qsize() < hq.maxsize - 1:
+            # if the queue is getting full, then we don't want to hang here.
+            # curiously, maxsize - 1 is the critical size at which it seems
+            # to hang.
+            print('ADDING TO HELP Q', hq.qsize(), hq.maxsize)
+            await self.put(msg, 'help')
+
+        print('ADDED TO HELP Q')
         ax = await self.get()
         ax.text(0, 0, msg)
         ax.axis('off')
+        print('HELP')
         ax.show()
 
     def doc_firstline(self, value):
@@ -1244,22 +1255,6 @@ async def runme():
     print('running farm')
     await farm.run()
 
-def random_colour():
-    """ Pick a random matplotlib colormap """
-    return random.choice(plt.colormaps())
-
-def random_queue(minsize=1, maxsize=5):
-    """Return a universal queue of random max size 
-
-    Whilst this may seem a little strange, it means every run is a
-    little different.  
-    
-    Probably could do with a debug over-ride.
-
-    I've been using this a while.
-
-    """
-    return curio.UniversalQueue(maxsize=random.randint(minsize, maxsize))
 
 
 def ellipsis(string, maxlen=200, keep=10):
