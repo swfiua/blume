@@ -132,8 +132,58 @@ import networkx as nx
 
 Parser = argparse.ArgumentParser
 
-from .magic2 import RoundAbout
+class RoundAbout:
+    """ Pass self around.
+    
+    Just a collection of random queues that everyone shares.
 
+    For maximal information sharing, I'm curious what happens when 
+    objects with the roundabout do something like:
+
+    await self.put(self)
+
+    The magic roundabout just looks after the queues.
+    """
+
+    # There is only one, initialise attributes as class attributes
+
+    # default queue is whatever random_queue serves up.
+    # 
+    queues = defaultdict(random_queue)
+    counts = Counter()
+    
+    async def put(self, item, name=None):
+
+        qq = self.queues[name]
+
+        await qq.put(item)
+
+    async def get(self, name=None):
+
+        qq = self.queues[name]
+
+        result = await qq.get()
+
+        return result
+
+
+    def select(self, name=None, create=True):
+        """ pick a q 
+        
+        create: if True, create if missing -- actually seems to create
+        regardless, why not?
+        """
+        return self.queues[name]
+
+    def status(self):
+        """ Show some stats """
+        print("Queue Stats")
+        for name, qq in self.queues.items():
+            print(name)
+            print(qq.qsize(), qq.maxsize)
+
+TheMagicRoundAbout = RoundAbout()
+            
 class Ball:
     
     def __init__(self, **kwargs):
@@ -146,7 +196,7 @@ class Ball:
         self.sleep = .8
 
         # let roundabouts deal with connections
-        self.radii = RoundAbout()
+        self.radii = TheMagicRoundAbout()
 
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
@@ -1194,10 +1244,23 @@ async def runme():
     print('running farm')
     await farm.run()
 
-    
 def random_colour():
     """ Pick a random matplotlib colormap """
     return random.choice(plt.colormaps())
+
+def random_queue(minsize=1, maxsize=5):
+    """Return a universal queue of random max size 
+
+    Whilst this may seem a little strange, it means every run is a
+    little different.  
+    
+    Probably could do with a debug over-ride.
+
+    I've been using this a while.
+
+    """
+    return curio.UniversalQueue(maxsize=random.randint(minsize, maxsize))
+
 
 def ellipsis(string, maxlen=200, keep=10):
     

@@ -58,7 +58,7 @@ class Carpet(Ball):
 
         # Connect canvas key events
         self.fig.canvas.mpl_connect('key_press_event', self.keypress)
-        self.fig.canvas.mpl_connect('draw_event', self.draw)
+        #self.fig.canvas.mpl_connect('draw_event', self.draw)
 
         # start the event loop and display the figure.
         print('Showing figure window')
