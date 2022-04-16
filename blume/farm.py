@@ -221,7 +221,7 @@ class Carpet(Ball):
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
         # let's see everything
-        self.log_events()
+        #self.log_events()
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
@@ -479,54 +479,85 @@ class Carpet(Ball):
 
         self._blank(axe)
         axe.figure.draw_artist(axe)
-        self.image.canvas.blit(self.get_full_bbox(axe))
         #self.image.canvas.draw_idle()
+        #self.image.canvas.flush_events()
+        self.image.canvas.blit(self.get_full_bbox(axe))
 
     def _blank(self, axe):
+
+        if not hasattr(self, 'blanks'):
+            self.blanks = deque(('skyblue', 'green', 'yellow', 'pink', 'orange'))
 
         from matplotlib.patches import Rectangle
         bb = self.get_full_bbox(axe)
         fig = axe.figure
+        print('blanking', bb.width, bb.height, bb.p0)
         
         rect = Rectangle(
             bb.p0, bb.width, bb.height,
-            facecolor='skyblue')
+            facecolor=self.blanks[0])
             #facecolor=fig.patch.get_facecolor() )
-
+        self.blanks.rotate()
         print('blanking', rect)
-
-        axe.text(0.1, 0.5, str(axe.get_subplotspec()))
+        print()
+        axe.text(0, 0.5, str(axe.get_subplotspec()))
+        axe.text(0, 0.8, str(rect))
         fig.draw_artist(rect)
         
         
     def get_full_bbox(self, ax):
 
         ss = ax.get_subplotspec()
+        gs = ss.get_gridspec()
+
         fig = self.image.figure
         fbbox = fig.bbox
-        
+
+        bottoms, tops, lefts, rights = gs.get_grid_positions(fig, raw=True)
+
+        print(gs)
+        print(bottoms, lefts)
+        print('POSITION', ss.get_position(fig))
+
         rows, cols, start, stop = ss.get_geometry()
 
-        assert(start == stop)
-        row = start // cols
-        col = start % cols
-
-        print('start, row, col', start, row, col)
+        # now calculate our bottom, top, left, right
+        rownums = list(ss.rowspan)
+        colnums = list(ss.colspan)
         
-        width = fbbox.width / cols
-        height = fbbox.height / rows
+        rowstart, rowstop = ss.rowspan[0], ss.rowspan[-1]
+        colstart, colstop = ss.colspan[0], ss.rowspan[-1]
 
-        xpos = width * col
-        ypos = height * row
-        print('full_bbox', rows, cols, row, col, xpos, ypos)
+        top = tops[rowstart]
+        left = lefts[colstart]
 
-        return Bbox([[xpos, ypos], [xpos+width, xpos+height]])
+        bottom = bottoms[rowstop]
+        right = rights[colstop]
+
+        print('btlr', bottom, top, left, right)
+
+        dpi = fig.dpi
+        width = fig.get_figwidth() * dpi
+        height = fig.get_figheight() * dpi
+        print('figgeom', width, height, dpi)
+        width = fbbox.width
+        height = fbbox.height
+        print('figbbox', width, height)
+
+        bottom *= height
+        top *= height
+        left *= width
+        right *= width
+        print('btlr2', bottom, top, left, right)
+        bbox = Bbox([[left, bottom], [right, top]])
+        print('bbox wh', bbox.width, bbox.height)
+        return bbox
 
     def hide(self, axe):
 
         if axe.get_visible():
             print('hiding', axe.get_subplotspec())
-            self._blank(axe)
+            #self._blank(axe)
             axe.set_visible(False)
 
 
