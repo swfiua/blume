@@ -914,11 +914,7 @@ class Shepherd(Ball):
             await self.put(msg, 'help')
 
         print('ADDED TO HELP Q')
-        ax = await self.get()
-        ax.text(0, 0, msg)
-        ax.axis('off')
-        print('HELP')
-        ax.show()
+
 
     def doc_firstline(self, value):
         """ Return first line of doc """
@@ -930,7 +926,23 @@ class Shepherd(Ball):
             return repr(value)
             #return "????"
 
+    async def helper(self):
+        """ Task to run if you want help on the carpet 
 
+        One day it will be easy to start and stop this.
+        """
+
+        print('HELPER STARTING UP')
+        while True:
+            msg = await self.get('help')
+            print('HELPER GOT HELP')
+            ax = await self.get()
+            ax.text(0, 0, msg)
+            ax.axis('off')
+            print('HELP')
+            ax.show()
+
+            
     async def start(self):
         """ Start things going 
 
@@ -980,6 +992,7 @@ class Shepherd(Ball):
         # R for run
         # S for stop
         # u/d/p/n up down previous next
+        self.running['helper'] = await curio.spawn(self.helper())
 
     async def whistle_stop(self):
 

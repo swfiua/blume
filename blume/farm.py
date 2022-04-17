@@ -133,8 +133,9 @@ class Axe:
 
     def simplify(self):
 
-        self.xaxis.set_visible(False)
-        self.yaxis.set_visible(False)
+        #self.xaxis.set_visible(False)
+        #self.yaxis.set_visible(False)
+        self.axis('off')
 
     def colorbar(self, mappable):
 
@@ -214,7 +215,8 @@ class Carpet(Ball):
             #   ymargin=0,
             #   zmargin=0)
 
-        self.image = plt.figure(constrained_layout=True, facecolor='grey')
+        #self.image = plt.figure(constrained_layout=True, facecolor='grey')
+        self.image = plt.figure()
         plt.show(block=False)
 
         # keyboard handling
@@ -335,19 +337,15 @@ class Carpet(Ball):
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        for axx in self.history:
-            print('hist', axx.title)
-
         ax = self.history.popleft()
-        print('popping', ax.title)
-        #self.hideall()
         pos = await self.get()
 
         ax.position(pos)
         ax.show()
 
-        if ax in self.image.axes:
+        if pos.delegate in self.image.axes:
             self.image.delaxes(pos.delegate)
+        del pos
         #self._update_pos()
 
     async def replay_history(self):
@@ -488,7 +486,10 @@ class Carpet(Ball):
         if not hasattr(self, 'blanks'):
             self.blanks = deque(
                 (fig.patch.get_facecolor(),
-                 'skyblue', 'green', 'yellow', 'pink', 'orange'))
+                 'skyblue', 'green', 'yellow', 'pink', 'orange',
+                 [random.random()/2,
+                  random.random()/2,
+                  random.random()/2]))
 
         from matplotlib.patches import Rectangle
         bb = self.get_full_bbox(axe)

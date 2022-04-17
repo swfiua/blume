@@ -6,12 +6,13 @@ Use if you don't know what to use?
 
 import random
 import curio
+from matplotlib import pyplot as plt
 
 def random_colour():
     """ Pick a random matplotlib colormap """
     return random.choice(plt.colormaps())
 
-def random_queue(minsize=1, maxsize=5):
+def random_queue(minsize=3, maxsize=20):
     """Return a universal queue of random max size 
 
     Whilst this may seem a little strange, it means every run is a
