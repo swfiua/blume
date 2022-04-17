@@ -776,7 +776,7 @@ class Shepherd(Ball):
         
         self.add_filter('u', self.up)
         self.add_filter('d', self.down)
-        self.add_filter('R', self.toggle_run)
+        self.add_filter('r', self.toggle_run)
         self.add_filter('I', self.edit_current)
 
         self.add_filter('x', self.status)

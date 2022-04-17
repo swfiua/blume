@@ -306,18 +306,16 @@ class Carpet(Ball):
 
     def hideall(self):
 
+        naxes = len(self.image.axes)
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
             if ax not in self.history and not ax.get_visible():
                 # while we are at lets delete some we no longer need
-                print('garbage collecting axe', ax.get_subplotspec())
-                print(len(self.axes))
-                if ax in ax.figure.axes:
-                    ax.figure.delaxes(ax)
+                ax.figure.delaxes(ax)
                 del ax
             else:
                 ax.set_visible(False)
-
+        print('hideall number axes: before/after:', naxes, len(self.image.axes))
 
     async def history_back(self):
 
@@ -347,7 +345,6 @@ class Carpet(Ball):
 
         ax.position(pos)
         ax.show()
-        print("history len", len(self.history))
 
         if ax in self.image.axes:
             self.image.delaxes(pos.delegate)
@@ -469,6 +466,7 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
+            self.hideall()
             self.generate_mosaic()
 
     def show(self, axe):
@@ -477,32 +475,34 @@ class Carpet(Ball):
         axe.set_visible(True)
         self.history.appendleft(axe)
 
-        self._blank(axe)
+        bbox = self._blank(axe)
         axe.figure.draw_artist(axe)
         #self.image.canvas.draw_idle()
         #self.image.canvas.flush_events()
-        self.image.canvas.blit(self.get_full_bbox(axe))
+        self.image.canvas.blit(bbox)
 
     def _blank(self, axe):
 
+        fig = axe.figure
+
         if not hasattr(self, 'blanks'):
-            self.blanks = deque(('skyblue', 'green', 'yellow', 'pink', 'orange'))
+            self.blanks = deque(
+                (fig.patch.get_facecolor(),
+                 'skyblue', 'green', 'yellow', 'pink', 'orange'))
 
         from matplotlib.patches import Rectangle
         bb = self.get_full_bbox(axe)
-        fig = axe.figure
-        print('blanking', bb.width, bb.height, bb.p0)
         
         rect = Rectangle(
             bb.p0, bb.width, bb.height,
             facecolor=self.blanks[0])
             #facecolor=fig.patch.get_facecolor() )
         self.blanks.rotate()
-        print('blanking', rect)
-        print()
-        axe.text(0, 0.5, str(axe.get_subplotspec()))
-        axe.text(0, 0.8, str(rect))
+        #axe.text(0, 0.5, str(axe.get_subplotspec()))
+        #axe.text(0, 0.8, str(rect))
         fig.draw_artist(rect)
+
+        return bb
         
         
     def get_full_bbox(self, ax):
@@ -515,10 +515,6 @@ class Carpet(Ball):
 
         bottoms, tops, lefts, rights = gs.get_grid_positions(fig, raw=True)
 
-        print(gs)
-        print(bottoms, lefts)
-        print('POSITION', ss.get_position(fig))
-
         rows, cols, start, stop = ss.get_geometry()
 
         # now calculate our bottom, top, left, right
@@ -526,7 +522,7 @@ class Carpet(Ball):
         colnums = list(ss.colspan)
         
         rowstart, rowstop = ss.rowspan[0], ss.rowspan[-1]
-        colstart, colstop = ss.colspan[0], ss.rowspan[-1]
+        colstart, colstop = ss.colspan[0], ss.colspan[-1]
 
         top = tops[rowstart]
         left = lefts[colstart]
@@ -534,23 +530,19 @@ class Carpet(Ball):
         bottom = bottoms[rowstop]
         right = rights[colstop]
 
-        print('btlr', bottom, top, left, right)
-
         dpi = fig.dpi
         width = fig.get_figwidth() * dpi
         height = fig.get_figheight() * dpi
-        print('figgeom', width, height, dpi)
         width = fbbox.width
         height = fbbox.height
-        print('figbbox', width, height)
 
         bottom *= height
         top *= height
         left *= width
         right *= width
-        print('btlr2', bottom, top, left, right)
+
         bbox = Bbox([[left, bottom], [right, top]])
-        print('bbox wh', bbox.width, bbox.height)
+
         return bbox
 
     def hide(self, axe):
