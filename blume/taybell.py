@@ -88,8 +88,7 @@ def shortify_line(value, maxlen=None, ellipsis=None, squash=None):
     if maxlen is None or size <= maxlen:
         return value
 
-    # need to shorten and insert ...
-    elen = len(ellipsis)
+    maxlen = int(maxlen)
 
     # try removing space -- maybe camel case too?
     if squash:
@@ -100,21 +99,23 @@ def shortify_line(value, maxlen=None, ellipsis=None, squash=None):
 
         # update size
         size = len(value)
-        
 
     # how many characters neet the chop?
     ncut = size-maxlen
 
     while ncut < len(ellipsis) and ellipsis:
         ellipsis = ellipsis[:-1]
-        elen = len(ellipsis)
+
+    elen = len(ellipsis)
 
     # give equal to beginning and end
     sluglen = (size-(ncut+elen))//2
 
     # and if there is a spare character, take it at the beginning
     spare = maxlen - ((2*sluglen) + elen)
-    return value[:sluglen+spare] + ellipsis + value[-sluglen:]
+    value = value[:sluglen+spare] + ellipsis + value[-sluglen:]
+    print('slug/spare/elen/value', sluglen, spare, elen, maxlen, size, len(value))
+    return value
 
 def taybell(ax, cells):
     """ """
