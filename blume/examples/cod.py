@@ -172,6 +172,7 @@ def save_data(data, filename='data.csv'):
 
 BASE_URL = 'https://www.arcgis.com/sharing/rest/content/items/'
 ITEM_IDS = [
+    'b87fb824d0514960b380cba68a2df0ba',
     '6bfe7832017546e5b30c5cc6a201091b',
     '26c902bf1da44d3d90b099392b544b81',
     '7cf545f26fb14b3f972116241e073ada',
