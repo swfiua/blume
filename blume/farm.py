@@ -106,6 +106,7 @@ class Axe:
     def show(self):
         """ Show the axes """
         self.carpet.show(self)
+        #self.set_visible(True)
 
     def hide(self):
         """ Hide the axes """
