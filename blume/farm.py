@@ -64,8 +64,6 @@ from matplotlib import figure, rc
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Bbox
 
-import networkx as nx
-
 #from .mosaic import Carpet
 
 from blume import magic

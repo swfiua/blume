@@ -130,8 +130,6 @@ from matplotlib import figure, artist
 
 from matplotlib import pyplot as plt
 
-import networkx as nx
-
 from .modnar import random_colour, random_queue
 
 Parser = argparse.ArgumentParser
@@ -598,6 +596,48 @@ def find_date_key(record):
             print(e)
             print(key, value, 'is not a date')
 
+class DiGraph:
+
+    def __init__(self):
+
+        self.nodes = defaultdict(dict)
+        self.edges = defaultdict(dict)
+
+    def add_nodes_from(self, nodes):
+
+        for node in nodes:
+            self.add_node(node)
+
+    def add_edges_from(self, edges):
+
+        for edge in edges:
+            self.add_edge(*edge)
+
+    def add_node(self, node, **keyw):
+
+        self.nodes[node].update(**keyw)
+    
+    def add_edge(self, a, b, **keyw):
+        
+        self.edges[(a, b)].update(**keyw)
+        for node in a, b:
+            if node not in self.nodes:
+                self.nodes[node].update(**keyw)
+
+    def predecessors(self, node):
+
+        result = []
+        for a, b in self.edges.keys():
+            if a is node:
+                result.append(b)
+
+    def __iter__(self):
+
+        return iter(self.nodes)
+
+    def __len__(self):
+
+        return len(self.nodes)
 
 class GeeFarm(Ball):
     """ A farm, for now.. 
@@ -617,7 +657,7 @@ class GeeFarm(Ball):
         """ Turn graph into a running farm """
         super().__init__()
         self.pause = True
-        hub = hub or nx.DiGraph()
+        hub = hub or DiGraph()
 
         hub.add_nodes_from(nodes or set())
         hub.add_edges_from(edges or set())
@@ -1073,8 +1113,6 @@ class Shepherd(Ball):
         """ Move focus to next node """
         current = self.current()
 
-        succ = nx.dfs_successors(self.flock, current, 1)
-
         succ = list(self.flock.predecessors(current))
 
         if not succ:
@@ -1150,9 +1188,9 @@ class Shepherd(Ball):
 
             colours.append(c)
             
-        ax = await self.get()
+        #ax = await self.get()
         
-        nx.draw_networkx(self.flock, node_color=colours, ax=ax)
+        #nx.draw_networkx(self.flock, node_color=colours, ax=ax)
 
 
 
