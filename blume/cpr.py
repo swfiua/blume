@@ -113,8 +113,8 @@ class SkyMap(magic.Ball):
         fig.clear()
                 
         #ax = fig.add_axes((0,0,1,1), projection='mollweide')
-        ax = fig.add_subplot(1, 1, 1,
-                             projection='mollweide')
+        ax = await self.get()
+        ax.projection('mollweide')
 
         locs = [self.decra2rad(ball['dec'], ball['ra'])
                     for ball in self.balls]
@@ -152,12 +152,12 @@ class SkyMap(magic.Ball):
                                    
         ax.axis('off')
 
-        await self.put(magic.fig2data(plt))
+        ax.show()
 
 
         fig.clear()
 
-        ax = fig.add_subplot(111)
+        ax = await self.get()
         rv = [xx.get('radial_velocity', 0.0) or 0. for xx in self.balls]
         distance = [xx.get('distance', 0.0) or 0. for xx in self.balls]
 
@@ -184,12 +184,13 @@ class SkyMap(magic.Ball):
         ax = fig.add_subplot(111)
         ax.plot(distance)
         #await self.outgoing.put(magic.fig2data(fig))
+        ax.show()
 
         fig.clear()
         ax = fig.add_subplot(111)
         ax.plot([xx[1] for xx in locs])
         #await self.outgoing.put(magic.fig2data(fig))
-
+        ax.show()
 
 class Spiral(magic.Ball):
     """  Model a spiral galaxy
