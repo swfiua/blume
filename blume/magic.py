@@ -662,12 +662,14 @@ class GeeFarm(Ball):
         # Tell the shepherd what to look after
         self.shep.flock = self.hub
 
+        print('GEEEFAR starting shep')
         result = self.shep.start()
         if inspect.iscoroutine(result):
             await result
 
         # create a task which is a dog watching the shepherd
-        self.superdog = await spawn(canine(self.shep))
+        print('GEEEFAR spawing superdog')
+        self.superdog = spawn(canine(self.shep))
 
         # set the shepherd to pause 
         self.shep.toggle_pause()
@@ -977,7 +979,7 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
-        self.running['whistle_stop'] = await spawn(self.whistle_stop)
+        self.running['whistle_stop'] = spawn(self.whistle_stop())
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -993,7 +995,7 @@ class Shepherd(Ball):
         # R for run
         # S for stop
         # u/d/p/n up down previous next
-        self.running['helper'] = await spawn(self.helper())
+        self.running['helper'] = spawn(self.helper())
 
     async def whistle_stop(self):
 
@@ -1011,7 +1013,7 @@ class Shepherd(Ball):
         """
 
         print('adding whistler', id(queue))
-        whistle = await spawn(
+        whistle = spawn(
             self.whistler(queue))
 
         self.whistlers[id(queue)] = whistle
@@ -1160,7 +1162,7 @@ class Shepherd(Ball):
         print('Cancelling runners')
         print(self.running)
         for task in self.running.values():
-            await task.cancel()
+            task.cancel()
 
         # don't cancel whistlers, cos we are likely running in one.
 

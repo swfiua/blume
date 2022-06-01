@@ -14,8 +14,6 @@ from datetime import timedelta, datetime
 import random
 import math
 import time
-import curio
-
 from .magic import Ball, fig2data
 
 MINUTES_TO_MIDNIGHT = -5.0
