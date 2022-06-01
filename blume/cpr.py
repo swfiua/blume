@@ -54,14 +54,14 @@ import random
 
 import math
 
-import curio
-
 import astropy.units as u
 import astropy.coordinates as coord
 
 from . import magic
 from . import farm as fm
 from . import taybell
+
+curio = magic
 
 from matplotlib import pyplot as plt
 from matplotlib import colors
@@ -545,7 +545,7 @@ def main(args=None):
 
     args = parser.parse_args(args)
 
-    curio.run(run(**args.__dict__), with_monitor=True)
+    curio.run(run(**args.__dict__))
 
 
 

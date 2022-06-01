@@ -5,7 +5,7 @@ Use if you don't know what to use?
 """
 
 import random
-import curio
+import asyncio
 from matplotlib import pyplot as plt
 
 def random_colour():
@@ -23,4 +23,4 @@ def random_queue(minsize=3, maxsize=20):
     I've been using this a while.
 
     """
-    return curio.UniversalQueue(maxsize=random.randint(minsize, maxsize))
+    return asyncio.Queue(maxsize=random.randint(minsize, maxsize))

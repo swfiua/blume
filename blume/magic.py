@@ -112,11 +112,13 @@ import dateutil
 
 import functools
 
-import curio
+#import curio
+import asyncio
+curio = asyncio
 
 sleep = curio.sleep
 run = curio.run
-spawn = curio.spawn
+spawn = curio.create_task
 
 import numpy as np
 
@@ -665,7 +667,7 @@ class GeeFarm(Ball):
             await result
 
         # create a task which is a dog watching the shepherd
-        self.superdog = await curio.spawn(canine(self.shep))
+        self.superdog = await spawn(canine(self.shep))
 
         # set the shepherd to pause 
         self.shep.toggle_pause()
@@ -679,9 +681,8 @@ class GeeFarm(Ball):
         print('MAGIC TREE FARM')
 
         # wait for the super dog
-        self.tg = curio.TaskGroup(
-            [self.superdog])
-        await self.tg.join()
+        await self.superdog
+
 
     async def quit(self):
         """ quit the farm """
@@ -864,7 +865,7 @@ class Shepherd(Ball):
                     result = lu[key]()
 
                     if inspect.iscoroutine(result):
-                        task = await curio.spawn(result)
+                        task = await spawn(result)
                         # need to join task
                         self.whistle_tasks.add(task)
                 except:
@@ -965,7 +966,7 @@ class Shepherd(Ball):
             print('info', info)
             if info.get('background'):
                 # run in background
-                runner = await curio.spawn(canine(sheep))
+                runner = spawn(canine(sheep))
                 self.running[sheep] = runner
 
 
@@ -976,7 +977,7 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
-        self.running['whistle_stop'] = await curio.spawn(self.whistle_stop)
+        self.running['whistle_stop'] = await spawn(self.whistle_stop)
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -992,7 +993,7 @@ class Shepherd(Ball):
         # R for run
         # S for stop
         # u/d/p/n up down previous next
-        self.running['helper'] = await curio.spawn(self.helper())
+        self.running['helper'] = await spawn(self.helper())
 
     async def whistle_stop(self):
 
@@ -1000,7 +1001,7 @@ class Shepherd(Ball):
             for task in self.whistle_tasks:
                 if task.terminated:
                     await task.join()
-            await curio.sleep(1)
+            await sleep(1)
             
 
     async def add_whistler(self, queue):
@@ -1010,7 +1011,7 @@ class Shepherd(Ball):
         """
 
         print('adding whistler', id(queue))
-        whistle = await curio.spawn(
+        whistle = await spawn(
             self.whistler(queue))
 
         self.whistlers[id(queue)] = whistle
@@ -1091,7 +1092,7 @@ class Shepherd(Ball):
         
         # run it if not already running
         if sheep not in self.running:
-            self.running[sheep] = await curio.spawn(canine(sheep))
+            self.running[sheep] = spawn(canine(sheep))
         else:
             task = self.running[sheep]
             try:
@@ -1110,7 +1111,7 @@ class Shepherd(Ball):
 
         idle_runner = IdleRunner(filename=filename)
 
-        sub = await curio.run_in_process(idle_runner)
+        sub = await asyncio.create_subprocess_shell(idle_runner)
 
         # idle seems to want an _W
         #self._w = None
@@ -1250,7 +1251,7 @@ async def canine(ball):
             
             runs += 1
 
-        await curio.sleep(ball.sleep)
+        await sleep(ball.sleep)
 
 
 async def runme():

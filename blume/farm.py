@@ -49,7 +49,9 @@ from collections import deque, defaultdict
 
 import datetime
 
-import curio
+#import curio
+import asyncio
+curio = asyncio
 
 import numpy as np
 
@@ -66,6 +68,7 @@ import networkx as nx
 
 #from .mosaic import Carpet
 
+from blume import magic
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
 from .mclock2 import GuidoClock
 from .rcparms import Params
@@ -275,7 +278,8 @@ class Carpet(Ball):
         # to context.
         print('key press event', event, event.key)
         qq = self.select('keys')
-        qq.put(event.key)
+        qq.put_nowait(event.key)
+        print('qqqq', qq, qq.qsize())
 
 
     async def save(self):
@@ -397,7 +401,7 @@ class Carpet(Ball):
             # Would be good to find a Tk file pointer that
             # can be used as a source of events
 
-            await curio.sleep(self.sleep * 10)
+            await magic.sleep(self.sleep * 10)
 
     async def start(self):
         
@@ -405,9 +409,9 @@ class Carpet(Ball):
         # start some tasks to keep things ticking along
         #watch_task = await curio.spawn(self.watch())
         print("carpet starting tasks")
-        poll_task = await curio.spawn(self.poll())
-
-        self.tasks = curio.TaskGroup([poll_task])
+        poll_task = magic.spawn(self.poll())
+        print('POLL TASK SPAWNED')
+        self.tasks = [poll_task]
         print("DONE STARTED carpet")
 
     def generate_mosaic(self):
@@ -608,7 +612,7 @@ def run(farm=None, dump=False):
         print('DUMP')
         farm.dump()
 
-    curio.run(start_and_run(farm))  
+    magic.run(start_and_run(farm))  
 
 async def start_and_run(farm):
 
