@@ -345,7 +345,13 @@ class Cod(magic.Ball):
                         label = 'expected'
                     else:
                         label = f'expected/{self.fudge}'
-                    ax.plot(index, expected/self.fudge, label=label)
+                    try:
+                        ax.plot(index, expected/self.fudge, label=label)
+                    except Exception as e:
+                        print(e)
+                        print(key)
+                        print(self.scale)
+                        print()
 
                     if self.history == 1:
                         ax.legend()
@@ -504,8 +510,7 @@ if __name__ == '__main__':
             repo.index.add(diff[0].a_path)
             repo.index.commit('latest data')
         
-    import curio
-    curio.run(run(args), with_monitor=args.monitor)
+    magic.run(run(args))
     
             
 

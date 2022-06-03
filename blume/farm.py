@@ -202,6 +202,8 @@ class Carpet(Ball):
         self.pos = 0
         self.simple = False
         self.expanded = None
+        self.output = None
+        self.showing = {}
 
         self.history = deque(maxlen=random.randint(20, 50))
 
@@ -219,7 +221,10 @@ class Carpet(Ball):
 
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
-        plt.show(block=False)
+        try:
+            plt.show(block=False)
+        except:
+            plt.show()
 
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
@@ -274,11 +279,8 @@ class Carpet(Ball):
         # use select here to get actual magic curio queue
         # where put can magically be a coroutine or a function according
         # to context.
-        print('key press event', event, event.key)
         qq = self.select('keys')
         qq.put_nowait(event.key)
-        print('qqqq', qq, qq.qsize())
-
 
     async def save(self):
         """ Save current image
@@ -472,15 +474,30 @@ class Carpet(Ball):
 
     def show(self, axe):
 
-        print('showing', axe.get_subplotspec())
-        axe.set_visible(True)
-        self.history.appendleft(axe)
+        ss = axe.get_subplotspec()
+        print('showing', ss)
 
+        if ss in self.showing:
+             tohide = showing[ss]
+             if tohide is not axe:
+                 tohide.set_visible(False)
+
+        self.showing[ss] = axe
+
+        axe.set_visible(True)
+        
+        self.history.appendleft(axe)
+        if self.output:
+            #self.output.clear()
+            self.output.write(self.image)
+    
         bbox = self._blank(axe)
         axe.figure.draw_artist(axe)
-        #self.image.canvas.draw_idle()
-        #self.image.canvas.flush_events()
+
         self.image.canvas.blit(bbox)
+
+        if self.output:
+            self.output.write(self.image)
 
     def _blank(self, axe):
 

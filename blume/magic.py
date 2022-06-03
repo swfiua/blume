@@ -134,6 +134,7 @@ from .modnar import random_colour, random_queue
 
 Parser = argparse.ArgumentParser
 
+
 class RoundAbout:
     """ Pass self around.
     
@@ -224,6 +225,7 @@ class Ball:
     def __getattr__(self, attr):
         """ Delegate to roundabout
         """
+
         return getattr(self.radii, attr)
 
 
@@ -723,7 +725,11 @@ class GeeFarm(Ball):
         print('MAGIC TREE FARM')
 
         # wait for the super dog
-        await self.superdog
+        try:
+            await self.superdog
+
+        except asyncio.CancelledError:
+            print('Farm shutting down')
 
 
     async def quit(self):
@@ -731,7 +737,7 @@ class GeeFarm(Ball):
 
         await self.shep.quit()
 
-        await self.superdog.cancel()
+        self.superdog.cancel()
 
 
 modes = deque(['grey', 'white', 'black'])
@@ -767,8 +773,6 @@ def fig2data(fig=None, background='grey'):
 
 
     return Image.open(image)
-
-
 
 class Shepherd(Ball):
     """Watches things nobody else is watching 
@@ -857,6 +861,9 @@ class Shepherd(Ball):
         """ Show current status of object graph """
         for item in self.flock.nodes:
             print(item)
+            await self.put(str(item), 'help')
+            await self.put(f'roundabout {id(self.radii)}')
+            print('length of help queue', self.select('help').qsize())
             if item is not self:
                 try:
                     stat = item.status()
@@ -865,6 +872,8 @@ class Shepherd(Ball):
                 except:
                     pass
             print()
+
+        await self.put(str(self.path), 'help')
 
         print('PATH')
         for item in self.path:
@@ -907,9 +916,7 @@ class Shepherd(Ball):
                     result = lu[key]()
 
                     if inspect.iscoroutine(result):
-                        task = await spawn(result)
-                        # need to join task
-                        self.whistle_tasks.add(task)
+                        task = spawn(result)
                 except:
                     print_exc()
 
@@ -955,6 +962,7 @@ class Shepherd(Ball):
             # to hang.
             print('ADDING TO HELP Q', hq.qsize(), hq.maxsize)
             await self.put(msg, 'help')
+            await self.put('woooohooo', 'help')
 
         print('ADDED TO HELP Q')
 
@@ -1019,7 +1027,6 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
-        self.running['whistle_stop'] = spawn(self.whistle_stop())
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -1036,15 +1043,6 @@ class Shepherd(Ball):
         # S for stop
         # u/d/p/n up down previous next
         self.running['helper'] = spawn(self.helper())
-
-    async def whistle_stop(self):
-
-        while True:
-            for task in self.whistle_tasks:
-                if task.terminated:
-                    await task.join()
-            await sleep(1)
-            
 
     async def add_whistler(self, queue):
         """ Add a whistler
@@ -1192,15 +1190,28 @@ class Shepherd(Ball):
         
         #nx.draw_networkx(self.flock, node_color=colours, ax=ax)
 
-
-
     async def quit(self):
         """ Cancel all the tasks """
 
+        print('running tasks')
+        for task in asyncio.all_tasks():
+            break
+
+        #print('Stopping whistles')
+        #await self.whistle_stop()
         print('Cancelling runners')
         print(self.running)
         for task in self.running.values():
-            task.cancel()
+            try:
+                task.cancel()
+            except Exception as e:
+                print(f'cancel failed for {task}')
+                print(e)
+
+        print('remaining tasks')
+        for task in asyncio.all_tasks():
+            print(task)
+        
 
         # don't cancel whistlers, cos we are likely running in one.
 
