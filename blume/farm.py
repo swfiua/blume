@@ -322,7 +322,7 @@ class Carpet(Ball):
                 del ax
             else:
                 ax.set_visible(False)
-        print('hideall number axes: before/after:', naxes, len(self.image.axes))
+        #print('hideall number axes: before/after:', naxes, len(self.image.axes))
 
     async def history_back(self):
 
@@ -456,7 +456,6 @@ class Carpet(Ball):
             
         ax = self.axes[self.pos]
 
-        print('putting out axis for pos', self.pos, ax.get_subplotspec())
         await self.put(ax)
 
         self._update_pos()
@@ -475,7 +474,6 @@ class Carpet(Ball):
     def show(self, axe):
 
         ss = axe.get_subplotspec()
-        print('showing', ss)
 
         if ss in self.showing:
              tohide = showing[ss]

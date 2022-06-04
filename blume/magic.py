@@ -339,11 +339,11 @@ class Interact(Ball):
         
         hmm.... worm can time
         """
-
         from pprint import pprint
         for key, value in sorted(vars(self.ball).items()):
             rep = ellipsis(repr(value))
             print(key, rep, type(value))
+            
 
         print()
         self.show_current()
@@ -367,10 +367,16 @@ class Interact(Ball):
 
         
     def show_current(self):
-        
+
         attr = self.current()
         value = repr(getattr(self.ball, attr))
-        print(attr, ellipsis(value, keep=60))
+        result = (attr, ellipsis(value))
+        print(*result)
+        for value in attr, ellipsis(value, keep=60):
+            qq = self.select('interact')
+            if not qq.full():
+                qq.put_nowait(result)
+                
 
     def current(self):
         """ Return current attr """
@@ -402,6 +408,7 @@ class Interact(Ball):
         setattr(self.ball, key, value)
 
         print(f'{key}: {value}')
+        self.show_current()
 
     def double(self):
         """ i double """
@@ -866,11 +873,11 @@ class Shepherd(Ball):
 
     async def status(self):
         """ Show current status of object graph """
-        await self.put(id(TheMagicRoundAbout), 'status')
-        await self.put(id(TheMagicRoundAbout), 'help')
-        qsize = self.select('status').qsize()
-        await self.put(f'status qsize {qsize}', 'help')
-        self.help_write(str(TheMagicRoundAbout.counts))
+        #await self.put(id(TheMagicRoundAbout), 'status')
+        #await self.put(id(TheMagicRoundAbout), 'help')
+        #qsize = self.select('status').qsize()
+        #await self.put(f'status qsize {qsize}', 'help')
+        self.put(str(TheMagicRoundAbout.counts), 'help')
         return
         
         for item in self.flock.nodes:
@@ -977,10 +984,9 @@ class Shepherd(Ball):
             # to hang.
             print('ADDING TO HELP Q', hq.qsize(), hq.maxsize)
             await self.put(msg, 'help')
-            await self.put('woooohooo', 'help')
 
         print('ADDED TO HELP Q')
-        self.help_write(msg)
+        #self.help_write(msg)
 
     def help_write(self, msg):
 
