@@ -158,12 +158,19 @@ class RoundAbout:
     async def put(self, item, name=None):
 
         qq = self.queues[name]
-
+        self.counts.update([f'put {name}'])
         await qq.put(item)
+
+    def put_nowait(self, item, name=None):
+
+        qq = self.queues[name]
+        self.counts.update([f'put_nowait {name}'])
+        qq.put_nowait(item)
 
     async def get(self, name=None):
 
         qq = self.queues[name]
+        self.counts.update([f'get {name}'])
 
         result = await qq.get()
 
@@ -859,6 +866,13 @@ class Shepherd(Ball):
 
     async def status(self):
         """ Show current status of object graph """
+        await self.put(id(TheMagicRoundAbout), 'status')
+        await self.put(id(TheMagicRoundAbout), 'help')
+        qsize = self.select('status').qsize()
+        await self.put(f'status qsize {qsize}', 'help')
+        self.help_write(str(TheMagicRoundAbout.counts))
+        return
+        
         for item in self.flock.nodes:
             print(item)
             await self.put(str(item), 'help')
@@ -937,6 +951,7 @@ class Shepherd(Ball):
         """
         print('HELP', self.path)
 
+
         # FIXME? 
         msg = ''
         keys = set()
@@ -965,7 +980,16 @@ class Shepherd(Ball):
             await self.put('woooohooo', 'help')
 
         print('ADDED TO HELP Q')
+        self.help_write(msg)
 
+    def help_write(self, msg):
+
+        if not hasattr(self, 'hhh'):
+            return
+        
+        self.hhh.clear()
+        for line in msg.split('\n'):
+            self.hhh.write(line, append=True)
 
     def doc_firstline(self, value):
         """ Return first line of doc """
