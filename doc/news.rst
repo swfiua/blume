@@ -8,6 +8,69 @@ What's happening with the `blume.table.Table`?
 
 My adventures in *matplotlib* land continue.
 
+2022/6/7
+========
+
+I have recently been trying to get blume running in a browser using
+`Pyscript <https://pyscript.net/>`_.
+
+This project allows python and many packages to run in the browser.
+
+I have been wanting to have some sort of `blume` running in the
+browser.  Up to now, this meant having to run a webserver.
+
+With pyscript, you just need static html and it downloads, builds and
+installs an entire python environment in a browser based virtual file
+system.
+
+In order to get pyscript working I had to avoid libraries that it does
+not support yet.
+
+One such package is `curio<https://github.com/dabeaz/curio>`_.   I had
+been using curio to run a loop for *async* python.   It was curio that
+mad me brave enough to dip into the asynchronous world.
+
+As I just needed an event loop, spawning of coroutines, sleep'ing and
+queues a switch to usin the asyncio from the python core is probably
+overdue.
+
+I also removed `networkx<https://pypi.org/project/networkx/>`_  adding
+a simple DiGraph class to the blume.magic module to take its place.
+
+You can find my current best effort at a working
+`blume application in the
+browser<https://gotu.readthedocs.io/en/latest/_static/poster.html>`_.
+
+There are lots of bugs and I am still figuring out the best way to go
+about building an interface.  It also seems there are quite a few
+others working on similar ideas.
+
+I gave a short talk about the background of *blume* and the early days
+of matplotlib.
+
+Someone asked where *blume* might be in 5 years time.   
+
+It's taken two years to this point, but the initial async code came
+from another project that is 3-4 year's old.
+
+It has been a time of evaluate options, different ways of working with
+axes and figures, thinking about what might be possible and exploring
+some of the inner workings of matplotlib.
+
+One area I want to explore more is the whole area of event handling in
+the *blume* world.   The bit I would really like to avoid is binding
+function names to keys, rather just have objects say, *"hey, I've got
+this cool function you could call" and let something else decide what
+actions trigger which callbacks.
+
+The goal is to have a stable core (blume.magic and blume.farm), that
+can be used in other projects, such as
+`The Geometry of the Universe<https://gotu.readthedocs.org`_.
+
+It does feel a major step forward in the project to be able to run
+examples in any modern browser, only having to serve static html.
+A full python environment on every mobile phone.
+
 
 2022/4/2
 ========
