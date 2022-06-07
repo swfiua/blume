@@ -26,7 +26,7 @@ system.
 In order to get pyscript working I had to avoid libraries that it does
 not support yet.
 
-One such package is `curio<https://github.com/dabeaz/curio>`_.   I had
+One such package is `curio <https://github.com/dabeaz/curio>`_.   I had
 been using curio to run a loop for *async* python.   It was curio that
 mad me brave enough to dip into the asynchronous world.
 
@@ -34,12 +34,12 @@ As I just needed an event loop, spawning of coroutines, sleep'ing and
 queues a switch to usin the asyncio from the python core is probably
 overdue.
 
-I also removed `networkx<https://pypi.org/project/networkx/>`_  adding
+I also removed `networkx <https://pypi.org/project/networkx/>`_  adding
 a simple DiGraph class to the blume.magic module to take its place.
 
 You can find my current best effort at a working
 `blume application in the
-browser<https://gotu.readthedocs.io/en/latest/_static/poster.html>`_.
+browser <https://gotu.readthedocs.io/en/latest/_static/poster.html>`_.
 
 There are lots of bugs and I am still figuring out the best way to go
 about building an interface.  It also seems there are quite a few
@@ -65,11 +65,30 @@ actions trigger which callbacks.
 
 The goal is to have a stable core (blume.magic and blume.farm), that
 can be used in other projects, such as
-`The Geometry of the Universe<https://gotu.readthedocs.org`_.
+`The Geometry of the Universe<https://gotu.readthedocs.org>`_.
 
 It does feel a major step forward in the project to be able to run
 examples in any modern browser, only having to serve static html.
-A full python environment on every mobile phone.
+A full python environment on every mobile phone.  One of the goals of
+the gotu project is to bring ideas to a wider audience and this very
+much helps with this.
+
+Another question from today related to how the development process
+differs to that of the *matplotlib* project.
+
+*blume* is very much a personal project, ideas are still evolving.  It
+is almost certain things will break from one version to another as
+different ideas are explored.  At the same time I am using it in other
+projects, such as gotu and karmapi.
+
+The primary focus is on a toolset for myself to explore data with
+python visualisations.   
+
+When I look back on software I have built over the years it has
+generally either been just for myself to run, or for a small team
+working closely together, rather than the tens of thousands of users
+that matplotlib has.
+
 
 
 2022/4/2
