@@ -65,7 +65,7 @@ actions trigger which callbacks.
 
 The goal is to have a stable core (blume.magic and blume.farm), that
 can be used in other projects, such as
-`The Geometry of the Universe<https://gotu.readthedocs.org>`_.
+`The Geometry of the Universe <https://gotu.readthedocs.org>`_.
 
 It does feel a major step forward in the project to be able to run
 examples in any modern browser, only having to serve static html.
