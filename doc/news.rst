@@ -57,11 +57,16 @@ It has been a time of evaluate options, different ways of working with
 axes and figures, thinking about what might be possible and exploring
 some of the inner workings of matplotlib.
 
+I am hoping from here the core of blume, the magic and farm modules
+will simplify signifcantly.
+
 One area I want to explore more is the whole area of event handling in
 the *blume* world.   The bit I would really like to avoid is binding
-function names to keys, rather just have objects say, *"hey, I've got
-this cool function you could call" and let something else decide what
-actions trigger which callbacks.
+function names to keys, rather just have objects say,
+*hey, I've got this cool function you could call*
+
+and let something else decide what actions trigger which callbacks.  I
+just struggle of ways to do this that would not be annoying.
 
 The goal is to have a stable core (blume.magic and blume.farm), that
 can be used in other projects, such as
@@ -79,7 +84,8 @@ differs to that of the *matplotlib* project.
 *blume* is very much a personal project, ideas are still evolving.  It
 is almost certain things will break from one version to another as
 different ideas are explored.  At the same time I am using it in other
-projects, such as gotu and karmapi.
+projects, such as gotu and karmapi, so I am starting to need stable
+releases of blume.
 
 The primary focus is on a toolset for myself to explore data with
 python visualisations.   
