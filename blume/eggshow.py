@@ -11,12 +11,8 @@ Press h for help.
 """
 
 
-from blume.farm import Farm, Ball
-
-
-from .mclock2 import GuidoClock
-
-import curio
+from blume.farm import Farm
+from blume import magic
 
 import random
 
@@ -25,7 +21,7 @@ from pathlib import Path
 import argparse
 import traceback
 
-class Examples(Ball):
+class Examples(magic.Ball):
 
     def __init__(self, args):
 
@@ -51,6 +47,14 @@ class Examples(Ball):
 
     async def run(self):
 
+        ax = await self.get()
+        print('got axes', ax)
+        ax.plot(range(10))
+        ax.show()
+        print('done show')
+        await magic.sleep(5)
+        print('done sleep and show')
+
         idx = 0
         if len(self.paths) > 1:
             idx = random.randint(0, len(self.paths)-1)
@@ -69,7 +73,7 @@ class Examples(Ball):
 
         print(path)
         try:
-            exec(path.open().read(), globals())
+            exec(path.open().read(), globals(), locals())
         except:
             print('BAD ONE', path)
             traceback.print_exc(limit=20)
@@ -77,11 +81,25 @@ class Examples(Ball):
             return
 
         print('publishing', path)
-        await self.put(fig2data(plt))
 
-        plt.close()
-
-        return True
+        ax = await self.get()
+        print('got axes', ax)
+        ax.plot(range(10))
+        print('show ax')
+        ax.show()
+        
+        ax = await self.get()
+        print('got axis for imshow fun')
+        try:
+            img = magic.fig2data()
+            print('showing', img)
+            ax.imshow(img)
+            print('imshowed')
+            ax.show()
+        except Exception:
+            print('WHOOO imshow failure')
+            import traceback
+            traceback.print_exc()
 
 
 def show():
@@ -109,4 +127,4 @@ if __name__ == '__main__':
     parser.add_argument('path', default='.')
 
     args = parser.parse_args()
-    curio.run(run(args))
+    magic.run(run(args))
