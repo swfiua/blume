@@ -205,9 +205,6 @@ class Ball:
         self.paused = False
         self.sleep = .8
 
-        # let roundabouts deal with connections
-        self.radii = TheMagicRoundAbout
-
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
         # let shepherd control things?
@@ -227,13 +224,13 @@ class Ball:
     def dump_roundabout(self):
 
         print('DUMPING ROUNDABOUT')
-        print(self.radii.counts)
+        print(TheMagicRoundAbout.counts)
 
     def __getattr__(self, attr):
-        """ Delegate to roundabout
+        """ Delegate to TheMagicRoundAbout
         """
 
-        return getattr(self.radii, attr)
+        return getattr(TheMagicRoundAbout), attr)
 
 
     def update(self, args):
@@ -372,10 +369,10 @@ class Interact(Ball):
         value = repr(getattr(self.ball, attr))
         result = (attr, ellipsis(value))
         print(*result)
-        for value in attr, ellipsis(value, keep=60):
-            qq = self.select('interact')
-            if not qq.full():
-                qq.put_nowait(result)
+        #for value in attr, ellipsis(value, keep=60):
+        #    qq = self.select('help')
+        #    if not qq.full():
+        #        qq.put_nowait(result)
                 
 
     def current(self):
@@ -779,12 +776,6 @@ def fig2data(fig=None, background='grey'):
     image = io.BytesIO()
 
     fig.savefig(image, facecolor=facecolor, dpi=200)
-    try:
-        fig.close()
-        pass
-    except AttributeError:
-        print('cannot close figure')
-
 
     return Image.open(image)
 
@@ -876,15 +867,15 @@ class Shepherd(Ball):
         #await self.put(id(TheMagicRoundAbout), 'status')
         #await self.put(id(TheMagicRoundAbout), 'help')
         #qsize = self.select('status').qsize()
-        #await self.put(f'status qsize {qsize}', 'help')
-        self.put(str(TheMagicRoundAbout.counts), 'help')
-        return
+        #await
+        helps = []
+        helps.append(str(TheMagicRoundAbout.counts))
         
         for item in self.flock.nodes:
             print(item)
-            await self.put(str(item), 'help')
-            await self.put(f'roundabout {id(self.radii)}')
+            helps.append(str(item))
             print('length of help queue', self.select('help').qsize())
+                         
             if item is not self:
                 try:
                     stat = item.status()
@@ -894,11 +885,13 @@ class Shepherd(Ball):
                     pass
             print()
 
-        await self.put(str(self.path), 'help')
+        helps.append('')
+        helps.append(str(self.path))
 
-        print('PATH')
+        helps.append('PATH')
         for item in self.path:
-            print(item)
+            helps.append(str(item))
+        await self.put('\n'.join(helps), 'help')
 
 
     def set_flock(self, flock):
@@ -1016,11 +1009,9 @@ class Shepherd(Ball):
         print('HELPER STARTING UP')
         while True:
             msg = await self.get('help')
-            print('HELPER GOT HELP')
             ax = await self.get()
             ax.text(0, 0, msg)
             ax.axis('off')
-            print('HELP')
             ax.show()
 
             
@@ -1177,9 +1168,7 @@ class Shepherd(Ball):
 
         filename = inspect.getsourcefile(sheep.__class__)
 
-        idle_runner = IdleRunner(filename=filename)
-
-        sub = await asyncio.create_subprocess_shell(idle_runner)
+        sub = await asyncio.create_subprocess_shell(f'idle {filename}')
 
         # idle seems to want an _W
         #self._w = None
@@ -1259,7 +1248,7 @@ class IdleRunner:
 
         import subprocess
 
-        subprocess.run(('idle', self.filename))
+        asyncio.subprocess.run(('idle', self.filename))
     
 
 class Table:
@@ -1315,7 +1304,7 @@ async def canine(ball):
     Now we could loop round doing timeouts on queues and then firing
     off runs.
 
-    With a bit more work when building things ... self.radii time?
+    With a bit more work when building things ... TheMagicRoundAbout time?
 
     Update: trying to accommodate balls where run is just a function.
     
