@@ -230,7 +230,7 @@ class Ball:
         """ Delegate to TheMagicRoundAbout
         """
 
-        return getattr(TheMagicRoundAbout), attr)
+        return getattr(TheMagicRoundAbout, attr)
 
 
     def update(self, args):
