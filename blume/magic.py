@@ -1100,11 +1100,13 @@ class Shepherd(Ball):
         print('oldgrey', self.current())
         await self.put('done', 'oldgrey')
         print('sent message to oldgrey')
-
+        
+        await self.put(str(self.current()), 'status')
 
     async def previous_ball(self):
         """ Move focus to previous """
         await self.up()
+        await self.put(str(self.current()), 'status')
 
     async def up(self):
         """ Move up path """
@@ -1112,6 +1114,7 @@ class Shepherd(Ball):
             del self.path[-1]
         print(f'up new path: {self.path}')
         await self.put('done', 'oldgrey')
+        await self.put(str(self.current()), 'status')
 
     async def down(self):
         """ Move focus to next node """
