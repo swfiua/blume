@@ -728,11 +728,13 @@ class GeeFarm(Ball):
             await result
 
         # create a task which is a dog watching the shepherd
-        print('GEEEFAR spawing superdog')
+        print('GEEEFAR spawning superdog')
         self.superdog = spawn(canine(self.shep))
 
         # set the shepherd to pause 
         self.shep.toggle_pause()
+
+        # figure out an initial path
 
 
     async def run(self):
@@ -1022,7 +1024,7 @@ class Shepherd(Ball):
         FIXME: make it simple
         """
         print('STARTING SHEPHERD')
-        for sheep in self.flock:
+        for sheep, info in self.flock.nodes.items():
             if sheep is self:
                 print("skipping starting myself")
                 #self.running[self] = True
@@ -1034,22 +1036,19 @@ class Shepherd(Ball):
             if inspect.iscoroutine(dolly):
                 await dolly
             
-            info = self.flock.nodes[sheep]
             print('info', info)
             if info.get('background'):
                 # run in background
                 runner = spawn(canine(sheep))
                 self.running[sheep] = runner
+            else:
+                self.path.append(sheep)
 
 
-            if info.get('hat'):
-                # set task to whistle out output
-                qq = sheep.select('keys')
-                print('XXXXX', sheep, id(qq))
-                await self.add_whistler(qq)
+            # set task to whistle out output
+            await self.add_whistler(TheMagicRoundAbout.select('keys'))
 
         print('whistlers', self.whistlers)
-
 
         print('sending out ready message to oldgrey')
         await self.put('ready', 'oldgrey')

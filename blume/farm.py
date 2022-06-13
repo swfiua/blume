@@ -161,12 +161,12 @@ class Farm(GeeFarm):
 
         clock = GuidoClock()
 
-        self.add_node(carpet, background=True, hat=True)
+        self.add_node(carpet, background=True)
 
         self.add_node(self.shep)
 
-        self.add(clock)
         self.add(Params())
+        self.add(clock)
 
         # connections
         #self.add_edge(carpet, hat)
@@ -174,7 +174,7 @@ class Farm(GeeFarm):
         # sheperd looking after gfarm.hub, which it is itself part of.
         self.shep.set_flock(self.hub)
 
-        # initial path this needs more thought
+        # initial path this needs more thought - let's do it in start()
         self.shep.set_path([self.shep, self.carpet])
 
 
@@ -182,6 +182,7 @@ class Farm(GeeFarm):
 
         #self.add_edge(item, self.carpet)
         self.add_edge(self.carpet, item)
+
         
 
 class Carpet(Ball):
