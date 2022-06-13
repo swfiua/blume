@@ -165,7 +165,10 @@ class RoundAbout:
 
         qq = self.queues[name]
         self.counts.update([f'put_nowait {name}'])
-        qq.put_nowait(item)
+        try:
+            qq.put_nowait(item)
+        except asyncio.queues.QueueFull:
+            print(f'magic queue {name} is full.  size={qq.qsize()}')
 
     async def get(self, name=None):
 
@@ -369,11 +372,8 @@ class Interact(Ball):
         value = repr(getattr(self.ball, attr))
         result = (attr, ellipsis(value))
         print(*result)
-        #for value in attr, ellipsis(value, keep=60):
-        #    qq = self.select('help')
-        #    if not qq.full():
-        #        qq.put_nowait(result)
-                
+        self.select('help').put_nowait(str(result))
+
 
     def current(self):
         """ Return current attr """
@@ -637,12 +637,19 @@ class DiGraph:
             if node not in self.nodes:
                 self.nodes[node].update(**keyw)
 
-    def predecessors(self, node):
+    def succcessors(self, node):
 
         result = []
         for a, b in self.edges.keys():
             if a is node:
                 result.append(b)
+
+    def predecessors(self, node):
+
+        result = []
+        for a, b in self.edges.keys():
+            if b is node:
+                result.append(a)
 
     def __iter__(self):
 
@@ -816,7 +823,6 @@ class Shepherd(Ball):
         self.flock = None
         self.running = {}
         self.whistlers = {}
-        self.relays = {}
         self.path = [self]
         self.whistle_tasks = set()
 
@@ -826,8 +832,8 @@ class Shepherd(Ball):
         self.add_filter('n', self.next_ball)
         self.add_filter('p', self.previous_ball)
         
-        self.add_filter('u', self.up)
-        self.add_filter('d', self.down)
+        #self.add_filter('u', self.up)
+        #self.add_filter('d', self.down)
         self.add_filter('r', self.toggle_run)
         self.add_filter('I', self.edit_current)
 
@@ -869,13 +875,11 @@ class Shepherd(Ball):
         #qsize = self.select('status').qsize()
         #await
         helps = []
-        helps.append(str(TheMagicRoundAbout.counts))
-        
+        helps += str(TheMagicRoundAbout.counts).split(',')
+
         for item in self.flock.nodes:
-            print(item)
             helps.append(str(item))
-            print('length of help queue', self.select('help').qsize())
-                         
+                          
             if item is not self:
                 try:
                     stat = item.status()
@@ -921,13 +925,11 @@ class Shepherd(Ball):
 
         or just send it to anything that is running and seems to care?
         """
-        for sheep in reversed(self.path):
-            lu = sheep.filters[name]
-
-            if key in lu.keys():
+        for sheep, trigger, callback in self.generate_key_bindings(name=name):
+            if key == trigger:
                 try:
-                    print(key, lu[key])
-                    result = lu[key]()
+                    print(key, trigger)
+                    result = callback()
 
                     if inspect.iscoroutine(result):
                         task = spawn(result)
@@ -938,11 +940,24 @@ class Shepherd(Ball):
                 return True
 
         # nobody cares :(
-        try:
-            print('nobody cares :(', key, ord(key), type(key))
-        except:
-            print(key)
+        print('nobody cares :(', key, ord(key), type(key))
+
         return False
+
+    def generate_key_bindings(self, name='keys'):
+
+        keys = set()
+        for sheep in reversed(self.path):
+            #msg += repr(sheep) + '\n'
+            lu = sheep.filters[name]
+        
+            for key, value in lu.items():
+                if key in keys:
+                    continue
+                yield sheep, key, value
+
+                keys.add(key)
+
 
     async def show_help(self, name='keys'):
         """ Show what keys do what 
@@ -954,18 +969,11 @@ class Shepherd(Ball):
 
         # FIXME? 
         msg = ''
-        keys = set()
-        for sheep in reversed(self.path):
-            #msg += repr(sheep) + '\n'
-            lu = sheep.filters[name]
-        
-            for key, value in lu.items():
-                if key in keys: continue
+        for sheep, key, callback in self.generate_key_bindings(name=name):
+            msg += '{} {}\n'.format(
+                key,
+                self.doc_firstline(callback))
 
-                keys.add(key)
-                msg += '{} {}\n'.format(
-                    key,
-                    self.doc_firstline(value))
         print(msg)
         # hmm -- there's a queue of help messages somewhere
         # maybe should use that for some other display.
@@ -979,16 +987,6 @@ class Shepherd(Ball):
             await self.put(msg, 'help')
 
         print('ADDED TO HELP Q')
-        #self.help_write(msg)
-
-    def help_write(self, msg):
-
-        if not hasattr(self, 'hhh'):
-            return
-        
-        self.hhh.clear()
-        for line in msg.split('\n'):
-            self.hhh.write(line, append=True)
 
     def doc_firstline(self, value):
         """ Return first line of doc """
@@ -1010,7 +1008,10 @@ class Shepherd(Ball):
         while True:
             msg = await self.get('help')
             ax = await self.get()
-            ax.text(0, 0, msg)
+            ax.text(0.5, 0.5, msg,
+                    verticalalignment='center',
+                    horizontalalignment='center',
+                    transform=ax.transAxes)
             ax.axis('off')
             ax.show()
 
@@ -1048,6 +1049,10 @@ class Shepherd(Ball):
                 await self.add_whistler(qq)
 
         print('whistlers', self.whistlers)
+
+
+        print('sending out ready message to oldgrey')
+        await self.put('ready', 'oldgrey')
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -1083,66 +1088,38 @@ class Shepherd(Ball):
         path management.
         """
         print(f'what is next?: {self.path}')
+        print(f'wtf is going on?')
         current = self.current()
-        while current not in self.flock.nodes and len(self.path) > 1:
-            del self.path[-1]
-            current = self.current()
+        print(f'current is {current}')
                 
-        nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
+        print(f'doing nodes manipulation')
+        nodes = [n for n in self.flock.nodes if n not in self.path]
 
         if nodes:
-
-            ix = nodes.index(current)
-            if len(nodes) == ix + 1:
-                ix = -1
-            
-            self.path.append(nodes[ix + 1])
+            self.path.append(nodes[0])
         
-        print(self.current())
+        print('oldgrey', self.current())
+        await self.put('done', 'oldgrey')
+        print('sent message to oldgrey')
 
 
     async def previous_ball(self):
         """ Move focus to previous """
-        current = self.current()
-        print(f'what is previous?: {self.path}')
-        while current not in self.flock.nodes and len(self.path) > 1:
-            del self.path[-1]
-            current = self.current()
-                
-        nodes = [n for n in self.flock.nodes if n not in self.path[:-1]]
-
-        if nodes:
-            
-            del self.path[-1]
-            ix = nodes.index(current)
-            if ix == 0:
-                ix = len(nodes)
-            
-            self.path.append(nodes[ix-1])
-
-        print(self.current())
+        await self.up()
 
     async def up(self):
         """ Move up path """
         if len(self.path) > 1:
             del self.path[-1]
         print(f'up new path: {self.path}')
+        await self.put('done', 'oldgrey')
 
     async def down(self):
         """ Move focus to next node """
-        current = self.current()
-
-        succ = list(self.flock.predecessors(current))
-
-        if not succ:
-            succ = list(self.flock.nodes)
-            
-        print('SSSSSSSS', succ)
-            
-        if succ:
-            self.path.append(random.choice(succ))
+        await self.next_ball()
 
         print(f'down new path: {self.path}')
+        await self.put('done', 'oldgrey')
 
     async def toggle_run(self, sheep=None):
         """ Toggle run status of sheep """

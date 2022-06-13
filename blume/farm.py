@@ -242,6 +242,7 @@ class Carpet(Ball):
 
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
+        self.add_filter('F', self.toggle_expand2)
 
 
     def log_events(self):
@@ -361,9 +362,14 @@ class Carpet(Ball):
         for hh in range(hlen):
             await self.history_rotate(1)
         
-    def toggle_expand(self):
+    def toggle_expand2(self):
+        fig = self.image
+
+        fig.subplots_adjust(hspace=0, wspace=0)
         
-        names = ["left", "bottom", "right", "top", "wspace", "hspace"]
+    def toggle_expand(self, names=None):
+        
+        names = names or ["left", "bottom", "right", "top", "wspace", "hspace"]
 
         fig = self.image
         if not self.expanded:
@@ -379,6 +385,7 @@ class Carpet(Ball):
                bottom=0, top=1,
                hspace=0, wspace=0)
         else:
+            print(self.expanded)
             fig.subplots_adjust(**self.expanded)
             self.expanded = None
         
