@@ -892,7 +892,7 @@ class Shepherd(Ball):
             print()
 
         helps.append('')
-        helps.append(str(self.path))
+        helps += [str(x.__class__) for x in self.path]
 
         helps.append('PATH')
         for item in self.path:

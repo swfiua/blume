@@ -210,21 +210,12 @@ class Carpet(Ball):
 
         self.axes = {}
 
-        #width, height = ball.width, ball.height
-
-            #rc('figure',
-            #   titlesize=0)
-
-            #rc('axes',
-            #   xmargin=0,
-            #   ymargin=0,
-            #   zmargin=0)
-
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
         try:
             plt.show(block=False)
         except:
+            # sometimes backends have show without block parameter?  
             plt.show()
 
         # keyboard handling
@@ -348,12 +339,12 @@ class Carpet(Ball):
         pos = await self.get()
 
         ax.position(pos)
-        ax.show()
+        ax.set_visible(True)
 
         if pos.delegate in self.image.axes:
             self.image.delaxes(pos.delegate)
         del pos
-        #self._update_pos()
+
 
     async def replay_history(self):
 
@@ -476,7 +467,7 @@ class Carpet(Ball):
 
         self.pos += 1
         if self.pos >= self.size * self.size:
-            self.hideall()
+            #self.hideall()
             self.generate_mosaic()
 
     def show(self, axe):
@@ -533,7 +524,8 @@ class Carpet(Ball):
         
         
     def get_full_bbox(self, ax):
-
+        # FIXME -- this needs to take account of padding of the figure
+        #  see toggle_expand
         ss = ax.get_subplotspec()
         gs = ss.get_gridspec()
 
