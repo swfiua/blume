@@ -306,16 +306,21 @@ class Carpet(Ball):
 
     def hideall(self):
 
+        for key, ax in self.showing.items():
+            ax.set_visible(False)
+        self.showing.clear()
+        
         naxes = len(self.image.axes)
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
             if ax not in self.history and not ax.get_visible():
                 # while we are at lets delete some we no longer need
+                print(f'deleting axes {ax}')
                 ax.figure.delaxes(ax)
                 del ax
             else:
                 ax.set_visible(False)
-        #print('hideall number axes: before/after:', naxes, len(self.image.axes))
+        print('hideall number axes: before/after:', naxes, len(self.image.axes))
 
     async def history_back(self):
 
@@ -345,6 +350,7 @@ class Carpet(Ball):
             self.image.delaxes(pos.delegate)
         del pos
 
+        ax.show()
 
     async def replay_history(self):
 
@@ -393,7 +399,7 @@ class Carpet(Ball):
         while True:
             #print('RUNNING EVENT LOOP')
             
-            #canvas.draw_idle()
+            canvas.draw_idle()
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
@@ -484,17 +490,19 @@ class Carpet(Ball):
         axe.set_visible(True)
         
         self.history.appendleft(axe)
-        if self.output:
-            #self.output.clear()
-            self.output.write(self.image)
-    
-        bbox = self._blank(axe)
-        axe.figure.draw_artist(axe)
+        print("SHOWING FIGURE")
+        self.image.show()
+        #if self.output:
+        #    #self.output.clear()
+        #    self.output.write(self.image)
+        
+        self._blank(axe)
+        #axe.figure.draw_artist(axe)
 
-        self.image.canvas.blit(bbox)
+        #self.image.canvas.blit(bbox)
 
-        if self.output:
-            self.output.write(self.image)
+        #if self.output:
+        #    self.output.write(self.image)
 
     def _blank(self, axe):
 
@@ -507,7 +515,10 @@ class Carpet(Ball):
                  [random.random()/2,
                   random.random()/2,
                   random.random()/2]))
-
+        axe.set_facecolor(self.blanks[0])
+        self.blanks.rotate()
+        return
+            
         from matplotlib.patches import Rectangle
         bb = self.get_full_bbox(axe)
         

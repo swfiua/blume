@@ -290,7 +290,7 @@ class Interact(Ball):
         self.add_filter('x', self.tenx)
         self.add_filter('z', self.tenth)
         self.add_filter('m', self.add_m)
-        self.add_filter('\177', self.shorten)
+        self.add_filter('c', self.shorten)
 
         self.add_filter('.', self.next_attr)
         self.add_filter(',', self.prev_attr)
