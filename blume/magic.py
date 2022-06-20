@@ -861,6 +861,7 @@ class Shepherd(Ball):
 
         if self.interaction not in self.path:
             self.path.append(self.interaction)
+            await self.put('interact', 'oldgrey')
 
         await self.interaction.interact()
 
@@ -1005,16 +1006,47 @@ class Shepherd(Ball):
 
         One day it will be easy to start and stop this.
         """
+        from blume.legend import Grid
 
         print('HELPER STARTING UP')
         while True:
             msg = await self.get('help')
             ax = await self.get()
-            ax.text(0.5, 0.5, msg,
-                    verticalalignment='center',
-                    horizontalalignment='center',
-                    transform=ax.transAxes)
+            print('got grid')
+            fontsize = 6
+            grid = Grid([[msg]], prop=dict(size=fontsize))
+            #ax.text(0., 0., msg)
+            #        verticalalignment='center',
+            #        horizontalalignment='center',
+            #        transform=ax.transAxes)
+            #ax.axis('off')
+            renderer = ax.figure._cachedRenderer
+            print('RENDERER', renderer)
+            ax.add_artist(grid)
             ax.axis('off')
+            if renderer:
+                try:
+                    print('FONT SCALING', grid.get_window_extent)
+                    extent = grid.get_window_extent(renderer)
+                    print('WINDOW EXTENT', extent)
+                    ax_extent = ax.get_window_extent(renderer)
+                    print('AXES EXTENT  ', ax_extent)
+                    print(ax_extent.x1 - ax_extent.x0)
+                    print(extent.x1 - extent.x0)
+                    xfontscale = (ax_extent.x1 - ax_extent.x0) / (extent.x1 - extent.x0)
+                    yfontscale = (ax_extent.y1 - ax_extent.y0) / (extent.y1 - extent.y0)
+                    fontsize *= min(xfontscale, yfontscale) * 0.9
+                    print('removing grid')
+                    grid.remove()
+                    print(fontsize)
+                    grid = Grid([[msg]], prop=dict(size=fontsize))
+                    ax.add_artist(grid)
+                except:
+                    import traceback
+                    traceback.print_exc()
+                        
+                
+            print('showing help axes')
             ax.show()
 
             

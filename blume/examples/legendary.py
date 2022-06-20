@@ -66,6 +66,8 @@ class Legend(magic.Ball):
             align=self.aligns[0],
             prop=props)
         ax.add_artist(grid)
+
+        print('Legend size', grid.get_window_extent(ax.figure._cachedRenderer))
         
         ax.plot(range(10))
 

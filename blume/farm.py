@@ -399,7 +399,6 @@ class Carpet(Ball):
         while True:
             #print('RUNNING EVENT LOOP')
             
-            canvas.draw_idle()
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
@@ -487,16 +486,16 @@ class Carpet(Ball):
 
         self.showing[ss] = axe
 
-        axe.set_visible(True)
-        
         self.history.appendleft(axe)
         print("SHOWING FIGURE")
-        self.image.show()
         #if self.output:
         #    #self.output.clear()
         #    self.output.write(self.image)
         
         self._blank(axe)
+        #self.image.show()
+        axe.set_visible(True)
+        self.image.canvas.draw_idle()
         #axe.figure.draw_artist(axe)
 
         #self.image.canvas.blit(bbox)
@@ -515,9 +514,9 @@ class Carpet(Ball):
                  [random.random()/2,
                   random.random()/2,
                   random.random()/2]))
-        axe.set_facecolor(self.blanks[0])
-        self.blanks.rotate()
-        return
+        #axe.set_facecolor(self.blanks[0])
+        #self.blanks.rotate()
+        #return
             
         from matplotlib.patches import Rectangle
         bb = self.get_full_bbox(axe)

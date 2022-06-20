@@ -147,7 +147,10 @@ class Grid(offsetbox.AnchoredOffsetbox):
         loc = loc or 1
         hboxes = []
 
-        textprops = prop.copy()
+        textprops = None
+        if prop:
+            textprops = prop.copy()
+            
         for row in data:
             #textprops = dict(horizontalalignment='right')
             #textprops = {}
@@ -159,9 +162,40 @@ class Grid(offsetbox.AnchoredOffsetbox):
         vbox = outer(pad=0, sep=0, align=align, mode=mode,
                      children=hboxes)
         super().__init__(loc=loc,
+                         #bbox_to_anchor=(0, 0, 1, 1),
                          child=vbox,
                          prop=prop)
 
+
+    def get_window_extent(self, renderer):
+        """Return the bounding box of the table in window coords."""
+
+        boxes = []
+        for child in self.get_children():
+            boxes += [x.get_window_extent(renderer) for x in child.get_children()]
+        
+        return transforms.Bbox.union(boxes)
+
+    def draw(self, renderer):
+
+        self.facecolor = COLORS[0]
+        COLORS.rotate()
+        print(f'drawing grid color {self.facecolor}')
+        from matplotlib.patches import bbox_artist
+        props= dict(pad=20)
+        bbox = bbox_artist(self, renderer, props=props, fill=True)
+        print('drawn', bbox)
+        super().draw(renderer)
+
+from collections import deque
+import random
+        
+COLORS = deque(['skyblue', 'green', 'yellow', 'pink', 'orange',
+                [random.random()/2,
+                 random.random()/2,
+                 random.random()/2]])
+
+        
 class LayoutGrid(layoutgrid.LayoutGrid):
     """ A grid of cells.
 
