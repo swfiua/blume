@@ -67,7 +67,7 @@ from matplotlib.transforms import Bbox
 #from .mosaic import Carpet
 
 from blume import magic
-from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, canine
+from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd
 from .mclock2 import GuidoClock
 from .rcparms import Params
 
@@ -106,8 +106,8 @@ class Axe:
 
     def show(self):
         """ Show the axes """
+        self.set_visible(True)
         self.carpet.show(self)
-        #self.set_visible(True)
 
     def hide(self):
         """ Hide the axes """
@@ -117,7 +117,7 @@ class Axe:
     def please_draw(self):
         """ Try to force a draw of the axes """
         print('politely asked to draw')
-        self.draw_artist(self)
+        #self.draw_artist(self)
 
     def projection(self, name):
         """ Set the projection 
@@ -200,7 +200,6 @@ class Carpet(Ball):
 
         # grid related
         self.size = 1
-        self.pos = 0
         self.simple = False
         self.expanded = None
         self.output = None
@@ -208,7 +207,7 @@ class Carpet(Ball):
 
         self.history = deque(maxlen=random.randint(20, 50))
 
-        self.axes = {}
+        self.axes = deque()
 
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
@@ -286,7 +285,6 @@ class Carpet(Ball):
     async def more(self):
         """ Show more pictures """
         self.size += 1
-        self.pos = 0
         self.hideall()
         self.generate_mosaic()
 
@@ -298,7 +296,6 @@ class Carpet(Ball):
         """ Show fewer pictures """
         if self.size > 1:
             self.size -= 1
-        self.pos = 0
         self.hideall()
         self.generate_mosaic()
         print('replay history', len(self.history))
@@ -309,10 +306,11 @@ class Carpet(Ball):
         for key, ax in self.showing.items():
             ax.set_visible(False)
         self.showing.clear()
-        
+        #return
         naxes = len(self.image.axes)
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
+            print(type(ax), 'hideall')
             if ax not in self.history and not ax.get_visible():
                 # while we are at lets delete some we no longer need
                 print(f'deleting axes {ax}')
@@ -340,16 +338,33 @@ class Carpet(Ball):
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        ax = self.history.popleft()
+        print('h waiting for axis')
+        print(magic.TheMagicRoundAbout.counts)
+        magic.TheMagicRoundAbout.status()
+        #for x in asyncio.all_tasks():
+        #    print(x.get_stack())
+        qq = self.select()
+        print('axis q size:', qq.qsize(), qq.maxsize)
+        #print(dir(self.select()))
+        #print('taking a sleep in rotate history')
+        #await magic.sleep(5)
+        if qq.empty():
+            print('NO Axes')
+            #return
+        
+            
         pos = await self.get()
-
+        print('h got axis')
+        ax = Axe(self.history.popleft(), self)
         ax.position(pos)
-        ax.set_visible(True)
+        #ax.set_visible(True)
 
         if pos.delegate in self.image.axes:
+            print('deleting pos axes')
             self.image.delaxes(pos.delegate)
         del pos
 
+        print('history showing axis')
         ax.show()
 
     async def replay_history(self):
@@ -402,9 +417,6 @@ class Carpet(Ball):
             canvas.flush_events()
             canvas.start_event_loop(self.sleep)
 
-            # Would be good to find a Tk file pointer that
-            # can be used as a source of events
-
             await magic.sleep(self.sleep * 10)
 
     async def start(self):
@@ -425,55 +437,49 @@ class Carpet(Ball):
         mosaic = np.arange(self.size * self.size)
         mosaic = mosaic.reshape((self.size, self.size))
 
-        # position within the mosaic
-        self.pos = 0
-
-
-        # first hide existing axes
-        #for ax in self.axes.values():
-        #    ax.set_visible(False)
-
         keys = dict(visible=False)
 
         picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
 
         for key, ax in picture.items():
-            axe = Axe(ax, self)
-            if self.simple:
-                axe.simplify()
-                axe.grid(True)
-            axe.meta = dict(key=key)
-            self.axes[key] = axe
+            ax.meta = dict(key=key)
+            self.axes.append(ax)
 
-        #assert len(self.image.axes) == self.size * self.size
+    def delete_old_axes(self):
+
+        naxes = len(self.axes)
+        for ax in self.image.axes:
+            #print('hiding', type(ax), id(ax))
+            if ax not in self.history:
+                print(f'deleting axes {ax}')
+                ax.figure.delaxes(ax)
+                del ax
+        print('del old axes number axes: before/after:', naxes, len(self.axes))
+
 
     async def run(self):
 
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
+            #print('carpet queue not empty')
             return
 
-
         if not self.axes:
+            self.delete_old_axes()
             self.generate_mosaic()
-            self.pos=0
             
-        ax = self.axes[self.pos]
+        ax = self.axes.popleft()
+        axe = Axe(ax, self)
+        if self.simple:
+            axe.simplify()
+            axe.grid(True)
 
-        await self.put(ax)
-
-        self._update_pos()
+        await self.put(axe)
+        print(f'carpet put out {ax}')
 
         # let the GUI event loop do it's thing.
         #self.image.canvas.flush_events()
         
-
-    def _update_pos(self):
-
-        self.pos += 1
-        if self.pos >= self.size * self.size:
-            #self.hideall()
-            self.generate_mosaic()
 
     def show(self, axe):
 
@@ -486,7 +492,7 @@ class Carpet(Ball):
 
         self.showing[ss] = axe
 
-        self.history.appendleft(axe)
+        self.history.appendleft(axe.delegate)
         print("SHOWING FIGURE")
         #if self.output:
         #    #self.output.clear()
@@ -525,6 +531,7 @@ class Carpet(Ball):
             bb.p0, bb.width, bb.height,
             facecolor=self.blanks[0])
             #facecolor=fig.patch.get_facecolor() )
+        print(f'_blank drawing {rect} {self.blanks[0]}')
         self.blanks.rotate()
         #axe.text(0, 0.5, str(axe.get_subplotspec()))
         #axe.text(0, 0.8, str(rect))

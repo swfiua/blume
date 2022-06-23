@@ -170,6 +170,17 @@ class RoundAbout:
         except asyncio.queues.QueueFull:
             print(f'magic queue {name} is full.  size={qq.qsize()}')
 
+    def get_nowait(self, name=None):
+
+        qq = self.queues[name]
+        self.counts.update([f'get_nowait {name}'])
+        try:
+            item = qq.get_nowait()
+        except asyncio.queues.QueueFull:
+            print(f'magic queue {name} is full.  size={qq.qsize()}')
+
+        return item
+    
     async def get(self, name=None):
 
         qq = self.queues[name]
@@ -192,8 +203,7 @@ class RoundAbout:
         """ Show some stats """
         print("Queue Stats")
         for name, qq in self.queues.items():
-            print(name)
-            print(qq.qsize(), qq.maxsize)
+            print(name, qq.qsize(), qq.maxsize)
 
 TheMagicRoundAbout = RoundAbout()
             
@@ -880,17 +890,17 @@ class Shepherd(Ball):
         helps = []
         helps += str(TheMagicRoundAbout.counts).split(',')
 
-        for item in self.flock.nodes:
-            helps.append(str(item))
-                          
-            if item is not self:
-                try:
-                    stat = item.status()
-                    if inspect.iscoroutine(stat):
-                        await stat
-                except:
-                    pass
-            print()
+        #for item in self.flock.nodes:
+        #    helps.append(str(item))
+        #                  
+        #    if item is not self:
+        #        try:
+        #            stat = item.status()
+        #            if inspect.iscoroutine(stat):
+        #                await stat
+        #        except:
+        #            pass
+        #    print()
 
         helps.append('')
         helps += [str(x.__class__) for x in self.path]
@@ -898,7 +908,8 @@ class Shepherd(Ball):
         helps.append('PATH')
         for item in self.path:
             helps.append(str(item))
-        await self.put('\n'.join(helps), 'help')
+        print('\n'.join(helps))
+        self.put_nowait('\n'.join(helps), 'help')
 
 
     def set_flock(self, flock):
@@ -914,6 +925,7 @@ class Shepherd(Ball):
         print('creating whistler for:', queue)
         while True:
             key = await queue.get()
+            print('whistling', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -936,6 +948,10 @@ class Shepherd(Ball):
 
                     if inspect.iscoroutine(result):
                         task = spawn(result)
+
+                        # push the task into a queue so something can show
+                        # any exception
+                        #await self.put(task, 'task')
                 except:
                     print_exc()
 
@@ -943,7 +959,7 @@ class Shepherd(Ball):
                 return True
 
         # nobody cares :(
-        print('nobody cares :(', key, ord(key), type(key))
+        print('nobody cares :(', key)
 
         return False
 
@@ -987,7 +1003,7 @@ class Shepherd(Ball):
             # curiously, maxsize - 1 is the critical size at which it seems
             # to hang.
             print('ADDING TO HELP Q', hq.qsize(), hq.maxsize)
-            await self.put(msg, 'help')
+            self.put_nowait(msg, 'help')
 
         print('ADDED TO HELP Q')
 
@@ -1014,7 +1030,7 @@ class Shepherd(Ball):
             ax = await self.get()
             print('got grid')
             fontsize = 6
-            grid = Grid([[msg]], prop=dict(size=fontsize))
+            grid = Grid([[msg]])
             #ax.text(0., 0., msg)
             #        verticalalignment='center',
             #        horizontalalignment='center',
@@ -1035,21 +1051,17 @@ class Shepherd(Ball):
                     print(extent.x1 - extent.x0)
                     xfontscale = (ax_extent.x1 - ax_extent.x0) / (extent.x1 - extent.x0)
                     yfontscale = (ax_extent.y1 - ax_extent.y0) / (extent.y1 - extent.y0)
-                    fontsize *= min(xfontscale, yfontscale) * 0.9
-                    print('removing grid')
-                    grid.remove()
-                    print(fontsize)
-                    grid = Grid([[msg]], prop=dict(size=fontsize))
-                    ax.add_artist(grid)
+                    fontscale = min(xfontscale, yfontscale) * 0.9
+                    grid.scale(fontscale)
+                    print('scaled by', fontscale)
                 except:
-                    import traceback
-                    traceback.print_exc()
+                    print_exc()
                         
                 
             print('showing help axes')
             ax.show()
 
-            
+
     async def start(self):
         """ Start things going 
 
@@ -1077,13 +1089,16 @@ class Shepherd(Ball):
                 self.path.append(sheep)
 
 
-            # set task to whistle out output
-            await self.add_whistler(TheMagicRoundAbout.select('keys'))
+        # set task to whistle out output
+        await self.add_whistler(TheMagicRoundAbout.select('keys'))
 
         print('whistlers', self.whistlers)
 
+        # add a task to watch tasks
+        self.watcher = spawn(self.task_watcher())
+
         print('sending out ready message to oldgrey')
-        await self.put('ready', 'oldgrey')
+        self.put_nowait('ready', 'oldgrey')
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -1101,6 +1116,22 @@ class Shepherd(Ball):
         # u/d/p/n up down previous next
         self.running['helper'] = spawn(self.helper())
 
+
+    async def task_watcher(self):
+
+        while True:
+            print('Task q size', self.select('task').qsize())
+            task = await self.get('task')
+            if task.cancelled():
+                continue
+
+            if task.done():
+                if task.exception():
+                    print(task.exception())
+            else:        
+                await self.put(task, 'task')
+            
+        
     async def add_whistler(self, queue):
         """ Add a whistler
         
@@ -1133,12 +1164,11 @@ class Shepherd(Ball):
         await self.put('done', 'oldgrey')
         print('sent message to oldgrey')
         
-        await self.put(str(self.current()), 'status')
+        self.put_nowait(str(self.current()), 'help')
 
     async def previous_ball(self):
         """ Move focus to previous """
         await self.up()
-        await self.put(str(self.current()), 'status')
 
     async def up(self):
         """ Move up path """
@@ -1146,14 +1176,15 @@ class Shepherd(Ball):
             del self.path[-1]
         print(f'up new path: {self.path}')
         await self.put('done', 'oldgrey')
-        await self.put(str(self.current()), 'status')
+        await self.put(str(self.current()), 'help')
 
     async def down(self):
         """ Move focus to next node """
         await self.next_ball()
 
-        print(f'down new path: {self.path}')
-        await self.put('done', 'oldgrey')
+        #print(f'down new path: {self.path}')
+        #await self.put(str(self.current()), 'help')
+        #await self.put('done', 'oldgrey')
 
     async def toggle_run(self, sheep=None):
         """ Toggle run status of sheep """
@@ -1328,6 +1359,7 @@ async def canine(ball):
 
             result = ball.run()
             if inspect.iscoroutine(result):
+                #print(f'canine awaits result {runs} for {ball}')
                 await result
             
             runs += 1

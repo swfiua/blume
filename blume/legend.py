@@ -166,6 +166,13 @@ class Grid(offsetbox.AnchoredOffsetbox):
                          child=vbox,
                          prop=prop)
 
+    def scale(self, factor):
+
+        for child in self._children:
+            for gchild in child._children:
+                t = gchild._text
+                t.set_size(t.get_size() * factor)
+                
 
     def get_window_extent(self, renderer):
         """Return the bounding box of the table in window coords."""
@@ -180,11 +187,11 @@ class Grid(offsetbox.AnchoredOffsetbox):
 
         self.facecolor = COLORS[0]
         COLORS.rotate()
-        print(f'drawing grid color {self.facecolor}')
+        print(f'drawing grid {id(self)} )color {self.facecolor}')
         from matplotlib.patches import bbox_artist
         props= dict(pad=20)
-        bbox = bbox_artist(self, renderer, props=props, fill=True)
-        print('drawn', bbox)
+        bbox_artist(self, renderer, props=props, fill=True)
+        print('drawn', self.get_window_extent(renderer))
         super().draw(renderer)
 
 from collections import deque
