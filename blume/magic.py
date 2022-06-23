@@ -742,7 +742,7 @@ class GeeFarm(Ball):
         self.superdog = spawn(canine(self.shep))
 
         # set the shepherd to pause 
-        self.shep.toggle_pause()
+        self.shep.pause = True
 
         # figure out an initial path
 
@@ -925,7 +925,6 @@ class Shepherd(Ball):
         print('creating whistler for:', queue)
         while True:
             key = await queue.get()
-            print('whistling', key)
             await self.whistle(key, name)
     
     async def whistle(self, key, name='keys'):
@@ -939,6 +938,16 @@ class Shepherd(Ball):
         or perhaps directional if there's a name?
 
         or just send it to anything that is running and seems to care?
+
+        Another option is just put each key into a queue and have
+        relays that wait on that queue then run the callback.
+
+        That then creates the problem of managing all the relays.
+
+        Each time they change, just cancel all existing and re-generate
+        using generate_key_bindings.
+
+        
         """
         for sheep, trigger, callback in self.generate_key_bindings(name=name):
             if key == trigger:
