@@ -271,8 +271,8 @@ class Carpet(Ball):
         # use select here to get actual magic curio queue
         # where put can magically be a coroutine or a function according
         # to context.
-        qq = self.select('keys')
-        qq.put_nowait(event.key)
+        qq = self.select(event.key)
+        qq.put_nowait(event)
 
     async def save(self):
         """ Save current image

@@ -835,6 +835,7 @@ class Shepherd(Ball):
         self.flock = None
         self.running = {}
         self.whistlers = {}
+        self.relays = set()
         self.path = [self]
         self.whistle_tasks = set()
 
@@ -871,6 +872,7 @@ class Shepherd(Ball):
 
         if self.interaction not in self.path:
             self.path.append(self.interaction)
+            await self.generate_key_relays()
             await self.put('interact', 'oldgrey')
 
         await self.interaction.interact()
@@ -920,57 +922,13 @@ class Shepherd(Ball):
         
         self.path = path or [self]
 
-    async def whistler(self, queue, name='keys'):
-        """ Send out whistles from a queue """
-        print('creating whistler for:', queue)
-        while True:
-            key = await queue.get()
-            await self.whistle(key, name)
-    
-    async def whistle(self, key, name='keys'):
-        """ send out a message 
-         
-        follow the graph to see who's interested
 
+    async def generate_key_relays(self, name='keys'):
 
-        feels like this should be some sort of broadcast
-
-        or perhaps directional if there's a name?
-
-        or just send it to anything that is running and seems to care?
-
-        Another option is just put each key into a queue and have
-        relays that wait on that queue then run the callback.
-
-        That then creates the problem of managing all the relays.
-
-        Each time they change, just cancel all existing and re-generate
-        using generate_key_bindings.
-
-        
-        """
-        for sheep, trigger, callback in self.generate_key_bindings(name=name):
-            if key == trigger:
-                try:
-                    print(key, trigger)
-                    result = callback()
-
-                    if inspect.iscoroutine(result):
-                        task = spawn(result)
-
-                        # push the task into a queue so something can show
-                        # any exception
-                        #await self.put(task, 'task')
-                except:
-                    print_exc()
-
-                # first one gets it?
-                return True
-
-        # nobody cares :(
-        print('nobody cares :(', key)
-
-        return False
+        self.relays.clear()
+        for target, key, callback in self.generate_key_bindings():
+            listener = spawn(relay(key, callback))
+            self.relays.add(listener)
 
     def generate_key_bindings(self, name='keys'):
 
@@ -988,12 +946,8 @@ class Shepherd(Ball):
 
 
     async def show_help(self, name='keys'):
-        """ Show what keys do what 
-
-        whistle help: these two need to be kept in sync.
-        """
+        """ Show what keys do what """
         print('HELP', self.path)
-
 
         # FIXME? 
         msg = ''
@@ -1097,11 +1051,9 @@ class Shepherd(Ball):
             else:
                 self.path.append(sheep)
 
-
-        # set task to whistle out output
-        await self.add_whistler(TheMagicRoundAbout.select('keys'))
-
-        print('whistlers', self.whistlers)
+        await self.generate_key_relays()
+        print('relays:')
+        print(self.relays)
 
         # add a task to watch tasks
         self.watcher = spawn(self.task_watcher())
@@ -1141,18 +1093,6 @@ class Shepherd(Ball):
                 await self.put(task, 'task')
             
         
-    async def add_whistler(self, queue):
-        """ Add a whistler
-        
-        FIXME: figure out what a whistler does
-        """
-
-        print('adding whistler', id(queue))
-        whistle = spawn(
-            self.whistler(queue))
-
-        self.whistlers[id(queue)] = whistle
-        
     async def next_ball(self):
         """ Move focus to next 
 
@@ -1170,6 +1110,7 @@ class Shepherd(Ball):
             self.path.append(nodes[0])
         
         print('oldgrey', self.current())
+        await self.generate_key_relays()
         await self.put('done', 'oldgrey')
         print('sent message to oldgrey')
         
@@ -1184,6 +1125,7 @@ class Shepherd(Ball):
         if len(self.path) > 1:
             del self.path[-1]
         print(f'up new path: {self.path}')
+        await self.generate_key_relays()
         await self.put('done', 'oldgrey')
         await self.put(str(self.current()), 'help')
 
@@ -1213,7 +1155,10 @@ class Shepherd(Ball):
             del self.running[sheep]
 
     async def edit_current(self):
-        """ open code for current in idle """
+        """ open code for current in idle 
+
+        FIXME: what to do with no idle, eg in pyscript land?
+        """
 
         sheep = self.current()
 
@@ -1267,8 +1212,6 @@ class Shepherd(Ball):
         for task in asyncio.all_tasks():
             break
 
-        #print('Stopping whistles')
-        #await self.whistle_stop()
         print('Cancelling runners')
         print(self.running)
         for task in self.running.values():
@@ -1282,8 +1225,6 @@ class Shepherd(Ball):
         for task in asyncio.all_tasks():
             print(task)
         
-
-        # don't cancel whistlers, cos we are likely running in one.
 
     def __str__(self):
 
@@ -1399,6 +1340,29 @@ def ellipsis(string, maxlen=200, keep=10):
         string = string[:keep] + ' ... ' + string[-keep:]
 
     return string
+
+async def relay(channel, callback):
+
+    print(f'listening for messages from {channel}')
+    while True:
+        print(f'RELAY WAITING FOR MESSAGE FROM {channel}')
+        msg = await TheMagicRoundAbout.get(channel)
+        print(f'message from {channel}: {msg}')
+        try:
+            result = callback()
+            print(f'{callback} RETURNED SUCCESSFULLY')
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print(f'{channel} relay exception for {callback}')
+            
+        if inspect.iscoroutine(result):
+            try:
+                print(f'awaiting {result}')
+                await result
+            except:
+                print(f'{channel} relay exception awaiting {result}')
+
 
 if __name__ == '__main__':
     
