@@ -234,10 +234,11 @@ class Ball:
         self.filters[name][key] = coro
 
 
-    def dump_roundabout(self):
+    async def dump_roundabout(self):
 
         print('DUMPING ROUNDABOUT')
         print(TheMagicRoundAbout.counts)
+        await self.put(TheMagicRoundAbout.counts, 'help')
 
     def __getattr__(self, attr):
         """ Delegate to TheMagicRoundAbout
@@ -1343,9 +1344,7 @@ def ellipsis(string, maxlen=200, keep=10):
 
 async def relay(channel, callback):
 
-    print(f'listening for messages from {channel}')
     while True:
-        print(f'RELAY WAITING FOR MESSAGE FROM {channel}')
         msg = await TheMagicRoundAbout.get(channel)
         print(f'message from {channel}: {msg}')
         try:
@@ -1355,6 +1354,7 @@ async def relay(channel, callback):
             import traceback
             traceback.print_exc()
             print(f'{channel} relay exception for {callback}')
+            continue
             
         if inspect.iscoroutine(result):
             try:
