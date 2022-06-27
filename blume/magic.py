@@ -994,19 +994,23 @@ class Shepherd(Ball):
             ax = await self.get()
             print('got grid')
             fontsize = 6
-            grid = Grid([[msg]])
+            prop = dict(size=fontsize)
+            
+            grid = Grid([[msg]], prop=prop)
             #ax.text(0., 0., msg)
             #        verticalalignment='center',
             #        horizontalalignment='center',
             #        transform=ax.transAxes)
             #ax.axis('off')
             renderer = ax.figure._cachedRenderer
-            print('RENDERER', renderer)
-            ax.add_artist(grid)
+
+            grid.figure = ax.figure
             ax.axis('off')
+            ax.add_artist(grid)
+
             if renderer:
                 try:
-                    print('FONT SCALING', grid.get_window_extent)
+                    print('FONT SCALING')
                     extent = grid.get_window_extent(renderer)
                     print('WINDOW EXTENT', extent)
                     ax_extent = ax.get_window_extent(renderer)
@@ -1016,12 +1020,18 @@ class Shepherd(Ball):
                     xfontscale = (ax_extent.x1 - ax_extent.x0) / (extent.x1 - extent.x0)
                     yfontscale = (ax_extent.y1 - ax_extent.y0) / (extent.y1 - extent.y0)
                     fontscale = min(xfontscale, yfontscale) * 0.9
-                    grid.scale(fontscale)
-                    print('scaled by', fontscale)
+
+                    prop['size'] *= fontscale
+                    grid.remove()
+                    grid = Grid([[msg]], prop=prop)
+                    ax.add_artist(grid)
+
+                    print('scaled by', fontscale, xfontscale, yfontscale)
+                    print('bbox after scaling')
+                    print(grid.get_window_extent(renderer))
                 except:
                     print_exc()
                         
-                
             print('showing help axes')
             ax.show()
 
@@ -1053,8 +1063,6 @@ class Shepherd(Ball):
                 self.path.append(sheep)
 
         await self.generate_key_relays()
-        print('relays:')
-        print(self.relays)
 
         # add a task to watch tasks
         self.watcher = spawn(self.task_watcher())
@@ -1187,7 +1195,7 @@ class Shepherd(Ball):
             #print(f'   {sheep.status()}')
         #print('SHEPHERD RUN')
         # delegated to hub
-        print('shepstart')
+        #print('shepstart')
         #nx.draw(self.flock)
         colours = []
         for sheep in self.flock:

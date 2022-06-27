@@ -84,7 +84,7 @@ from matplotlib import offsetbox, pyplot, artist, transforms, figure
 from matplotlib import _layoutgrid as layoutgrid
 
 from matplotlib.offsetbox import TextArea, HPacker, VPacker, DrawingArea
-offsetbox.DEBUG = True
+#offsetbox.DEBUG = True
 
 from blume import magic
 from blume.table import Cell
