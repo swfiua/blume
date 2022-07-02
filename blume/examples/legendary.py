@@ -66,17 +66,15 @@ class Legend(magic.Ball):
             align=self.aligns[0],
             prop=props)
         ax.add_artist(grid)
-
         print('Legend size', grid.get_window_extent(ax.figure._cachedRenderer))
         
-        ax.plot(range(10))
-
         #print('FINAL DRAW', len(fig._localaxes))
         ax.show()
 
 
 
 def main():
+    from blume import docs
     import argparse
     from blume import farm as land
     import numpy as np
@@ -103,6 +101,8 @@ def main():
     farm = land.Farm()
 
     farm.add(leg)
+    from gotu import spiral
+    farm.add(docs.Docs([spiral]))
 
     farm.shep.path.append(leg)
     print(type(magic.run))

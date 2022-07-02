@@ -238,7 +238,16 @@ class Ball:
 
         print('DUMPING ROUNDABOUT')
         print(TheMagicRoundAbout.counts)
-        await self.put(TheMagicRoundAbout.counts, 'help')
+        #await self.put(TheMagicRoundAbout.counts, 'help')
+        counts = TheMagicRoundAbout.counts.most_common()
+        ax = await self.get()
+        
+        ax.bar(range(len(counts)),
+            height=[x[1] for x in counts],
+            tick_label = [x[0] for x in counts])
+        for tick in ax.get_xticklabels():
+            tick.update(dict(rotation=45))
+        ax.show()
 
     def __getattr__(self, attr):
         """ Delegate to TheMagicRoundAbout
@@ -345,7 +354,7 @@ class Interact(Ball):
         self.set_ball(ball)
 
 
-    async def interact(self):
+    def interact(self):
         """ Go into interactive mode 
         
         hmm.... worm can time
@@ -383,7 +392,7 @@ class Interact(Ball):
         value = repr(getattr(self.ball, attr))
         result = (attr, ellipsis(value))
         print(*result)
-        self.select('help').put_nowait(str(result))
+        self.put_nowait(str(result), 'help')
 
 
     def current(self):
@@ -835,10 +844,8 @@ class Shepherd(Ball):
 
         self.flock = None
         self.running = {}
-        self.whistlers = {}
         self.relays = set()
         self.path = [self]
-        self.whistle_tasks = set()
 
         self.interaction = Interact(self.path[-1])
 
@@ -871,12 +878,13 @@ class Shepherd(Ball):
         if current is not self.interaction.ball:
             self.interaction.set_ball(current)
 
+        self.interaction.interact()
+
         if self.interaction not in self.path:
             self.path.append(self.interaction)
             await self.generate_key_relays()
-            await self.put('interact', 'oldgrey')
+            await self.put('interact', 'gkr')
 
-        await self.interaction.interact()
 
         
     def current(self):
@@ -926,10 +934,15 @@ class Shepherd(Ball):
 
     async def generate_key_relays(self, name='keys'):
 
+        for rly in self.relays:
+            rly.cancel()
+
         self.relays.clear()
         for target, key, callback in self.generate_key_bindings():
             listener = spawn(relay(key, callback))
             self.relays.add(listener)
+
+        await self.put('gkr', 'oldgrey')
 
     def generate_key_bindings(self, name='keys'):
 
@@ -997,6 +1010,7 @@ class Shepherd(Ball):
             prop = dict(size=fontsize)
             
             grid = Grid([[msg]], prop=prop)
+            #grid.set_visible(False)
             #ax.text(0., 0., msg)
             #        verticalalignment='center',
             #        horizontalalignment='center',
@@ -1010,13 +1024,13 @@ class Shepherd(Ball):
 
             if renderer:
                 try:
-                    print('FONT SCALING')
+                    #print('FONT SCALING')
                     extent = grid.get_window_extent(renderer)
-                    print('WINDOW EXTENT', extent)
+                    #print('WINDOW EXTENT', extent)
                     ax_extent = ax.get_window_extent(renderer)
-                    print('AXES EXTENT  ', ax_extent)
-                    print(ax_extent.x1 - ax_extent.x0)
-                    print(extent.x1 - extent.x0)
+                    #print('AXES EXTENT  ', ax_extent)
+                    #print(ax_extent.x1 - ax_extent.x0)
+                    #print(extent.x1 - extent.x0)
                     xfontscale = (ax_extent.x1 - ax_extent.x0) / (extent.x1 - extent.x0)
                     yfontscale = (ax_extent.y1 - ax_extent.y0) / (extent.y1 - extent.y0)
                     fontscale = min(xfontscale, yfontscale) * 0.9
@@ -1026,9 +1040,9 @@ class Shepherd(Ball):
                     grid = Grid([[msg]], prop=prop)
                     ax.add_artist(grid)
 
-                    print('scaled by', fontscale, xfontscale, yfontscale)
-                    print('bbox after scaling')
-                    print(grid.get_window_extent(renderer))
+                    #print('scaled by', fontscale, xfontscale, yfontscale)
+                    #print('bbox after scaling')
+                    #print(grid.get_window_extent(renderer))
                 except:
                     print_exc()
                         
@@ -1062,13 +1076,13 @@ class Shepherd(Ball):
             else:
                 self.path.append(sheep)
 
-        await self.generate_key_relays()
+        spawn(relay('gkr', self.generate_key_relays))
 
         # add a task to watch tasks
         self.watcher = spawn(self.task_watcher())
 
         print('sending out ready message to oldgrey')
-        self.put_nowait('ready', 'oldgrey')
+        self.put_nowait('ready', 'gkr')
         #await self.watch_roundabouts()
 
         # figure out current path
@@ -1118,10 +1132,9 @@ class Shepherd(Ball):
         if nodes:
             self.path.append(nodes[0])
         
-        print('oldgrey', self.current())
-        await self.generate_key_relays()
-        await self.put('done', 'oldgrey')
-        print('sent message to oldgrey')
+        #print('oldgrey', self.current())
+        #await self.generate_key_relays()
+        await self.put('done', 'gkr')
         
         self.put_nowait(str(self.current()), 'help')
 
@@ -1135,8 +1148,8 @@ class Shepherd(Ball):
             del self.path[-1]
         print(f'up new path: {self.path}')
         await self.generate_key_relays()
-        await self.put('done', 'oldgrey')
         await self.put(str(self.current()), 'help')
+        await self.put('done', 'gkr')
 
     async def down(self):
         """ Move focus to next node """
@@ -1217,22 +1230,20 @@ class Shepherd(Ball):
     async def quit(self):
         """ Cancel all the tasks """
 
-        print('running tasks')
-        for task in asyncio.all_tasks():
-            break
-
-        print('Cancelling runners')
-        print(self.running)
-        for task in self.running.values():
+        print('Cancelling runners and relays')
+        tocancel = set(self.running.values())
+        tocancel.update(self.relays)
+        for task in tocancel:
             try:
                 task.cancel()
             except Exception as e:
                 print(f'cancel failed for {task}')
                 print(e)
 
-        print('remaining tasks')
-        for task in asyncio.all_tasks():
-            print(task)
+        #print('remaining tasks')
+        #for task in asyncio.all_tasks():
+        #    if not task.cancelled():
+        #        print(task)
         
 
     def __str__(self):
@@ -1352,6 +1363,7 @@ def ellipsis(string, maxlen=200, keep=10):
 
 async def relay(channel, callback):
 
+    import traceback
     while True:
         msg = await TheMagicRoundAbout.get(channel)
         print(f'message from {channel}: {msg}')
@@ -1359,9 +1371,8 @@ async def relay(channel, callback):
             result = callback()
             print(f'{callback} RETURNED SUCCESSFULLY')
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             print(f'{channel} relay exception for {callback}')
+            traceback.print_exc()
             continue
             
         if inspect.iscoroutine(result):
@@ -1370,7 +1381,7 @@ async def relay(channel, callback):
                 await result
             except:
                 print(f'{channel} relay exception awaiting {result}')
-
+                traceback.print_exc()
 
 if __name__ == '__main__':
     

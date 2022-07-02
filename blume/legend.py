@@ -79,7 +79,7 @@ axes.
 
 
 """
-
+import traceback
 from matplotlib import offsetbox, pyplot, artist, transforms, figure
 from matplotlib import _layoutgrid as layoutgrid
 
@@ -183,15 +183,17 @@ class Grid(offsetbox.AnchoredOffsetbox):
         
         return transforms.Bbox.union(boxes)
 
-    def draw(self, renderer):
+    def xdraw(self, renderer):
 
         self.facecolor = COLORS[0]
         COLORS.rotate()
-        print(f'drawing grid {id(self)} )color {self.facecolor}')
+        print(f'drawing grid {id(self)} color {self.facecolor}')
+        print(f'drawing grid {id(self)} axes {self.axes}')
+        #traceback.print_stack()
         from matplotlib.patches import bbox_artist
         props= dict(pad=20)
         bbox_artist(self, renderer, props=props, fill=True)
-        print('drawn', self.get_window_extent(renderer))
+        #print('drawn', self.get_window_extent(renderer))
         super().draw(renderer)
 
 from collections import deque

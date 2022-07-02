@@ -147,7 +147,7 @@ class Axe:
 
         self.get_xaxis().set_visible(False)
         self.get_yaxis().set_visible(False)
-        
+
 
 class Farm(GeeFarm):
 
@@ -211,6 +211,7 @@ class Carpet(Ball):
 
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
+        #self.image = plt.figure(figsize=(80/2.54, 120/2.54))
         try:
             plt.show(block=False)
         except:
@@ -280,7 +281,7 @@ class Carpet(Ball):
         This one saves the current data, not the PIL file
         so can be used to make transforms along the way.
         """
-        self.image.savefig(f'carpet{datetime.datetime.now()}.png')
+        self.image.savefig(f'carpet{datetime.datetime.now()}.png', dpi=1000)
         
     async def more(self):
         """ Show more pictures """
@@ -475,10 +476,6 @@ class Carpet(Ball):
             axe.grid(True)
 
         await self.put(axe)
-        print(f'carpet put out {ax}')
-
-        # let the GUI event loop do it's thing.
-        #self.image.canvas.flush_events()
         
 
     def show(self, axe):
@@ -498,13 +495,13 @@ class Carpet(Ball):
         #    #self.output.clear()
         #    self.output.write(self.image)
         
-        self._blank(axe)
+        bbox = self._blank(axe)
         #self.image.show()
         axe.set_visible(True)
-        self.image.canvas.draw_idle()
-        #axe.figure.draw_artist(axe)
+        #self.image.canvas.draw_idle()
+        axe.figure.draw_artist(axe)
 
-        #self.image.canvas.blit(bbox)
+        self.image.canvas.blit(bbox)
 
         #if self.output:
         #    self.output.write(self.image)
@@ -536,6 +533,7 @@ class Carpet(Ball):
         #axe.text(0, 0.5, str(axe.get_subplotspec()))
         #axe.text(0, 0.8, str(rect))
         fig.draw_artist(rect)
+        #axe.add_artist(rect)
 
         return bb
         
@@ -546,17 +544,21 @@ class Carpet(Ball):
         ss = ax.get_subplotspec()
         gs = ss.get_gridspec()
 
+        nrows, ncols = gs.get_geometry()
+
         fig = self.image.figure
         fbbox = fig.bbox
+        dpi = fig.dpi
+        spp = fig.subplotpars
 
-        bottoms, tops, lefts, rights = gs.get_grid_positions(fig, raw=True)
-
-        rows, cols, start, stop = ss.get_geometry()
-
-        # now calculate our bottom, top, left, right
-        rownums = list(ss.rowspan)
-        colnums = list(ss.colspan)
+        # set hspace/wspace to zeo
+        print('before', gs.get_grid_positions(fig))
+        hspace, wspace = spp.hspace, spp.wspace
+        spp.hspace, spp.wspace = 0., 0.
         
+        bottoms, tops, lefts, rights = gs.get_grid_positions(fig)
+        print('after', gs.get_grid_positions(fig))
+        # now calculate our bottom, top, left, right
         rowstart, rowstop = ss.rowspan[0], ss.rowspan[-1]
         colstart, colstop = ss.colspan[0], ss.colspan[-1]
 
@@ -566,9 +568,20 @@ class Carpet(Ball):
         bottom = bottoms[rowstop]
         right = rights[colstop]
 
-        dpi = fig.dpi
-        width = fig.get_figwidth() * dpi
-        height = fig.get_figheight() * dpi
+        # adjust edge box for figure padding
+        print(f'_blank {left} {top} {right} {bottom} {ncols} {nrows}')
+        if False:
+            if rowstart == 0:
+                top = 1.0
+            if colstart == 0:
+                left = 0
+            if rowstop == nrows-1:
+                bottom = 0.0
+            if colstop == ncols-1:
+                right = 1.0
+
+        print(f'_adjus {left} {top} {right} {bottom} {ncols} {nrows}')
+        print(f'_blank {rowstart} {colstart} {rowstop} {colstop}')
         width = fbbox.width
         height = fbbox.height
 
@@ -576,6 +589,9 @@ class Carpet(Ball):
         top *= height
         left *= width
         right *= width
+
+        # restore hspace, wspace in subplotparms
+        spp.hspace, spp.wspace = hspace, wspace
 
         bbox = Bbox([[left, bottom], [right, top]])
 

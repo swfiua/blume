@@ -7,23 +7,17 @@ Displays them
 
 Press h for help.
 """
-
-
-from blume.magic import Farm, Carpet, Ball, Hat, fig2data
-from .mclock2 import GuidoClock
-
-import curio
-
+from pathlib import Path
+from PIL import Image
 import random
 
-from matplotlib import pyplot as plt
-from pathlib import Path
 import argparse
-import traceback
 
-from PIL import Image
+from blume import magic
+from blume import farm
 
-class Train(Ball):
+
+class Train(magic.Ball):
 
     def __init__(self, args):
 
@@ -45,7 +39,6 @@ class Train(Ball):
         self.bans = ['embedding', '_runner', 'tick_labels']
 
         # not sure this works -- stop others stealing the show
-        plt.show = show
         self.bads = set()
 
     async def run(self):
@@ -75,37 +68,22 @@ class Train(Ball):
             return
 
         print('publishing', path)
-        await self.outgoing.put(image)
-
-        return True
-
-
-def show():
-    print('NO SHOW TODAY')
+        ax = await self.get()
+        ax.axis('off')
+        ax.imshow(image)
+        ax.show()
 
 
 async def run(args):
     """ Don't do things this way until things settle down ..."""
 
-    farm = Farm()
-
-    clock = GuidoClock()
-
-    # ??? 
-    farm.event_map.update(clock.event_map)
+    fm = farm.Farm()
 
     examples = Train(args)
 
-    carpet = farm.carpet
-    farm.add_edge(examples, carpet)
-    farm.add_edge(clock, carpet)
+    fm.add(examples)
 
-
-    farm.setup()
-    starter = await curio.spawn(farm.start())
-
-    print('farm runnnnnnnnnning')
-    runner = await farm.run()
+    await farm.start_and_run(fm)
     
         
 if __name__ == '__main__':
@@ -114,4 +92,4 @@ if __name__ == '__main__':
     parser.add_argument('path', default='.')
 
     args = parser.parse_args()
-    curio.run(run(args))
+    magic.run(run(args))
