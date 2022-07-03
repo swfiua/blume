@@ -29,7 +29,7 @@ class Params(Ball):
         self.add_filter('G', self.show_group)
         self.add_filter('N', self.next_group)
 
-        self.add_filter(' ', self.next_group)
+        self.add_filter('g', self.next_group)
 
     def next_group(self):
 
