@@ -100,9 +100,9 @@ def main():
 
     farm = land.Farm()
 
-    farm.add(leg)
     from gotu import spiral
     farm.add(docs.Docs([spiral]))
+    farm.add(leg)
 
     farm.shep.path.append(leg)
     print(type(magic.run))
