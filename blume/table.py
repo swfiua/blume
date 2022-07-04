@@ -395,7 +395,7 @@ class Table(Artist):
                     .format(loc, '\n\t'.join(self.codes)))
             loc = self.codes[loc]
         self.set_figure(ax.figure)
-        self._axes = ax
+        #self._axes = ax
         self._loc = loc
         self._bbox = bbox
 

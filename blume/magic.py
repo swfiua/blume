@@ -132,6 +132,8 @@ from matplotlib import pyplot as plt
 
 from .modnar import random_colour, random_queue
 
+from .table import table
+
 Parser = argparse.ArgumentParser
 
 
@@ -225,7 +227,7 @@ class Ball:
         
         self.add_filter('z', self.sleepy)
         self.add_filter('w', self.wakey)
-        self.add_filter(' ', self.toggle_pause)
+        #self.add_filter(' ', self.toggle_pause)
         self.add_filter('W', self.dump_roundabout)
         self.add_filter('j', self.status)
 
@@ -1004,11 +1006,17 @@ class Shepherd(Ball):
         print('HELPER STARTING UP')
         while True:
             msg = await self.get('help')
+            print('helper got message')
             ax = await self.get()
             print('got grid')
+            tab = table(ax, cellText=[[msg]], bbox=(0,0,1,1))
+            print('got grid')
+            ax.axis('off')
+            ax.show()
+            continue
+            
             fontsize = 6
             prop = dict(size=fontsize)
-            
             grid = Grid([[msg]], prop=prop)
             #grid.set_visible(False)
             #ax.text(0., 0., msg)
@@ -1021,7 +1029,7 @@ class Shepherd(Ball):
             grid.figure = ax.figure
             ax.axis('off')
             ax.add_artist(grid)
-
+        
             if renderer:
                 try:
                     #print('FONT SCALING')
@@ -1327,14 +1335,22 @@ async def canine(ball):
     while True:
         if not ball.paused:
 
-            result = ball.run()
-            if inspect.iscoroutine(result):
-                #print(f'canine awaits result {runs} for {ball}')
-                await result
+            try:
+                result = ball.run()
+                if inspect.iscoroutine(result):
+                    #print(f'canine awaits result {runs} for {ball}')
+                    await result
             
-            runs += 1
+                runs += 1
 
-        await sleep(ball.sleep)
+                await sleep(ball.sleep)
+            except asyncio.CancelledError:
+                print(f'cancelled running of {ball}')
+                raise
+
+            except:
+                print_exc()
+                raise
 
 
 async def runme():

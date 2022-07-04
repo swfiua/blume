@@ -59,7 +59,7 @@ from PIL import Image
 
 import matplotlib
 
-from matplotlib import figure, rc
+from matplotlib import figure, rc, colors
 
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Bbox
@@ -70,6 +70,22 @@ from blume import magic
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd
 from .mclock2 import GuidoClock
 from .rcparms import Params
+
+class PatchColours:
+
+    def __init__(self):
+        self.colours = deque(
+            ('skyblue', 'green', 'yellow', 'pink', 'orange',
+             [random.random()/2,
+              random.random()/2,
+              random.random()/2]))
+
+    def next(self):
+
+        self.colours.rotate()
+        return self.colours[0]
+
+Colours = PatchColours()
 
 class Axe:
     """ A matplotlib axis that has some extra methods 
@@ -102,16 +118,24 @@ class Axe:
 
     def position(self, target):
         """ Set position to that of target """
+        sps = self.get_subplotspec()
         self.set_subplotspec(target.get_subplotspec())
+        print(f're position: {sps} {self.get_subplotspec()}')
 
     def show(self):
         """ Show the axes """
         self.set_visible(True)
+        if not hasattr(self, 'img'):
+            self._blank()
+        else:
+            self.img.set_visible(True)
         self.carpet.show(self)
 
     def hide(self):
         """ Hide the axes """
         self.set_visible(False)
+        if hasattr(self, 'img'):
+            self.img.set_visible(False)
         self.carpet.hide(self)
 
     def please_draw(self):
@@ -132,6 +156,8 @@ class Axe:
         self.delegate = pax
         self.position(ax)
 
+        # now delete ax
+        ax.remove()
 
     def simplify(self):
 
@@ -147,6 +173,87 @@ class Axe:
 
         self.get_xaxis().set_visible(False)
         self.get_yaxis().set_visible(False)
+
+    def get_id(self):
+
+        return id(self.delegate)
+
+    def _blank(self):
+
+        fig = self.figure
+
+        bb = self.get_full_bbox()
+
+        img = np.zeros((int(bb.height), int(bb.width), 3))
+        img += colors.to_rgb(Colours.next())
+
+        self.img = fig.figimage(img, bb.p0[0], bb.p0[1], zorder=-1)
+
+        #axe.text(0, 0.5, str(axe.get_subplotspec()))
+        #axe.text(0, 0.8, str(rect))
+        #fig.draw_artist(rect)
+        #axe.add_artist(rect)
+
+        return img
+        
+        
+    def get_full_bbox(self):
+        # FIXME -- this needs to take account of padding of the figure
+        #  see toggle_expand
+        ss = self.get_subplotspec()
+        gs = ss.get_gridspec()
+
+        nrows, ncols = gs.get_geometry()
+
+        fig = self.figure
+        fbbox = fig.bbox
+        dpi = fig.dpi
+        spp = fig.subplotpars
+
+        # set hspace/wspace to zeo
+        hspace, wspace = spp.hspace, spp.wspace
+        spp.hspace, spp.wspace = 0., 0.
+        
+        bottoms, tops, lefts, rights = gs.get_grid_positions(fig)
+
+        # now calculate our bottom, top, left, right
+        rowstart, rowstop = ss.rowspan[0], ss.rowspan[-1]
+        colstart, colstop = ss.colspan[0], ss.colspan[-1]
+
+        top = tops[rowstart]
+        left = lefts[colstart]
+
+        bottom = bottoms[rowstop]
+        right = rights[colstop]
+
+        # adjust edge box for figure padding
+        print(f'_blank {left} {top} {right} {bottom} {ncols} {nrows}')
+        if True:
+            if rowstart == 0:
+                top = 1.0
+            if colstart == 0:
+                left = 0
+            if rowstop == nrows-1:
+                bottom = 0.0
+            if colstop == ncols-1:
+                right = 1.0
+
+        print(f'_adjus {left} {top} {right} {bottom} {ncols} {nrows}')
+        print(f'_blank {rowstart} {colstart} {rowstop} {colstop}')
+        width = fbbox.width
+        height = fbbox.height
+
+        bottom *= height
+        top *= height
+        left *= width
+        right *= width
+
+        # restore hspace, wspace in subplotparms
+        spp.hspace, spp.wspace = hspace, wspace
+
+        bbox = Bbox([[left, bottom], [right, top]])
+
+        return bbox
 
 
 class Farm(GeeFarm):
@@ -191,6 +298,25 @@ class Carpet(Ball):
         moving it back there, but that requires making it magic!
 
         Current status: history just added, wormholes opened.
+
+        FIXME: figure out lifecycle of an Axe
+
+        generate_mosaic creates and adds to self.axes
+
+        Need to be able to know:
+             a. Axe has been handed out
+             b. Axe has been shown
+             c. Axe still in history
+             d. geometry -- so we can spot Axe replacing another in same spot.
+        
+        Cases:  
+            handed out, still in history == keep
+            handed out, not in history, 
+
+        Deletion:
+            a. not in history
+            b. has been handed out
+            c. not in current image:  ie self.showing
     """
     def __init__(self):
 
@@ -204,10 +330,12 @@ class Carpet(Ball):
         self.expanded = None
         self.output = None
         self.showing = {}
+        self.dpi = 100 # dpi for savefig
 
-        self.history = deque(maxlen=random.randint(20, 50))
+        self.history = deque(maxlen=random.randint(4, 5))
 
         self.axes = deque()
+        self.lookup = dict()
 
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
@@ -276,20 +404,17 @@ class Carpet(Ball):
         qq.put_nowait(event)
 
     async def save(self):
-        """ Save current image
-
-        This one saves the current data, not the PIL file
-        so can be used to make transforms along the way.
-        """
-        self.image.savefig(f'carpet{datetime.datetime.now()}.png', dpi=1000)
+        """ Save current image """
+        self.image.savefig(f'carpet{datetime.datetime.now()}.png', dpi=self.dpi)
         
     async def more(self):
         """ Show more pictures """
         self.size += 1
         self.hideall()
-        self.generate_mosaic()
+        #self.generate_mosaic()
 
         print('replay history', len(self.history))
+
         await self.replay_history()
 
 
@@ -298,27 +423,40 @@ class Carpet(Ball):
         if self.size > 1:
             self.size -= 1
         self.hideall()
-        self.generate_mosaic()
+        #self.generate_mosaic()
         print('replay history', len(self.history))
         await self.replay_history()
 
     def hideall(self):
 
+        # hide everything currently being shown
+        print(f'HIDEALL showing {len(self.showing)}')
         for key, ax in self.showing.items():
-            ax.set_visible(False)
+            print(f'hiding {id(ax.delegate)} {ax.get_subplotspec()}')
+            ax.hide()
+            
         self.showing.clear()
+
+        # drain any axes waiting in self.axes
+        for ax in self.axes:
+            print(f'DELETING {id(ax.delegate)} {ax.get_subplotspec()}')
+            ax.figure.delaxes(ax.delegate)
+        self.axes.clear()
         #return
         naxes = len(self.image.axes)
         for ax in self.image.axes:
-            #print('hiding', type(ax), id(ax))
-            print(type(ax), 'hideall')
-            if ax not in self.history and not ax.get_visible():
+            ax = self.lookup[id(ax)]
+            print('hiding', id(ax))
+
+            if (ax not in self.history and
+                not ax.get_visible()):
                 # while we are at lets delete some we no longer need
                 print(f'deleting axes {ax}')
-                ax.figure.delaxes(ax)
+                ax.figure.delaxes(ax.delegate)
                 del ax
             else:
                 ax.set_visible(False)
+
         print('hideall number axes: before/after:', naxes, len(self.image.axes))
 
     async def history_back(self):
@@ -340,19 +478,12 @@ class Carpet(Ball):
 
         # we want to replace the current axes with the value we pop
         print('h waiting for axis')
-        print(magic.TheMagicRoundAbout.counts)
-        magic.TheMagicRoundAbout.status()
-        #for x in asyncio.all_tasks():
-        #    print(x.get_stack())
         qq = self.select()
         print('axis q size:', qq.qsize(), qq.maxsize)
-        #print(dir(self.select()))
-        #print('taking a sleep in rotate history')
-        #await magic.sleep(5)
+
         if qq.empty():
             print('NO Axes')
             #return
-        
             
         pos = await self.get()
         print('h got axis')
@@ -373,6 +504,8 @@ class Carpet(Ball):
         # take a copy of the current history
         hlen = len(self.history)
 
+        # need to throw away one axis in the queue
+        await self.get()
         for hh in range(hlen):
             await self.history_rotate(1)
         
@@ -444,13 +577,16 @@ class Carpet(Ball):
 
         for key, ax in picture.items():
             ax.meta = dict(key=key)
-            self.axes.append(ax)
+            axe = Axe(ax, self)
+            self.axes.append(axe)
+            self.lookup[id(ax)] = axe
 
     def delete_old_axes(self):
 
-        naxes = len(self.axes)
+        naxes = len(self.image.axes)
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
+            ax = self.lookup[id(ax)]
             if ax not in self.history:
                 print(f'deleting axes {ax}')
                 ax.figure.delaxes(ax)
@@ -459,143 +595,48 @@ class Carpet(Ball):
 
 
     async def run(self):
-
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
-            #print('carpet queue not empty')
             return
 
         if not self.axes:
-            self.delete_old_axes()
             self.generate_mosaic()
             
-        ax = self.axes.popleft()
-        axe = Axe(ax, self)
+        axe = self.axes.popleft()
         if self.simple:
             axe.simplify()
             axe.grid(True)
-
         await self.put(axe)
-        
+
+
+    def get_axe_geometry(self, axe):
+
+        return axe.get_subplotspec().get_geometry()
 
     def show(self, axe):
 
-        ss = axe.get_subplotspec()
+        gg = self.get_axe_geometry(axe)
 
-        if ss in self.showing:
-             tohide = showing[ss]
-             if tohide is not axe:
-                 tohide.set_visible(False)
+        if gg in self.showing:
+            tohide = self.showing[gg]
+            #print(f'Showing {id(tohide)} {tohide.get_visible()}')
+            if tohide is not axe:
+                print(f'HIDING AXE id{tohide}')
+                tohide.hide()
 
-        self.showing[ss] = axe
-
-        self.history.appendleft(axe.delegate)
+        self.history.appendleft(axe)
         print("SHOWING FIGURE")
-        #if self.output:
-        #    #self.output.clear()
-        #    self.output.write(self.image)
         
-        bbox = self._blank(axe)
+        self.showing[gg] = axe
+
         #self.image.show()
-        axe.set_visible(True)
-        #self.image.canvas.draw_idle()
-        axe.figure.draw_artist(axe)
-
-        self.image.canvas.blit(bbox)
-
-        #if self.output:
-        #    self.output.write(self.image)
-
-    def _blank(self, axe):
-
-        fig = axe.figure
-
-        if not hasattr(self, 'blanks'):
-            self.blanks = deque(
-                (fig.patch.get_facecolor(),
-                 'skyblue', 'green', 'yellow', 'pink', 'orange',
-                 [random.random()/2,
-                  random.random()/2,
-                  random.random()/2]))
-        #axe.set_facecolor(self.blanks[0])
-        #self.blanks.rotate()
-        #return
-            
-        from matplotlib.patches import Rectangle
-        bb = self.get_full_bbox(axe)
+        #axe.show()
+        self.image.canvas.draw_idle()
         
-        rect = Rectangle(
-            bb.p0, bb.width, bb.height,
-            facecolor=self.blanks[0])
-            #facecolor=fig.patch.get_facecolor() )
-        print(f'_blank drawing {rect} {self.blanks[0]}')
-        self.blanks.rotate()
-        #axe.text(0, 0.5, str(axe.get_subplotspec()))
-        #axe.text(0, 0.8, str(rect))
-        fig.draw_artist(rect)
-        #axe.add_artist(rect)
-
-        return bb
+        #axe.figure.draw_artist(axe)
         
-        
-    def get_full_bbox(self, ax):
-        # FIXME -- this needs to take account of padding of the figure
-        #  see toggle_expand
-        ss = ax.get_subplotspec()
-        gs = ss.get_gridspec()
+        #self.image.canvas.blit(bbox)
 
-        nrows, ncols = gs.get_geometry()
-
-        fig = self.image.figure
-        fbbox = fig.bbox
-        dpi = fig.dpi
-        spp = fig.subplotpars
-
-        # set hspace/wspace to zeo
-        print('before', gs.get_grid_positions(fig))
-        hspace, wspace = spp.hspace, spp.wspace
-        spp.hspace, spp.wspace = 0., 0.
-        
-        bottoms, tops, lefts, rights = gs.get_grid_positions(fig)
-        print('after', gs.get_grid_positions(fig))
-        # now calculate our bottom, top, left, right
-        rowstart, rowstop = ss.rowspan[0], ss.rowspan[-1]
-        colstart, colstop = ss.colspan[0], ss.colspan[-1]
-
-        top = tops[rowstart]
-        left = lefts[colstart]
-
-        bottom = bottoms[rowstop]
-        right = rights[colstop]
-
-        # adjust edge box for figure padding
-        print(f'_blank {left} {top} {right} {bottom} {ncols} {nrows}')
-        if False:
-            if rowstart == 0:
-                top = 1.0
-            if colstart == 0:
-                left = 0
-            if rowstop == nrows-1:
-                bottom = 0.0
-            if colstop == ncols-1:
-                right = 1.0
-
-        print(f'_adjus {left} {top} {right} {bottom} {ncols} {nrows}')
-        print(f'_blank {rowstart} {colstart} {rowstop} {colstop}')
-        width = fbbox.width
-        height = fbbox.height
-
-        bottom *= height
-        top *= height
-        left *= width
-        right *= width
-
-        # restore hspace, wspace in subplotparms
-        spp.hspace, spp.wspace = hspace, wspace
-
-        bbox = Bbox([[left, bottom], [right, top]])
-
-        return bbox
 
     def hide(self, axe):
 
