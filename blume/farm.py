@@ -334,10 +334,10 @@ class Carpet(Ball):
 
         self.axes = deque()
         self.lookup = dict()
-        self.savefig_dpi = 3000
+        #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         #self.image = plt.figure(figsize=(33.1, 46.8), dpi=300) # A0 300 dpi
-        self.image = plt.figure(figsize=(3.31, 4.68), dpi=3000)
+        self.image = plt.figure(figsize=(3.31, 4.68))
         try:
             plt.show(block=False)
         except:
@@ -403,8 +403,8 @@ class Carpet(Ball):
 
     async def save(self):
         """ Save current image """
-        self.image.savefig(f'carpet{datetime.datetime.now()}.png',
-                           dpi=self.savefig_dpi)
+        self.image.savefig(f'carpet{datetime.datetime.now()}.svg')
+        #                   dpi=self.savefig_dpi)
         
     async def more(self):
         """ Show more pictures """

@@ -132,7 +132,7 @@ from matplotlib import pyplot as plt
 
 from .modnar import random_colour, random_queue
 
-from .table import table
+from . import table
 
 Parser = argparse.ArgumentParser
 
@@ -1008,7 +1008,19 @@ class Shepherd(Ball):
             print('helper got message')
             ax = await self.get()
             print('got grid')
-            tab = table(ax, cellText=[[msg]], bbox=(0,0,1,1))
+            try:
+                #tab = table.Table(ax, bbox=(0,0,1,1))
+                #tab.add_cell(0, 0, text=msg,
+                #             width=1, height=1, loc='center')
+                txt = [[x] for x in msg.split('\n')]
+                #tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1))
+                tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1))
+                #tab = table.table(ax, cellText=txt, bbox=(0,0,1,1))
+                foo = tab[0,0]
+                foo.set_text_props(multialignment='left')
+            except:
+                print_exc()
+                raise
             print('got grid')
             ax.axis('off')
             ax.show()

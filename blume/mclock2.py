@@ -28,6 +28,7 @@ class GuidoClock(Ball):
         self.height = 640
         self.sleep = 1
         segments=9
+        self.radius = 1.5
         
         self.segments = segments
 
@@ -71,7 +72,7 @@ class GuidoClock(Ball):
     def set_radius(self):
 
         #radius = min(self.width, self.height) // 2
-        radius = 1.5
+        radius = self.radius
         self.radius = radius
         self.bigsize = radius * .975
         self.litsize = radius * .67
@@ -173,9 +174,10 @@ class GuidoClock(Ball):
         # Draw the hands
         #print('bigd/litd cos sin', bigd, litd, math.cos(bigr), math.sin(bigr))
 
-        self.draw_hand(bigr, bigsize, width=5, color='yellow')
+        width = self.ax.get_window_extent().width / 100
+        self.draw_hand(bigr, bigsize, width=width, color='yellow')
 
-        self.draw_hand(litr, litsize, width=10, color='green')
+        self.draw_hand(litr, litsize, width=2*width, color='green')
         
         # Draw the text
         if self.showtext:
@@ -249,6 +251,6 @@ class GuidoClock(Ball):
                 colors.append("#%02x%02x%02x" % tuple(fill))
                 wedges.append(extent)
 
-        self.ax.pie(wedges, colors=colors, radius=1.5,
+        self.ax.pie(wedges, colors=colors, radius=self.radius,
                 startangle=0, counterclock=False)
         
