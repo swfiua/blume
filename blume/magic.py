@@ -884,9 +884,8 @@ class Shepherd(Ball):
 
         if self.interaction not in self.path:
             self.path.append(self.interaction)
-            await self.generate_key_relays()
-            await self.put('interact', 'gkr')
-
+            self.generate_key_relays()
+            self.put_nowait('interact', 'gkr')
 
         
     def current(self):
@@ -934,7 +933,7 @@ class Shepherd(Ball):
         self.path = path or [self]
 
 
-    async def generate_key_relays(self, name='keys'):
+    def generate_key_relays(self, name='keys'):
 
         for rly in self.relays:
             rly.cancel()
@@ -944,7 +943,7 @@ class Shepherd(Ball):
             listener = spawn(relay(key, callback))
             self.relays.add(listener)
 
-        await self.put('gkr', 'oldgrey')
+        self.put_nowait('gkr', 'oldgrey')
 
     def generate_key_bindings(self, name='keys'):
 
@@ -1142,7 +1141,7 @@ class Shepherd(Ball):
         
         #print('oldgrey', self.current())
         #await self.generate_key_relays()
-        await self.put('done', 'gkr')
+        self.put_nowait('done', 'gkr')
         
         self.put_nowait(str(self.current()), 'help')
 
@@ -1155,9 +1154,9 @@ class Shepherd(Ball):
         if len(self.path) > 1:
             del self.path[-1]
         print(f'up new path: {self.path}')
-        await self.generate_key_relays()
-        await self.put(str(self.current()), 'help')
-        await self.put('done', 'gkr')
+        self.generate_key_relays()
+        self.put_nowait(str(self.current()), 'help')
+        self.put_nowait('done', 'gkr')
 
     async def down(self):
         """ Move focus to next node """

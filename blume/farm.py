@@ -156,6 +156,10 @@ class Axe:
         self.delegate = pax
         self.position(ax)
 
+        assert(hasattr(ax, 'img'))
+        ax.img.remove()
+        self._blank()
+
         # now delete ax
         ax.remove()
 
@@ -188,11 +192,6 @@ class Axe:
         img += colors.to_rgb(Colours.next())
 
         self.img = fig.figimage(img, bb.p0[0], bb.p0[1], zorder=-1)
-
-        #axe.text(0, 0.5, str(axe.get_subplotspec()))
-        #axe.text(0, 0.8, str(rect))
-        #fig.draw_artist(rect)
-        #axe.add_artist(rect)
 
         return img
         
@@ -330,16 +329,15 @@ class Carpet(Ball):
         self.expanded = None
         self.output = None
         self.showing = {}
-        self.dpi = 100 # dpi for savefig
 
-        self.history = deque(maxlen=random.randint(4, 5))
+        self.history = deque(maxlen=random.randint(10, 20))
 
         self.axes = deque()
         self.lookup = dict()
-
+        self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
-        self.image = plt.figure()
-        #self.image = plt.figure(figsize=(80/2.54, 120/2.54))
+        #self.image = plt.figure(figsize=(33.1, 46.8), dpi=300) # A0 300 dpi
+        self.image = plt.figure(figsize=(3.31, 4.68), dpi=3000)
         try:
             plt.show(block=False)
         except:
@@ -405,7 +403,8 @@ class Carpet(Ball):
 
     async def save(self):
         """ Save current image """
-        self.image.savefig(f'carpet{datetime.datetime.now()}.png', dpi=self.dpi)
+        self.image.savefig(f'carpet{datetime.datetime.now()}.png',
+                           dpi=self.savefig_dpi)
         
     async def more(self):
         """ Show more pictures """
@@ -442,22 +441,7 @@ class Carpet(Ball):
             print(f'DELETING {id(ax.delegate)} {ax.get_subplotspec()}')
             ax.figure.delaxes(ax.delegate)
         self.axes.clear()
-        #return
-        naxes = len(self.image.axes)
-        for ax in self.image.axes:
-            ax = self.lookup[id(ax)]
-            print('hiding', id(ax))
 
-            if (ax not in self.history and
-                not ax.get_visible()):
-                # while we are at lets delete some we no longer need
-                print(f'deleting axes {ax}')
-                ax.figure.delaxes(ax.delegate)
-                del ax
-            else:
-                ax.set_visible(False)
-
-        print('hideall number axes: before/after:', naxes, len(self.image.axes))
 
     async def history_back(self):
 
@@ -566,6 +550,9 @@ class Carpet(Ball):
 
     def generate_mosaic(self):
 
+        # first try and delete some stuff
+        self.delete_old_axes()
+
         # set up the square mosaic for current size
         mosaic = []
         mosaic = np.arange(self.size * self.size)
@@ -586,12 +573,18 @@ class Carpet(Ball):
         naxes = len(self.image.axes)
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
-            ax = self.lookup[id(ax)]
-            if ax not in self.history:
-                print(f'deleting axes {ax}')
+            axe = self.lookup[id(ax)]
+            if (axe not in self.history and
+                axe not in self.showing and
+                hasattr(axe, 'img')):
+                
+                print(f'deleting axes {id(ax)} {ax.get_subplotspec()}')
+                axe.img.remove()
                 ax.figure.delaxes(ax)
+                del self.lookup[id(ax)]
                 del ax
-        print('del old axes number axes: before/after:', naxes, len(self.axes))
+        print('del old axes number axes: before/after:',
+              naxes, len(self.image.axes))
 
 
     async def run(self):
