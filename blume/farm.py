@@ -327,7 +327,7 @@ class Carpet(Ball):
         self.sleep = 0.01
 
         # grid related
-        self.size = 1
+        self.size = [1, 1]
         self.simple = False
         self.expanded = None
         self.output = None
@@ -356,10 +356,11 @@ class Carpet(Ball):
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
         self.add_filter('-', self.less)
+        self.add_filter('a', self.add_row)
+        self.add_filter('c', self.add_column)
 
         self.add_filter('[', self.history_back)
         self.add_filter(']', self.history_forward)
-
 
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
@@ -409,25 +410,36 @@ class Carpet(Ball):
         """ Save current image """
         self.image.savefig(f'carpet{datetime.datetime.now()}.svg')
         #                   dpi=self.savefig_dpi)
+
+    async def add_row(self):
+        """ add a row to the mosaic """
+        self.size[0] += 1
+        await self.rebuild()
         
+    async def add_column(self):
+        self.size[1] += 1
+        await self.rebuild()
+
     async def more(self):
         """ Show more pictures """
-        self.size += 1
-        self.hideall()
-        #self.generate_mosaic()
-
-        print('replay history', len(self.history))
-
-        await self.replay_history()
-
+        self.size[0] += 1
+        self.size[1] += 1
+        await self.rebuild()
 
     async def less(self):
         """ Show fewer pictures """
-        if self.size > 1:
-            self.size -= 1
+        if self.size[0] > 1:
+            self.size[0] -= 1
+        if self.size[1] > 1:
+            self.size[1] -= 1
+        await self.rebuild()    
+
+    async def rebuild(self):
         self.hideall()
         #self.generate_mosaic()
+
         print('replay history', len(self.history))
+
         await self.replay_history()
 
     def hideall(self):
@@ -559,8 +571,8 @@ class Carpet(Ball):
 
         # set up the square mosaic for current size
         mosaic = []
-        mosaic = np.arange(self.size * self.size)
-        mosaic = mosaic.reshape((self.size, self.size))
+        mosaic = np.arange(self.size[0] * self.size[1])
+        mosaic = mosaic.reshape(*self.size)
 
         keys = dict(visible=False)
 
