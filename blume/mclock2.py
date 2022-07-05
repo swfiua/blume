@@ -139,7 +139,6 @@ class GuidoClock(Ball):
         #print('GUIDOCLOCK run')
         self.redraw()
         self.ax.show()
-        self.ax.please_draw()
 
             
     def redraw(self):

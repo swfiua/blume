@@ -340,7 +340,7 @@ class Carpet(Ball):
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         #self.image = plt.figure(figsize=(33.1, 46.8), dpi=300) # A0 300 dpi
-        self.image = plt.figure(figsize=(3*3.31, 3*4.68))
+        self.image = plt.figure(figsize=(5*3.31, 5*4.68))
         try:
             plt.show(block=False)
         except:
@@ -365,7 +365,7 @@ class Carpet(Ball):
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
         self.add_filter('F', self.toggle_expand2)
-        self.add_filter(' ', self.toggle_pause)
+        #self.add_filter(' ', self.toggle_pause)
 
 
     def log_events(self):
@@ -477,7 +477,7 @@ class Carpet(Ball):
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        print('h waiting for axis')
+        print('HISTORY waiting for axis')
         qq = self.select()
         print('axis q size:', qq.qsize(), qq.maxsize)
 
@@ -486,8 +486,8 @@ class Carpet(Ball):
             #return
             
         pos = await self.get()
-        print('h got axis')
-        ax = Axe(self.history.popleft(), self)
+        print('HISTORY got axis')
+        ax = self.history.popleft()
         ax.position(pos)
         #ax.set_visible(True)
 
@@ -496,7 +496,7 @@ class Carpet(Ball):
             self.image.delaxes(pos.delegate)
         del pos
 
-        print('history showing axis')
+        print(f'history showing axis {id(ax)}')
         ax.show()
 
     async def replay_history(self):
@@ -588,16 +588,17 @@ class Carpet(Ball):
 
         naxes = len(self.image.axes)
         print(f'deleting old axes, number of axes: {naxes}')
+        showing = self.showing.values()
         for ax in self.image.axes:
-            #print('hiding', type(ax), id(ax))
             print(f'LOOKUP keys {self.lookup.keys()}')
             try:
                 axe = self.lookup[id(ax)]
             except:
                 print(f'WHOA {id(ax)} {type(ax)} missing from lookup')
                 raise
+
             if (axe not in self.history and
-                axe not in self.showing and
+                axe not in showing and
                 hasattr(axe, 'img')):
                 
                 print(f'deleting axes {id(ax)} {ax.get_subplotspec()}')
@@ -636,7 +637,7 @@ class Carpet(Ball):
             tohide = self.showing[gg]
             #print(f'Showing {id(tohide)} {tohide.get_visible()}')
             if tohide is not axe:
-                print(f'HIDING AXE id{tohide}')
+                print(f'HIDING AXE {id(tohide.delegate)}')
                 tohide.hide()
 
         self.history.appendleft(axe)

@@ -12,7 +12,7 @@ from PIL import Image
 import random
 
 from collections import deque
-
+import time
 import argparse
 
 from blume import magic
@@ -74,7 +74,13 @@ class Train(magic.Ball):
         print('publishing', path)
         ax = await self.get()
         ax.axis('off')
+        #ax.imshow(image, aspect='equal')
+        
+        t1=time.time()
         ax.imshow(image, aspect='equal')
+        t2=time.time()
+        print(f'IMSHOW time for {path} {t2-t1}')
+        
         ax.show()
 
 
