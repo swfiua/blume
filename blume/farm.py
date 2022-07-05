@@ -75,10 +75,13 @@ class PatchColours:
 
     def __init__(self):
         self.colours = deque(
-            ('skyblue', 'green', 'yellow', 'pink', 'orange',
+            ('skyblue', 'lightgreen', 'yellow', 'pink', 'orange'))
+
+        for extra in range(4):
+            self.colours.append(
              [random.random()/2,
               random.random()/2,
-              random.random()/2]))
+              random.random()/2])
 
     def next(self):
 
@@ -155,10 +158,10 @@ class Axe:
 
         self.delegate = pax
         self.position(ax)
+        self.carpet.lookup[id(pax)] = self
 
-        assert(hasattr(ax, 'img'))
-        ax.img.remove()
-        self._blank()
+        if hasattr(ax, 'img'):
+            ax.img.remove()
 
         # now delete ax
         ax.remove()
@@ -337,7 +340,7 @@ class Carpet(Ball):
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         #self.image = plt.figure(figsize=(33.1, 46.8), dpi=300) # A0 300 dpi
-        self.image = plt.figure(figsize=(3.31, 4.68))
+        self.image = plt.figure(figsize=(3*3.31, 3*4.68))
         try:
             plt.show(block=False)
         except:
@@ -361,6 +364,7 @@ class Carpet(Ball):
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
         self.add_filter('F', self.toggle_expand2)
+        self.add_filter(' ', self.toggle_pause)
 
 
     def log_events(self):
@@ -571,9 +575,15 @@ class Carpet(Ball):
     def delete_old_axes(self):
 
         naxes = len(self.image.axes)
+        print(f'deleting old axes, number of axes: {naxes}')
         for ax in self.image.axes:
             #print('hiding', type(ax), id(ax))
-            axe = self.lookup[id(ax)]
+            print(f'LOOKUP keys {self.lookup.keys()}')
+            try:
+                axe = self.lookup[id(ax)]
+            except:
+                print(f'WHOA {id(ax)} {type(ax)} missing from lookup')
+                raise
             if (axe not in self.history and
                 axe not in self.showing and
                 hasattr(axe, 'img')):

@@ -1009,13 +1009,7 @@ class Shepherd(Ball):
             ax = await self.get()
             print('got grid')
             try:
-                #tab = table.Table(ax, bbox=(0,0,1,1))
-                #tab.add_cell(0, 0, text=msg,
-                #             width=1, height=1, loc='center')
-                txt = [[x] for x in msg.split('\n')]
-                #tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1))
                 tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1))
-                #tab = table.table(ax, cellText=txt, bbox=(0,0,1,1))
                 foo = tab[0,0]
                 foo.set_text_props(multialignment='left')
             except:

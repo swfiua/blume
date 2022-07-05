@@ -11,6 +11,8 @@ from pathlib import Path
 from PIL import Image
 import random
 
+from collections import deque
+
 import argparse
 
 from blume import magic
@@ -19,11 +21,11 @@ from blume import farm
 
 class Train(magic.Ball):
 
-    def __init__(self, args):
+    def __init__(self, path='.'):
 
         super().__init__()
         
-        self.path = Path(args.path)
+        self.path = Path(path)
 
     async def start(self):
 
@@ -34,7 +36,8 @@ class Train(magic.Ball):
             self.paths = list(path.glob('**/*.jpg'))
             self.paths += list(path.glob('**/*.png'))
                 
-
+        self.paths = deque(self.paths)
+        
         print('PATHS', len(self.paths))
         self.bans = ['embedding', '_runner', 'tick_labels']
 
@@ -44,11 +47,12 @@ class Train(magic.Ball):
     async def run(self):
 
         idx = 0
-        if len(self.paths) > 1:
-            idx = random.randint(0, len(self.paths)-1)
+        #if len(self.paths) > 1:
+        #    idx = random.randint(0, len(self.paths)-1)
 
         path = self.paths[idx]
-        
+        self.paths.rotate()
+
         if str(path) in self.bads:
             return
 
@@ -70,16 +74,15 @@ class Train(magic.Ball):
         print('publishing', path)
         ax = await self.get()
         ax.axis('off')
-        ax.imshow(image)
+        ax.imshow(image, aspect='equal')
         ax.show()
 
 
 async def run(args):
-    """ Don't do things this way until things settle down ..."""
 
     fm = farm.Farm()
 
-    examples = Train(args)
+    examples = Train(args.path)
 
     fm.add(examples)
 

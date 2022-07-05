@@ -10,10 +10,6 @@ from blume import magic
 
 from blume import farm as fm
 
-import curio
-
-from matplotlib import pyplot as plt
-
 from pycbc import waveform
 
 
@@ -25,7 +21,7 @@ class Binary(magic.Ball):
         super().__init__()
 
         self.sample()
-        self.skip = 0.5
+        self.skip = 0.8
         self.random = True
 
     def sample(self):
@@ -68,13 +64,15 @@ class Binary(magic.Ball):
         nn = len(ts)
 
         skip = int(self.skip * nn)
-        plt.plot(ts[skip:])
-        #plt.plot(ts)
 
-        plt.title(f"{self.m1} {self.m2:.1f}")
+        ax = await self.get()
+        ax.plot(ts[skip:])
+        
+        ax.axis('off')
+        #ax.set_title(f"Solar Masses: {self.m1:.1f} {self.m2:.1f}")
+        ax.show()
 
-        await self.put(magic.fig2data(plt))
-
+        
         if self.random:
             self.sample()
 
@@ -112,9 +110,8 @@ if __name__ == '__main__':
     parser.add_argument('-random', action='store_true')
 
 
-    curio.run(run(parser.parse_args()))
+    magic.run(run(parser.parse_args()))
 
 
-        
 
 

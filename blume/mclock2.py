@@ -28,7 +28,7 @@ class GuidoClock(Ball):
         self.height = 640
         self.sleep = 1
         segments=9
-        self.radius = 1.5
+        self.radius = 1.25
         
         self.segments = segments
 
