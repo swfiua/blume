@@ -59,7 +59,7 @@ from PIL import Image
 
 import matplotlib
 
-from matplotlib import figure, rc, colors
+from matplotlib import figure, rc, colors, patches
 
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Bbox
@@ -191,12 +191,14 @@ class Axe:
 
         bb = self.get_full_bbox()
 
-        img = np.zeros((int(bb.height), int(bb.width), 3))
-        img += colors.to_rgb(Colours.next())
+        self.img = patches.Rectangle(
+            bb.p0,
+            bb.width, bb.height,
+            facecolor=Colours.next()
+        )
 
-        self.img = fig.figimage(img, bb.p0[0], bb.p0[1], zorder=-1)
-
-        return img
+        # add patch to the background
+        self.carpet.background.add_artist(self.img)
         
         
     def get_full_bbox(self):
@@ -229,7 +231,6 @@ class Axe:
         right = rights[colstop]
 
         # adjust edge box for figure padding
-        print(f'_blank {left} {top} {right} {bottom} {ncols} {nrows}')
         if True:
             if rowstart == 0:
                 top = 1.0
@@ -239,16 +240,6 @@ class Axe:
                 bottom = 0.0
             if colstop == ncols-1:
                 right = 1.0
-
-        print(f'_adjus {left} {top} {right} {bottom} {ncols} {nrows}')
-        print(f'_blank {rowstart} {colstart} {rowstop} {colstop}')
-        width = fbbox.width
-        height = fbbox.height
-
-        bottom *= height
-        top *= height
-        left *= width
-        right *= width
 
         # restore hspace, wspace in subplotparms
         spp.hspace, spp.wspace = hspace, wspace
@@ -339,8 +330,8 @@ class Carpet(Ball):
         self.lookup = dict()
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
-        #self.image = plt.figure(figsize=(33.1, 46.8), dpi=300) # A0 300 dpi
-        self.image = plt.figure(figsize=(5*3.31, 5*4.68))
+        self.image = plt.figure()
+        self.background = self.image.add_axes((0,0,1,1))
         try:
             plt.show(block=False)
         except:
@@ -590,6 +581,9 @@ class Carpet(Ball):
         print(f'deleting old axes, number of axes: {naxes}')
         showing = self.showing.values()
         for ax in self.image.axes:
+            if ax is self.background:
+                continue
+
             print(f'LOOKUP keys {self.lookup.keys()}')
             try:
                 axe = self.lookup[id(ax)]
@@ -602,6 +596,8 @@ class Carpet(Ball):
                 hasattr(axe, 'img')):
                 
                 print(f'deleting axes {id(ax)} {ax.get_subplotspec()}')
+                print('ffffff', axe.img)
+                print('ffffff', axe.img._remove_method)
                 axe.img.remove()
                 ax.figure.delaxes(ax)
                 del self.lookup[id(ax)]

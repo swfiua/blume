@@ -17,10 +17,12 @@ class Docs(magic.Ball):
 
         ax = await self.get()
 
-        msg = self.texts[0]
+        item = self.texts[0]
+        msg = item['text']
+        background = item.get('background', 'moccasin')
         
         tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1),
-                          cellColours=[['moccasin']],
+                          cellColours=[[background]],
                           cellLoc='center')
         foo = tab[0,0]
         foo.set_text_props(multialignment='center')
