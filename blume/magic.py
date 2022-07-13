@@ -980,10 +980,7 @@ class Shepherd(Ball):
             # if the queue is getting full, then we don't want to hang here.
             # curiously, maxsize - 1 is the critical size at which it seems
             # to hang.
-            print('ADDING TO HELP Q', hq.qsize(), hq.maxsize)
             self.put_nowait(msg, 'help')
-
-        print('ADDED TO HELP Q')
 
     def doc_firstline(self, value):
         """ Return first line of doc """
@@ -1005,9 +1002,7 @@ class Shepherd(Ball):
         print('HELPER STARTING UP')
         while True:
             msg = await self.get('help')
-            print('helper got message')
             ax = await self.get()
-            print('got grid')
             try:
                 tab = table.table(
                     ax, cellText=[[msg]], bbox=(0,0,1,1),
@@ -1018,7 +1013,7 @@ class Shepherd(Ball):
             except:
                 print_exc()
                 raise
-            print('got grid')
+
             ax.axis('off')
             ax.show()
             continue
@@ -1390,10 +1385,8 @@ async def relay(channel, callback):
     import traceback
     while True:
         msg = await TheMagicRoundAbout.get(channel)
-        print(f'message from {channel}: {msg}')
         try:
             result = callback()
-            print(f'{callback} RETURNED SUCCESSFULLY')
         except Exception as e:
             print(f'{channel} relay exception for {callback}')
             traceback.print_exc()
@@ -1401,10 +1394,8 @@ async def relay(channel, callback):
             
         if inspect.iscoroutine(result):
             try:
-                print(f'awaiting {result}')
                 await result
             except:
-                print(f'{channel} relay exception awaiting {result}')
                 traceback.print_exc()
 
 if __name__ == '__main__':
