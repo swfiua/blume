@@ -75,6 +75,9 @@ class PatchColours:
 
     def __init__(self):
         self.colours = deque(
+            ('skyblue',))
+        return
+        self.colours = deque(
             ('skyblue', 'lightgreen', 'yellow', 'pink', 'orange'))
 
         for extra in range(4):

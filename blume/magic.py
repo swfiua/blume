@@ -394,7 +394,7 @@ class Interact(Ball):
         value = repr(getattr(self.ball, attr))
         result = (attr, ellipsis(value))
         print(*result)
-        self.put_nowait(str(result), 'help')
+        #self.put_nowait(str(result), 'help')
 
 
     def current(self):
@@ -858,6 +858,7 @@ class Shepherd(Ball):
         #self.add_filter('u', self.up)
         #self.add_filter('d', self.down)
         self.add_filter('r', self.toggle_run)
+        self.add_filter('b', self.start)
         self.add_filter('I', self.edit_current)
 
         self.add_filter('x', self.status)
@@ -1004,8 +1005,10 @@ class Shepherd(Ball):
             msg = await self.get('help')
             ax = await self.get()
             try:
+                if isinstance(msg, str):
+                    msg = [[msg]]
                 tab = table.table(
-                    ax, cellText=[[msg]], bbox=(0,0,1,1),
+                    ax.delegate, cellText=msg, bbox=(0,0,1,1),
                     cellLoc='center')
 
                 foo = tab[0,0]
