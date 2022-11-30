@@ -27,6 +27,12 @@ class Train(magic.Ball):
         
         self.path = Path(path)
         self.scale = 1
+        self.rotation = 1
+
+        def reverse():
+            """ U turn if U want 2 """
+            self.rotation *= -1
+        self.add_filter('u', reverse)
 
     async def start(self):
 
@@ -52,7 +58,7 @@ class Train(magic.Ball):
         #    idx = random.randint(0, len(self.paths)-1)
 
         path = self.paths[idx]
-        self.paths.rotate()
+        self.paths.rotate(self.rotation)
 
         if str(path) in self.bads:
             return
