@@ -26,6 +26,7 @@ class Train(magic.Ball):
         super().__init__()
         
         self.path = Path(path)
+        self.scale = 1
 
     async def start(self):
 
@@ -71,13 +72,15 @@ class Train(magic.Ball):
             self.bads.add(str(path))
             return
 
-        print('publishing', path)
+        if self.scale:
+            w, h = image.size
+            image = image.resize((int(w * self.scale), int(h * self.scale)))
+
+        print('publishing', path, image.size)
         ax = await self.get()
         ax.axis('off')
-        #ax.imshow(image, aspect='equal')
-        
         t1=time.time()
-        ax.imshow(image, aspect='equal')
+        ax.imshow(image)
         t2=time.time()
         print(f'IMSHOW time for {path} {t2-t1}')
         

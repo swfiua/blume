@@ -983,5 +983,9 @@ def table(ax,
         if rowLabelWidth == 0:
             table.auto_set_column_width(-1)
 
+    
+    print('Table axes', table._axes)
+    print('Axes', ax)
+    print('Same:', ax is table._axes)
     ax.add_artist(table)
     return table

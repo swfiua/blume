@@ -1000,7 +1000,7 @@ class Shepherd(Ball):
         """
         from blume.legend import Grid
 
-        print('HELPER STARTING UP')
+        print('xxHELPER STARTING UPxx')
         while True:
             msg = await self.get('help')
             ax = await self.get()
@@ -1014,8 +1014,9 @@ class Shepherd(Ball):
                 foo = tab[0,0]
                 foo.set_text_props(multialignment='left')
             except:
+                print("HELPER CAUGHT AN EXCEPTION")
                 print_exc()
-                raise
+                continue
 
             ax.axis('off')
             ax.show()
