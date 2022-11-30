@@ -401,7 +401,7 @@ class Carpet(Ball):
 
     async def save(self):
         """ Save current image """
-        self.image.savefig(f'carpet{datetime.datetime.now()}.svg')
+        self.image.savefig(f'carpet{datetime.datetime.now()}.png')
         #                   dpi=self.savefig_dpi)
 
     async def add_row(self):

@@ -26,7 +26,8 @@ class Train(magic.Ball):
         super().__init__()
         
         self.path = Path(path)
-        self.scale = 1
+        self.scale = 0
+        self.size = 1024
         self.rotation = 1
 
         def reverse():
@@ -43,7 +44,7 @@ class Train(magic.Ball):
             self.paths = list(path.glob('**/*.jpg'))
             self.paths += list(path.glob('**/*.png'))
                 
-        self.paths = deque(self.paths)
+        self.paths = deque(sorted(self.paths))
         
         print('PATHS', len(self.paths))
         self.bans = ['embedding', '_runner', 'tick_labels']
@@ -78,17 +79,21 @@ class Train(magic.Ball):
             self.bads.add(str(path))
             return
 
-        if self.scale:
-            w, h = image.size
-            image = image.resize((int(w * self.scale), int(h * self.scale)))
+
+        w, h = image.size
+
+        scale = self.scale
+        
+        if scale == 0:
+            scale = min(self.size/w, self.size/h)
+
+        if scale:
+            image = image.resize((int(w * scale), int(h * scale)))
 
         print('publishing', path, image.size)
         ax = await self.get()
         ax.axis('off')
-        t1=time.time()
         ax.imshow(image)
-        t2=time.time()
-        print(f'IMSHOW time for {path} {t2-t1}')
         
         ax.show()
 
