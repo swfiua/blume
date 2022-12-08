@@ -263,6 +263,9 @@ class Farm(GeeFarm):
 
         clock = GuidoClock()
 
+        console = magic.Console()
+
+        self.add_node(console, background=True)
         self.add_node(carpet, background=True)
 
         self.add_node(self.shep)
@@ -320,7 +323,7 @@ class Carpet(Ball):
         self.sleep = 0.01
 
         # grid related
-        self.size = [1, 1]
+        self.size = [1, 1]  # wibni Interact operations worked sanely here
         self.simple = False
         self.expanded = None
         self.output = None

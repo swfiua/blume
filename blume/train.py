@@ -28,7 +28,7 @@ class Train(magic.Ball):
         self.path = Path(path)
         self.scale = 0
         self.size = 1024
-        self.rotation = 1
+        self.rotation = -1
 
         def reverse():
             """ U turn if U want 2 """
