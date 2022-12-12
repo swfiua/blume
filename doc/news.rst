@@ -8,6 +8,18 @@ What's happening with the `blume.table.Table`?
 
 My adventures in *matplotlib* land continue.
 
+2022/12/9
+=========
+
+I just added a Console module to the `blume.magic` module.  It simply
+takes each line of input and sends it to the magic roundabout queue of
+the same name.
+
+It uses `asyncio.run_in_executor` to run handle the calls to `input`.
+
+
+
+
 2022/6/7
 ========
 
