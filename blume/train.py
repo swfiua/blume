@@ -11,6 +11,8 @@ from pathlib import Path
 from PIL import Image
 import random
 
+import numpy as np
+
 from collections import deque
 import time
 import argparse
@@ -29,6 +31,8 @@ class Train(magic.Ball):
         self.scale = 0
         self.size = 1024
         self.rotation = -1
+
+        self.boost = 20
 
         def reverse():
             """ U turn if U want 2 """
@@ -83,20 +87,39 @@ class Train(magic.Ball):
         w, h = image.size
 
         scale = self.scale
-        
+
         if scale == 0:
             scale = min(self.size/w, self.size/h)
 
         if scale:
             image = image.resize((int(w * scale), int(h * scale)))
 
-        print('publishing', path, image.size)
+        if self.boost:
+            image = self.booster(image)
+        
+        print('publishing', path, image.size, 'entropy:', image.entropy())
         ax = await self.get()
         ax.axis('off')
         ax.imshow(image)
         
         ax.show()
 
+
+    def booster(self, im):
+        """ Scale pixel values in im by self. boost """
+        if not self.boost: return im
+
+        ent = im.entropy()
+        data = np.array(im.getdata())
+        
+        data *= self.boost
+        data = np.clip(data, 0, 256)
+        data = [(int(x), int(y), int(z)) for x,y,z in data]
+        im.putdata(data)
+        newt = im.entropy()
+        print('boost change in entropy:', newt - ent)
+
+        return im
 
 async def run(args):
 
@@ -112,7 +135,7 @@ async def run(args):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', default='.')
+    parser.add_argument('--path', default='.')
 
     args = parser.parse_args()
     magic.run(run(args))
