@@ -119,7 +119,7 @@ class Train(magic.Ball):
         ent = im.entropy()
         data = np.array(im.getdata())
         
-        data *= self.boost
+        data *= int(self.boost)
         data = np.clip(data, 0, 256)
         data = [(int(x), int(y), int(z)) for x,y,z in data]
         im.putdata(data)
