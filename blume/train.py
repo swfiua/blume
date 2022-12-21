@@ -9,6 +9,7 @@ Press h for help.
 """
 from pathlib import Path
 from PIL import Image
+import numpy as np
 import random
 
 from collections import deque
@@ -29,6 +30,7 @@ class Train(magic.Ball):
         self.scale = 0
         self.size = 1024
         self.rotation = -1
+        self.clip = None
 
         def reverse():
             """ U turn if U want 2 """
@@ -90,10 +92,14 @@ class Train(magic.Ball):
         if scale:
             image = image.resize((int(w * scale), int(h * scale)))
 
+        if self.clip:
+
+            image = np.clip(image, 0, self.clip)
+
         print('publishing', path, image.size)
         ax = await self.get()
         ax.axis('off')
-        ax.imshow(image)
+        ax.imshow(image, cmap=magic.random_colour())
         
         ax.show()
 
@@ -112,7 +118,7 @@ async def run(args):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', default='.')
+    parser.add_argument('--path', default='.')
 
     args = parser.parse_args()
     magic.run(run(args))
