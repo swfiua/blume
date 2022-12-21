@@ -12,6 +12,8 @@ from PIL import Image
 import numpy as np
 import random
 
+import numpy as np
+
 from collections import deque
 import time
 import argparse
@@ -31,6 +33,8 @@ class Train(magic.Ball):
         self.size = 1024
         self.rotation = -1
         self.clip = None
+
+        self.boost = 20
 
         def reverse():
             """ U turn if U want 2 """
@@ -85,7 +89,7 @@ class Train(magic.Ball):
         w, h = image.size
 
         scale = self.scale
-        
+
         if scale == 0:
             scale = min(self.size/w, self.size/h)
 
@@ -96,13 +100,33 @@ class Train(magic.Ball):
 
             image = np.clip(image, 0, self.clip)
 
-        print('publishing', path, image.size)
+        if self.boost:
+            image = self.booster(image)
+        
+        print('publishing', path, image.size, 'entropy:', image.entropy())
+
         ax = await self.get()
         ax.axis('off')
         ax.imshow(image, cmap=magic.random_colour())
         
         ax.show()
 
+
+    def booster(self, im):
+        """ Scale pixel values in im by self. boost """
+        if not self.boost: return im
+
+        ent = im.entropy()
+        data = np.array(im.getdata())
+        
+        data *= self.boost
+        data = np.clip(data, 0, 256)
+        data = [(int(x), int(y), int(z)) for x,y,z in data]
+        im.putdata(data)
+        newt = im.entropy()
+        print('boost change in entropy:', newt - ent)
+
+        return im
 
 async def run(args):
 
