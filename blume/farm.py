@@ -66,7 +66,7 @@ from matplotlib.transforms import Bbox
 
 #from .mosaic import Carpet
 
-from blume import magic
+from blume import magic, console
 from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd
 from .mclock2 import GuidoClock
 from .rcparms import Params
@@ -263,9 +263,9 @@ class Farm(GeeFarm):
 
         clock = GuidoClock()
 
-        console = magic.Console()
+        shell = console.Console(farm=self, carpet=carpet, shepherd=self.shep)
 
-        self.add_node(console, background=True)
+        self.add_node(shell, background=True)
         self.add_node(carpet, background=True)
 
         self.add_node(self.shep)

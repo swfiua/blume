@@ -1,29 +1,71 @@
 
 import readline
+import rlcompleter
 import sys
 
 import code
+import asyncio
 
 from blume import magic, farm
 
-import curio
-from curio.file import aopen, AsyncFile
 
-async def run():
+class Console(magic.Ball):
+    """ Prompt for input """
 
-    xx = AsyncFile(sys.stdin)
+    def __init__(self, **kwargs):
 
-    console = code.InteractiveConsole(locals())
+        super().__init__()
 
-    while True:
+        if kwargs:
+            self.__dict__.update(kwargs)
 
-        line = await xx.readline()
-        try:
-            console.runcode(line)
-            #print(eval(line))
-        except Exception as e:
-            print(e)
-    
+    async def start(self):
+
+
+        # kludge together a namespace for the console and completer
+        names = {}
+        names.update(self.__dict__)
+        names.update(globals())
+        names.update(locals())
+
+        completer = rlcompleter.Completer(names)
+        readline.set_completer(completer.complete)
+        self.console = code.InteractiveConsole(names)
+
+        # incantation to make tab completion work
+        readline.parse_and_bind("tab: complete")
+
+    async def run(self):
+
+        loop = asyncio.get_running_loop()
+
+        await magic.sleep(0.5)
+
+        banner = """
+********************************
+Welcome to the magic console.
+Your wish is my command!
+********************************
+"""
+
+        print(banner)
+
+        while True:
+
+            key = await loop.run_in_executor(
+                None, input, '>>> ')
+
+            # Single character inputs => put them into the
+            # Magic RoundAbout
+            if len(key.strip()) == 1:
+                char = key.strip()
+                await self.put(char, char)
+            else:
+                self.console.push(key)
+
+
+        
+            
 
 if __name__ == '__main__':
 

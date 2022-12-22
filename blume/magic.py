@@ -1343,21 +1343,6 @@ class Carpet(Ball):
 
         await self.put(self)
 
-class Console(Ball):
-    """ Prompt for input """
-
-    async def run(self):
-
-        loop = asyncio.get_running_loop()
-
-        while True:
-            key = await loop.run_in_executor(
-                None, input, '>>>')
-
-            # put the key into the queue named key
-            qq = self.select(key)
-            qq.put_nowait(key)
-            
 
 async def canine(ball):
     """ A sheep dog, something to control when it pauses and sleeps
