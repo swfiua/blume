@@ -321,6 +321,26 @@ class Interact(Ball):
 
         self.add_filter('i', self.interact)
 
+    async def run(self):
+        """When this is triggeredit usually means I
+        want to run self.ball, not myself
+
+        for now, achieve this by waiting for self.back()
+        and then pushing an r to trigger a run
+
+        wonder if this works?
+        I wonder how far the magic roundabout can go before
+        descending into chaos
+
+        the real reason this is here is it is the Sheperd that looks
+        after running things.
+
+        I think I will have it listen to a 'run' queue.
+
+        ... added a run queue i think .... let's see
+        """
+        
+        await self.put(self.ball, 'run')
 
     def set_ball(self, ball):
 
@@ -1102,6 +1122,7 @@ class Shepherd(Ball):
                 self.path.append(sheep)
 
         spawn(relay('gkr', self.generate_key_relays))
+        spawn(relay('run', self.toggle_run, with_message=True))
 
         # add a task to watch tasks
         self.watcher = spawn(self.task_watcher())
@@ -1408,13 +1429,17 @@ def ellipsis(string, maxlen=200, keep=10):
 
     return string
 
-async def relay(channel, callback):
+async def relay(channel, callback, with_message=False):
 
     import traceback
     while True:
         msg = await TheMagicRoundAbout.get(channel)
         try:
-            result = callback()
+            if with_message:
+                result = callback(msg)
+            else:
+                result = callback()
+
         except Exception as e:
             print(f'{channel} relay exception for {callback}')
             traceback.print_exc()
