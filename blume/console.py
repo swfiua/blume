@@ -1,10 +1,19 @@
 
-import readline
-import rlcompleter
-import sys
-
 import code
 import asyncio
+import sys
+
+print('PLATFORM' * 3)
+print(sys.platform)
+if sys.platform != 'emscripten':
+    import readline
+    import rlcompleter
+
+    InteractiveConsole = code.InteractiveConsole
+else:
+    from pyodide.console import Console as InteractiveConsole
+    readline = False
+
 
 from blume import magic, farm
 
@@ -21,25 +30,41 @@ class Console(magic.Ball):
 
     async def start(self):
 
-
         # kludge together a namespace for the console and completer
         names = {}
         names.update(self.__dict__)
         names.update(globals())
         names.update(locals())
 
-        completer = rlcompleter.Completer(names)
-        readline.set_completer(completer.complete)
-        self.console = code.InteractiveConsole(names)
+        self.console = InteractiveConsole(names)
 
-        # incantation to make tab completion work
-        readline.parse_and_bind("tab: complete")
+        # incantation to make tab completion work 
+        if readline:
+            completer = rlcompleter.Completer(names)
+            readline.set_completer(completer.complete)
+            readline.parse_and_bind("tab: complete")
+
+        print("starting relay of stdin")
+        if sys.platform != 'emscripten':
+            
+            self.stdin_relay = magic.spawn(self.relay_stdin())
+
+        print("started relay of stdin")
+
+
+    async def relay_stdin(self, txt='>>> '):
+        """ Put stdin into a queue """
+
+        loop = asyncio.get_running_loop()
+        while True:
+            key = await loop.run_in_executor(
+                None, input, '>>> ')
+
+            await self.put(key, 'stdin')
+            
 
     async def run(self):
 
-        loop = asyncio.get_running_loop()
-
-        await magic.sleep(0.5)
 
         banner = """
 ********************************
@@ -52,8 +77,7 @@ Your wish is my command!
 
         while True:
 
-            key = await loop.run_in_executor(
-                None, input, '>>> ')
+            key = await self.get('stdin')
 
             # Single character inputs => put them into the
             # Magic RoundAbout

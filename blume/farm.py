@@ -37,6 +37,8 @@ The plan in magic land is to get the magic roundabout working.
 At the moment there is a magic roundabout for each Ball.
 
 """
+import sys
+
 import random
 
 import math
@@ -263,9 +265,14 @@ class Farm(GeeFarm):
 
         clock = GuidoClock()
 
-        shell = console.Console(farm=self, carpet=carpet, shepherd=self.shep)
+        self.shell = console.Console(
+            farm=self,
+            carpet=carpet,
+            shepherd=self.shep,
+        )
 
-        self.add_node(shell, background=True)
+        background = sys.platform != 'emscriptem'
+        self.add_node(self.shell, background=background)
         self.add_node(carpet, background=True)
 
         self.add_node(self.shep)
