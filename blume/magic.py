@@ -323,7 +323,7 @@ class Interact(Ball):
         self.add_filter('i', self.interact)
 
     async def run(self):
-        """When this is triggeredit usually means I
+        """When this is triggered it usually means I
         want to run self.ball, not myself
 
         for now, achieve this by waiting for self.back()
@@ -340,8 +340,10 @@ class Interact(Ball):
 
         ... added a run queue i think .... let's see
         """
-        
         await self.put(self.ball, 'run')
+
+        # and switch ourself off
+        await self.put(self, 'run')
 
     def set_ball(self, ball):
 

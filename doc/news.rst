@@ -8,6 +8,24 @@ What's happening with the `blume.table.Table`?
 
 My adventures in *matplotlib* land continue.
 
+2023/1/1
+========
+
+The addition of the `blume.console` module has re-ignited my attempts
+to get web pages running pyodide up and running.
+
+The latest approach, *magic.html*, aims to be a way to run blume in a
+browser.  A matplotlib window and a simple console to control it all.
+
+This is proving trickier than I had hoped, as python meets javascript
+in an asynchronous framework.
+
+I have started to use the `blume.magic.TheMagicRoundAbout` to pass
+messages around in the system.  It is likely a good time to get more
+information from the magic RoundAbout.
+
+
+
 2022/12/9
 =========
 

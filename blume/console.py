@@ -3,8 +3,6 @@ import code
 import asyncio
 import sys
 
-print('PLATFORM' * 3)
-print(sys.platform)
 if sys.platform != 'emscripten':
     import readline
     import rlcompleter
@@ -85,7 +83,15 @@ Your wish is my command!
                 char = key.strip()
                 await self.put(char, char)
             else:
-                self.console.push(key)
+                print('handling input from stdin')
+                try:
+                    result = self.console.push(key)
+                except Exception as e:
+                    print("exception")
+                    print(e)
+                    result = e
+                print(result)
+                await self.put(result, 'stdout')
 
 
         

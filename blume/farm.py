@@ -271,7 +271,8 @@ class Farm(GeeFarm):
             shepherd=self.shep,
         )
 
-        background = sys.platform != 'emscriptem'
+        #background = sys.platform != 'emscriptem'
+        background = True
         self.add_node(self.shell, background=background)
         self.add_node(carpet, background=True)
 
@@ -343,6 +344,16 @@ class Carpet(Ball):
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
+        print("GOT IMAGE", self.image)
+        if hasattr(self.image.canvas, "create_root_element"):
+            from js import document
+            print('FIGURE CANVAS', self.image.canvas.create_root_element)
+            def create_root_element():
+                return document.getElementById('canvas')
+            self.image.canvas.create_root_element = create_root_element
+        else:
+            print('CANVAS has no create_root_element')
+            
         self.background = self.image.add_axes((0,0,1,1))
         try:
             plt.show(block=False)
