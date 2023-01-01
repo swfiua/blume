@@ -83,7 +83,6 @@ Your wish is my command!
                 char = key.strip()
                 await self.put(char, char)
             else:
-                print('handling input from stdin')
                 try:
                     result = self.console.push(key)
                 except Exception as e:
@@ -91,7 +90,7 @@ Your wish is my command!
                     print(e)
                     result = e
                 print(result)
-                await self.put(result, 'stdout')
+                #await self.put(result, 'stdout')
 
 
         

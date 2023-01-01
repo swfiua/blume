@@ -345,11 +345,15 @@ class Carpet(Ball):
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
         print("GOT IMAGE", self.image)
+
+        # for emscripten and html5_canvas
         if hasattr(self.image.canvas, "create_root_element"):
             from js import document
             print('FIGURE CANVAS', self.image.canvas.create_root_element)
             def create_root_element():
                 return document.getElementById('canvas')
+
+            # monkey patch
             self.image.canvas.create_root_element = create_root_element
         else:
             print('CANVAS has no create_root_element')
