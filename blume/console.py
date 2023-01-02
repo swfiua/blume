@@ -26,6 +26,16 @@ class Console(magic.Ball):
         if kwargs:
             self.__dict__.update(kwargs)
 
+    def complete(self, text):
+
+        completions, index = self.console.complete(text)
+        if len(completions) == 1:
+            return completions[0]
+
+        print(' '.join(completions))
+        return None
+        
+
     async def start(self):
 
         # kludge together a namespace for the console and completer
@@ -85,9 +95,10 @@ Your wish is my command!
             else:
                 try:
                     result = self.console.push(key)
+                    if sys.platform == 'emscripten':
+                        result = await result
                 except Exception as e:
                     print("exception")
-                    print(e)
                     result = e
                 print(result)
                 #await self.put(result, 'stdout')
