@@ -98,9 +98,17 @@ Your wish is my command!
                 try:
                     result = self.console.push(key)
                     if sys.platform == 'emscripten':
+                        """ emscriptem returns a promise 
+                            that needs to be awaited 
+
+                        TODO: unravel how it deals with incomplete 
+                              lines of input.
+                        """
                         result = await result
+                        if result is not None: print(result)
                 except Exception as e:
                     print("exception")
+                    print(e)
                     result = e
                 #await self.put(result, 'stdout')
 
