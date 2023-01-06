@@ -52,16 +52,18 @@ class Console(magic.Ball):
             readline.set_completer(completer.complete)
             readline.parse_and_bind("tab: complete")
 
-        print("starting relay of stdin")
         if sys.platform != 'emscripten':
             
             self.stdin_relay = magic.spawn(self.relay_stdin())
 
-        print("started relay of stdin")
-
 
     async def relay_stdin(self, txt='>>> '):
-        """ Put stdin into a queue """
+        """ Put stdin into a queue 
+
+        This is useful(?) since code below can just wait on that
+        queue and not worry about actual stdin eg on a pyodide web page.
+
+        """
 
         loop = asyncio.get_running_loop()
         while True:
@@ -100,7 +102,6 @@ Your wish is my command!
                 except Exception as e:
                     print("exception")
                     result = e
-                print(result)
                 #await self.put(result, 'stdout')
 
 

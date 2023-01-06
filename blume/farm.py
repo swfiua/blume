@@ -269,6 +269,7 @@ class Farm(GeeFarm):
             farm=self,
             carpet=carpet,
             shepherd=self.shep,
+            tmra=magic.TheMagicRoundAbout,
         )
 
         #background = sys.platform != 'emscriptem'
@@ -347,6 +348,8 @@ class Carpet(Ball):
         print("GOT IMAGE", self.image)
 
         # for emscripten and html5_canvas
+        # need an easy way to use any id as the root element.
+        # for now, its 'canvas'
         if hasattr(self.image.canvas, "create_root_element"):
             from js import document
             print('FIGURE CANVAS', self.image.canvas.create_root_element)
