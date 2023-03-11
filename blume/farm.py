@@ -486,7 +486,7 @@ class Carpet(Ball):
 
     async def history_rotate(self, n=1):
 
-        print('history', len(self.history), 'rotate', n)
+        #print('history', len(self.history), 'rotate', n)
 
         if len(self.history) == 0:
             return
@@ -518,12 +518,13 @@ class Carpet(Ball):
             await self.history_rotate(1)
         
     def toggle_expand2(self):
+        """ ask figure to expand the axes to fill the space """
         fig = self.image
 
         fig.subplots_adjust(hspace=0, wspace=0)
         
     def toggle_expand(self, names=None):
-        
+        """ Toggle making each axis fill its space """
         names = names or ["left", "bottom", "right", "top", "wspace", "hspace"]
 
         fig = self.image
