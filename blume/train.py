@@ -34,12 +34,28 @@ class Train(magic.Ball):
         self.rotation = -1
         self.clip = None
 
-        self.boost = 20
+        self.boost = 0
 
         def reverse():
             """ U turn if U want 2 """
             self.rotation *= -1
         self.add_filter('u', reverse)
+        self.add_filter('d', self.down)
+        self.add_filter('b', self.back)
+
+
+    async def down(self):
+
+        choices = [x for x in self.path.glob('*') if x.is_dir()]
+
+        # pick at rando from choices
+        self.path = random.choice(choices)
+        await self.start()
+        
+    async def back(self):
+        self.path = self.path.parent
+
+        await self.start()
 
     async def start(self):
 
@@ -81,7 +97,6 @@ class Train(magic.Ball):
             image = Image.open(path)
         except:
             print('BAD ONE', path)
-            traceback.print_exc(limit=20)
             self.bads.add(str(path))
             return
 
