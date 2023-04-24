@@ -33,6 +33,7 @@ class Train(magic.Ball):
         self.size = 1024
         self.rotation = -1
         self.clip = None
+        self.min_entropy = .0
 
         self.boost = 0
 
@@ -48,13 +49,18 @@ class Train(magic.Ball):
 
         choices = [x for x in self.path.glob('*') if x.is_dir()]
 
-        # pick at rando from choices
-        self.path = random.choice(choices)
-        await self.start()
+        if not choices:
+            print(self.path, 'has no sub directories')
+
+        else:
+            # pick at rando from choices
+            self.path = random.choice(choices)
+            print(self.path)
+            await self.start()
         
     async def back(self):
         self.path = self.path.parent
-
+        print(self.path)
         await self.start()
 
     async def start(self):
@@ -117,8 +123,16 @@ class Train(magic.Ball):
 
         if self.boost:
             image = self.booster(image)
-        
-        print('publishing', path, image.size, 'entropy:', image.entropy())
+
+        mininfo = self.min_entropy
+        if mininfo:
+            entropy = image.entropy()
+            if entropy < mininfo:
+                print('skipping  ', path, image.size, 'entropy:', entropy)
+                return
+            else:
+                print('publishing', path, image.size, 'entropy:', entropy)
+            
 
         ax = await self.get()
         ax.axis('off')
