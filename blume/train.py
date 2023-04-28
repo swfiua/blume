@@ -132,7 +132,8 @@ class Train(magic.Ball):
                 return
             else:
                 print('publishing', path, image.size, 'entropy:', entropy)
-            
+        else:
+            print('publishing', path, image.size)
 
         ax = await self.get()
         ax.axis('off')
