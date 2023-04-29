@@ -39,6 +39,8 @@ At the moment there is a magic roundabout for each Ball.
 """
 import sys
 
+import inspect
+
 import random
 
 import math
@@ -66,16 +68,43 @@ from matplotlib import figure, rc
 from matplotlib import pyplot as plt
 
 from blume import magic, console
-from .magic import Ball, RoundAbout, GeeFarm, fig2data, Shepherd, Carpet
+from .magic import Ball, RoundAbout, Shepherd, Carpet, spawn
+
 from .mclock2 import GuidoClock
 from .rcparms import Params
+from .console import Console
 
 
-class Farm(GeeFarm):
+class Farm(Ball):
+    """ A farm, for now.. 
 
-    def __init__(self):
+    A network of things running around.
 
+    Magic round-abouts of queues connecting it all.
+
+    Displays, keyboards, human input, outputs.
+
+    A graph of tools.
+
+    And something to help it run.
+    """
+
+    def __init__(self, hub=None, nodes=None, edges=None):
+        """ Turn graph into a running farm """
         super().__init__()
+        self.pause = True
+        hub = hub or DiGraph()
+
+        hub.add_nodes_from(nodes or set())
+        hub.add_edges_from(edges or set())
+
+        print('OK to here')
+        self.hub = hub
+        self.shep = Shepherd()
+
+        # register quit event with shepherd
+        self.shep.add_filter('q', self.quit)
+        print('OK to here2')
 
         # start a farm going
         carpet = Carpet()
@@ -110,12 +139,132 @@ class Farm(GeeFarm):
         self.shep.set_path([self.shep, self.carpet])
 
 
+        
+
+    def __getattr__(self, attr):
+        """ Delegate to hub
+
+        self.hub is a directed graph, so we're a Ball that is a graph
+        """
+        #print(f'farm looking for {attr}')
+        if attr == 'hub':
+            raise AttributeError
+        return getattr(self.hub, attr)
+
+    def status(self):
+
+        print(f' nodes: {self.hub.number_of_nodes()}')
+        print(f' edges: {self.hub.number_of_edges()}')
+
+        hub = self.hub
+        for item in hub.nodes:
+            print(hub[item])
+
+        for edge in hub.edges:
+            print(edge, hub.edges[edge])
+
     def add(self, item):
 
         #self.add_edge(item, self.carpet)
         self.add_edge(self.carpet, item)
 
+    async def start(self):
+        """ Traverse the graph do some plumbing? 
+
+        Let the shepherd look after the running of everything
+        """
+
+        # Tell the shepherd what to look after
+        self.shep.flock = self.hub
+
+        print('GEEEFAR starting shep')
+        result = self.shep.start()
+        if inspect.iscoroutine(result):
+            await result
+
+        # create a task which is a dog watching the shepherd
+        print('GEEEFAR spawning superdog')
+        self.superdog = spawn(magic.canine(self.shep))
+
+        # set the shepherd to pause 
+        self.shep.pause = True
+
+        # figure out an initial path
+
+
+    async def run(self):
+        """ Run the farm 
+
+        For now, just plot the current graph.
+        """
+        print('MAGIC TREE FARM')
+
+        # wait for the super dog
+        try:
+            await self.superdog
+
+        except asyncio.CancelledError:
+            print('Farm shutting down')
+
+
+    async def quit(self):
+        """ quit the farm """
+
+        await self.shep.quit()
+
+        self.superdog.cancel()
+
+
+class DiGraph:
+
+    def __init__(self):
+
+        self.nodes = defaultdict(dict)
+        self.edges = defaultdict(dict)
+
+    def add_nodes_from(self, nodes):
+
+        for node in nodes:
+            self.add_node(node)
+
+    def add_edges_from(self, edges):
+
+        for edge in edges:
+            self.add_edge(*edge)
+
+    def add_node(self, node, **keyw):
+
+        self.nodes[node].update(**keyw)
+    
+    def add_edge(self, a, b, **keyw):
         
+        self.edges[(a, b)].update(**keyw)
+        for node in a, b:
+            if node not in self.nodes:
+                self.nodes[node].update(**keyw)
+
+    def succcessors(self, node):
+
+        result = []
+        for a, b in self.edges.keys():
+            if a is node:
+                result.append(b)
+
+    def predecessors(self, node):
+
+        result = []
+        for a, b in self.edges.keys():
+            if b is node:
+                result.append(a)
+
+    def __iter__(self):
+
+        return iter(self.nodes)
+
+    def __len__(self):
+
+        return len(self.nodes)
+
 
 
 
