@@ -220,9 +220,7 @@ async def run(args):
     # add to path to get key events at start 
     farm.shep.path.append(mandy)
 
-    await farm.start()
-
-    await farm.run()
+    fm.run(farm)
 
 
 

@@ -234,7 +234,13 @@ class Ball:
         self.add_filter('W', self.dump_roundabout)
         self.add_filter('j', self.status)
 
-    def add_filter(self, key, coro, name='keys'):
+    def add_filter(self, key=None, coro=None, name='keys'):
+
+        filters = self.filters[name]
+        if key is None:
+            for char in coro.__name__:
+                if char not in filters:
+                    key = char
 
         self.filters[name][key] = coro
 
@@ -1022,6 +1028,7 @@ class Shepherd(Ball):
             for key, value in lu.items():
                 if key in keys:
                     continue
+
                 yield sheep, key, value
 
                 keys.add(key)
@@ -1032,13 +1039,13 @@ class Shepherd(Ball):
         print('HELP', self.path)
 
         # FIXME? 
-        msg = ''
+        msg = []
         for sheep, key, callback in self.generate_key_bindings(name=name):
-            msg += '{} {}\n'.format(
-                key,
-                self.doc_firstline(callback))
+            doc = self.doc_firstline(callback)
+            msg.append([key, sheep.__class__.__name__,  doc])
 
-        print(msg)
+        textmsg = '\n'.join([' '.join(x) for x in msg])
+        print(textmsg)
         # hmm -- there's a queue of help messages somewhere
         # maybe should use that for some other display.
 
@@ -1056,7 +1063,7 @@ class Shepherd(Ball):
         if doc:
             return doc.split('\n')[0]
         else:
-            return repr(value)
+            return value.__name__
             #return "????"
 
     async def helper(self):
@@ -1073,9 +1080,12 @@ class Shepherd(Ball):
             try:
                 if isinstance(msg, str):
                     msg = [[msg]]
+
+                widths = get_widths(msg)
                 tab = table.table(
                     ax.delegate, cellText=msg, bbox=(0,0,1,1),
-                    cellLoc='center')
+                    cellLoc='center',
+                    colWidths=widths)
 
                 foo = tab[0,0]
                 foo.set_text_props(multialignment='left')
@@ -1085,49 +1095,6 @@ class Shepherd(Ball):
                 continue
 
             ax.axis('off')
-            ax.show()
-            continue
-            
-            fontsize = 6
-            prop = dict(size=fontsize)
-            grid = Grid([[msg]], prop=prop)
-            #grid.set_visible(False)
-            #ax.text(0., 0., msg)
-            #        verticalalignment='center',
-            #        horizontalalignment='center',
-            #        transform=ax.transAxes)
-            #ax.axis('off')
-            renderer = ax.figure._cachedRenderer
-
-            grid.figure = ax.figure
-            ax.axis('off')
-            ax.add_artist(grid)
-        
-            if renderer:
-                try:
-                    #print('FONT SCALING')
-                    extent = grid.get_window_extent(renderer)
-                    #print('WINDOW EXTENT', extent)
-                    ax_extent = ax.get_window_extent(renderer)
-                    #print('AXES EXTENT  ', ax_extent)
-                    #print(ax_extent.x1 - ax_extent.x0)
-                    #print(extent.x1 - extent.x0)
-                    xfontscale = (ax_extent.x1 - ax_extent.x0) / (extent.x1 - extent.x0)
-                    yfontscale = (ax_extent.y1 - ax_extent.y0) / (extent.y1 - extent.y0)
-                    fontscale = min(xfontscale, yfontscale) * 0.9
-
-                    prop['size'] *= fontscale
-                    grid.remove()
-                    grid = Grid([[msg]], prop=prop)
-                    ax.add_artist(grid)
-
-                    #print('scaled by', fontscale, xfontscale, yfontscale)
-                    #print('bbox after scaling')
-                    #print(grid.get_window_extent(renderer))
-                except:
-                    print_exc()
-                        
-            print('showing help axes')
             ax.show()
 
 
@@ -1332,6 +1299,22 @@ class Shepherd(Ball):
 
         return f'shepherd of flock degree {len(self.flock)}'
 
+def get_widths(msg):
+
+    # find max len of string for each column
+    ncols = len(msg[0])
+
+    widths = []
+    for col in range(ncols):
+        widths.append(max([len(x[col]) for x in msg]) + 3)
+
+    # now normalise
+    total = sum(widths)
+    widths = [x/total for x in widths]
+    print('WWWWWWWWWWWW', widths)
+    return widths
+
+    
 class IdleRunner:
 
     def __init__(self, filename):

@@ -190,6 +190,7 @@ class Farm(Ball):
         self.shep.pause = True
 
         # figure out an initial path
+        await self.shep.show_help()
 
 
     async def run(self):
