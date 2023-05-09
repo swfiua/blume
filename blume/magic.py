@@ -265,6 +265,7 @@ class Ball:
         """
 
         return getattr(TheMagicRoundAbout, attr)
+        
 
 
     def update(self, args):
@@ -326,9 +327,11 @@ class Axe:
         try:
             return getattr(self.delegate, attr)
         except AttributeError as e:
-            # fixme:
-            #raise e
-            raise AttributeError
+
+            try:
+                return getattr(plt, attr)
+            except:
+                raise AttributeError
 
     def position(self, target):
         """ Set position to that of target """

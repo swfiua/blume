@@ -11,8 +11,9 @@ Press h for help.
 """
 
 
-from blume.farm import Farm
-from blume import magic
+from blume import magic, farm
+from blume import farm
+#from blume.farm import Farm
 
 import random
 
@@ -21,6 +22,27 @@ from pathlib import Path
 import argparse
 import traceback
 
+class ModuleWrapper(magic.Ball):
+    """ Wrap a file of code up as a Ball """
+    def __init__(self, path):
+        
+        super().__init__()
+        locs = locals()
+        locs['__name__'] = '__eggshow__'
+        result = exec(path.open().read(), globals())
+        result = exec(path.open().read(), globals(), locs)
+
+        print('LLLOOOOCCCSSS')
+        print(locs)
+        self.locs = locs
+
+    async def run(self):
+
+        ax = await self.get()
+        self.locs['plt'] = ax
+
+        exec(self.locs['run'].__code__, self.locs)
+        
 class Examples(magic.Ball):
 
     def __init__(self, args):
@@ -73,7 +95,15 @@ class Examples(magic.Ball):
 
         print(path)
         try:
-            exec(path.open().read(), globals(), locals())
+            ax = await self.get()
+            locs = dict(plt=ax)
+            result = exec(path.open().read(), globals(), locs)
+            print(f'result for {path}: {result}')
+            print(locs)
+            locs['aa'] = 6
+            locs['run']
+            # if the file has a run method (or async func)
+            # then we want to run it with locs as locals.
         except:
             print('BAD ONE', path)
             traceback.print_exc(limit=20)
@@ -106,19 +136,17 @@ def show():
     print('NO SHOW TODAY')
 
 
-async def run(args):
+def run(args):
     """ Don't do things this way until things settle down ..."""
 
-    farm = Farm()
+    land = farm.Farm()
 
     examples = Examples(args)
 
-    farm.add(examples)
+    land.add(examples)
+    land.add(ModuleWrapper(Path(args.path)))
 
-    starter = await farm.start()
-
-    print('farm runnnnnnnnnning')
-    runner = await farm.run()
+    farm.run(land)
     
         
 if __name__ == '__main__':
@@ -127,4 +155,4 @@ if __name__ == '__main__':
     parser.add_argument('path', default='.')
 
     args = parser.parse_args()
-    magic.run(run(args))
+    run(args)
