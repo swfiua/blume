@@ -278,7 +278,11 @@ class Ball:
 
         
         """
-        for key, value in vars(args).items():
+        try:
+            data = vars(args)
+        except TypeError:
+            data = args
+        for key, value in data.items():
             setattr(self, key, value)
 
     def sleepy(self):

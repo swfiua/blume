@@ -22,25 +22,29 @@ from pathlib import Path
 import argparse
 import traceback
 
+CURRENT_AXE = None
+
 class ModuleWrapper(magic.Ball):
     """ Wrap a file of code up as a Ball """
     def __init__(self, path):
         
         super().__init__()
-        locs = locals()
-        locs['__name__'] = '__eggshow__'
+        self.update(locals())
+        global __name__
+        __name__ = '__eggshow__'
+        self.locs = {}
         result = exec(path.open().read(), globals())
-        result = exec(path.open().read(), globals(), locs)
+        result = exec(path.open().read(), globals(), self.locs)
 
         print('LLLOOOOCCCSSS')
-        print(locs)
-        self.locs = locs
+        print(self.locs)
 
     async def run(self):
 
         ax = await self.get()
-        self.locs['plt'] = ax
-
+        self.plt = ax
+        global CURRENT_AXE
+        CURRENT_AXE = ax
         exec(self.locs['run'].__code__, self.locs)
         
 class Examples(magic.Ball):
@@ -133,7 +137,11 @@ class Examples(magic.Ball):
 
 
 def show():
-    print('NO SHOW TODAY')
+
+    if CURRENT_AXE:
+        CURRENT_AXE.show()
+    else:
+        print('NO SHOW TODAY')
 
 
 def run(args):
