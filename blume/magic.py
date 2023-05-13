@@ -598,9 +598,9 @@ class Interact(Ball):
 
         Idea is to interact on current attribute of whatever current is
         """
-        print('XXXXX re_interact')
         current = self.current()
         obj = getattr(self.ball, current)
+        print('XXXXX re_interact', obj, type(obj))
 
         self.history.append(self.ball)
         self.set_ball(obj)

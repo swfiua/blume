@@ -29,15 +29,10 @@ class ModuleWrapper(magic.Ball):
     def __init__(self, path):
         
         super().__init__()
-        self.update(locals())
+
         global __name__
         __name__ = '__eggshow__'
-        self.locs = {}
-        result = exec(path.open().read(), globals())
-        result = exec(path.open().read(), globals(), self.locs)
-
-        print('LLLOOOOCCCSSS')
-        print(self.locs)
+        result = exec(path.open().read(), self.__dict__)
 
     async def run(self):
 
@@ -45,7 +40,9 @@ class ModuleWrapper(magic.Ball):
         self.plt = ax
         global CURRENT_AXE
         CURRENT_AXE = ax
-        exec(self.locs['run'].__code__, self.locs)
+
+        exec(self.main.__code__, self.__dict__)
+
         
 class Examples(magic.Ball):
 
