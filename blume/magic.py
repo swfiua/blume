@@ -465,6 +465,18 @@ class Axe:
 
         return bbox
 
+    def get(self):
+        """ Return a fresh axis """
+        
+        task = spawn(self.carpet.get())
+
+        try:
+            return self.carpet.get_nowait()
+        except asyncio.queues.QueueEmpty:
+            return self
+
+            
+
 class PatchColours:
 
     def __init__(self):
@@ -1355,11 +1367,7 @@ class Table:
 
 
 class Carpet(Ball):
-    """ FIXME This should of course be in the magic module.
-        I Can't remember why it needed to be here - probably worth
-        moving it back there, but that requires making it magic!
-
-        Current status: history just added, wormholes opened.
+    """ Current status: history just added, wormholes opened.
 
         FIXME: figure out lifecycle of an Axe
 

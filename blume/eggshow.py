@@ -36,8 +36,14 @@ class ModuleWrapper(magic.Ball):
 
     async def run(self):
 
-        ax = await self.get()
-        self.plt = ax
+        if self.axes:
+            for ix, ax in enumerate(self.axes):
+                if ax:
+                    self.axes[ix] = await magic.TheMagicRoundAbout.get()
+        else:
+            ax = await magic.TheMagicRoundAbout.get()
+            self.plt = ax
+
         global CURRENT_AXE
         CURRENT_AXE = ax
 
