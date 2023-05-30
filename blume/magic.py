@@ -569,7 +569,7 @@ class Interact(Ball):
             
         except Exception as e:
             print(e)
-            print('oops no can interact', ball)
+            print('oops no can interact', ellipsis(repr(ball)))
             return
 
         self.attrs = attrs
@@ -612,8 +612,17 @@ class Interact(Ball):
         """
         current = self.current()
         obj = getattr(self.ball, current)
-        print('XXXXX re_interact', obj, type(obj))
+        print('XXXXX re_interact', current, type(obj))
 
+        try:
+            ax = await self.get()
+            from astropy.table import Table
+            table = Table(obj)
+            ax.imshow(obj)
+            ax.show()
+        except:
+            raise
+        
         self.history.append(self.ball)
         self.set_ball(obj)
         self.show_current()

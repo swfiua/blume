@@ -36,7 +36,7 @@ class ModuleWrapper(magic.Ball):
 
     async def run(self):
 
-        if self.axes:
+        if hasattr(self, 'axes'):
             for ix, ax in enumerate(self.axes):
                 if ax:
                     self.axes[ix] = await magic.TheMagicRoundAbout.get()
