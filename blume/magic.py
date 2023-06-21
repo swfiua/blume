@@ -1118,6 +1118,7 @@ class Shepherd(Ball):
                 foo = tab[0,0]
                 foo.set_text_props(multialignment='left')
             except:
+                print(msg)
                 print("HELPER CAUGHT AN EXCEPTION")
                 print_exc()
                 continue
@@ -1334,7 +1335,7 @@ def get_widths(msg):
 
     widths = []
     for col in range(ncols):
-        widths.append(max([len(x[col]) for x in msg]) + 3)
+        widths.append(max([len(str(x[col])) for x in msg]) + 3)
 
     # now normalise
     total = sum(widths)

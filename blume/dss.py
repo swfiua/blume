@@ -37,9 +37,6 @@ from traceback import print_exc
 from sympy import *
 from einsteinpy.symbolic import predefined
 
-import curio
-
-from blume import magic
 from blume import magic
 from blume import farm as fm
 
@@ -114,7 +111,7 @@ class Dss(magic.Ball):
  
             #print(img[row-1])
 
-            await curio.sleep(0)
+            await magic.sleep(0)
 
         ax = await self.get()
         ax.hide_axes()
@@ -125,7 +122,7 @@ class Dss(magic.Ball):
         ax.show()
 
 
-async def run():
+def run():
 
     dss = Dss()
 
@@ -136,13 +133,7 @@ async def run():
     
     farm.add(dss)
     
-    await farm.start()
-
-    print(dss.deSitter())
-
-    farm.shep.path.append(dss)
-
-    await farm.run()
+    fm.run(farm)
         
 
 
@@ -151,4 +142,4 @@ if __name__ == '__main__':
     print(help(init_printing))
     init_printing(pretty_print=True)
 
-    curio.run(run(), with_monitor=True)
+    run()

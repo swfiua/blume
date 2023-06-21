@@ -363,7 +363,7 @@ class Milky(Ball):
 
         
 
-async def run(args):
+def main(args):
 
     milky = Milky(args.bunch, args.topn)
 
@@ -374,9 +374,7 @@ async def run(args):
     # add to path to get key events at start 
     farm.shep.path.append(milky)
 
-    await farm.start()
-
-    await farm.run()
+    fm.run(farm)
 
 
 if __name__ == '__main__':
@@ -387,7 +385,7 @@ if __name__ == '__main__':
     parser.add_argument('-topn', type=int, default=10)
 
 
-    curio.run(run(parser.parse_args()))
+    main(main(parser.parse_args()))
     
 
     
