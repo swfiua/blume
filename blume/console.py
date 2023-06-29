@@ -13,7 +13,7 @@ else:
     readline = False
 
 
-from blume import magic, farm
+from blume import magic
 
 
 class Console(magic.Ball):

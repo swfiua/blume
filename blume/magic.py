@@ -468,8 +468,6 @@ class Axe:
     def get(self):
         """ Return a fresh axis """
         
-        task = spawn(self.carpet.get())
-
         try:
             return self.carpet.get_nowait()
         except asyncio.queues.QueueEmpty:
@@ -615,11 +613,7 @@ class Interact(Ball):
         print('XXXXX re_interact', current, type(obj))
 
         try:
-            ax = await self.get()
-            from astropy.table import Table
-            table = Table(obj)
-            ax.imshow(obj)
-            ax.show()
+            await self.to_table(obj)
         except:
             raise
         
@@ -627,6 +621,22 @@ class Interact(Ball):
         self.set_ball(obj)
         self.show_current()
 
+
+    async def to_table(self, obj):
+        from astropy.table import Table
+        table = Table(obj)
+        print(table.colnames)
+
+        for ix, xx in enumerate(table.colnames):
+            
+            ax = await self.get()
+
+            for yy in table.colnames[ix+1:]:
+                print('plotting', xx, yy)
+                ax.plot(table[xx], table[yy], label=yy)
+                ax.set_xlabel(xx)
+                ax.legend()
+            ax.show()
         
     def show_current(self):
 

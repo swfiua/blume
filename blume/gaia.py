@@ -45,8 +45,8 @@ from astropy import coordinates
 from astropy import units as u
 from .magic import Ball
 
-import curio
-from curio import queue
+import asyncio
+curio = asyncio
 
 import healpy as hp
 import numpy as np
@@ -111,7 +111,7 @@ class Milky(Ball):
 
     async def start(self):
         """ start async task to read/download data """
-        self.bunchq = curio.PriorityQueue()
+        self.bunchq = asyncio.Queue()
 
         # load any bunches there are
         # for now, keep them separate
@@ -127,7 +127,7 @@ class Milky(Ball):
             await curio.sleep(0)
 
         # launch a task to get more bunches, if needed
-        self.sampler = await curio.spawn(self.get_samples())
+        self.sampler = await magic.spawn(self.get_samples())
 
     async def get_samples(self):
 
@@ -139,7 +139,8 @@ class Milky(Ball):
             # take sample
             bid = len(self.bunches)
             path = Path(f'bunch_{bid}.fits')
-            bunch = await curio.run_in_process(get_sample, squeal, str(path))
+            bunch = await curio.create_task(
+                get_sample(squeal, str(path)))
 
             self.bunches.append(bunch)
             
@@ -213,8 +214,8 @@ class Milky(Ball):
         print(f'sag A* {sagra.deg} {sagdec}')
 
         npix = hp.nside2npix(nside)
-        hpxmap = np.zeros(npix, dtype=np.float)
-        radvel = np.zeros(npix, dtype=np.float)
+        hpxmap = np.zeros(npix, dtype=float)
+        radvel = np.zeros(npix, dtype=float)
         #radvel += 2000
 
         ra = np.zeros(0)

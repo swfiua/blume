@@ -18,10 +18,14 @@ class Docs(magic.Ball):
         ax = await self.get()
 
         item = self.texts[0]
-        msg = item['text']
-        background = item.get('background', 'moccasin')
+        try:
+            msg = item['text']
+            background = item.get('background', 'moccasin')
+        except:
+            msg = item.__doc__
+            background = 'moccasin'
         
-        tab = table.table(ax, cellText=[[msg]], bbox=(0,0,1,1),
+        tab = table.table(ax.delegate, cellText=[[msg]], bbox=(0,0,1,1),
                           cellColours=[[background]],
                           cellLoc='center')
         foo = tab[0,0]

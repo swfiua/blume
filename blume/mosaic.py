@@ -167,6 +167,7 @@ class Carpet(Ball):
         #    self.count += 1
 
         # self.fig.canvas.callbacks.process('draw_event')
+        pass
 
 async def run():
 

@@ -65,7 +65,7 @@ class Params(Ball):
 
     def next_group(self):
 
-        self.groups.rotate()
+        self.group_names.rotate()
 
     def show_group(self):
 
