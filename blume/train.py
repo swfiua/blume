@@ -24,11 +24,12 @@ from blume import farm
 
 class Train(magic.Ball):
 
-    def __init__(self, path='.'):
+    def __init__(self, path='.', paths=None):
 
         super().__init__()
         
         self.path = Path(path)
+        self.paths=paths
         self.scale = 0
         self.size = 1024
         self.rotation = -1
@@ -66,13 +67,15 @@ class Train(magic.Ball):
 
     async def start(self):
 
-        if self.path.is_file():
-            self.paths = [self.path]
+        if not self.paths:
+            if self.path.is_file():
+                self.paths = [self.path]
+            else:
+                path = Path(self.path)
+                self.paths = list(path.glob('**/*.jpg'))
+                self.paths += list(path.glob('**/*.png'))
         else:
-            path = Path(self.path)
-            self.paths = list(path.glob('**/*.jpg'))
-            self.paths += list(path.glob('**/*.png'))
-                
+            self.paths = [Path(path) for path in self.paths]
         self.paths = deque(sorted(self.paths))
         
         print('PATHS', len(self.paths))
@@ -167,7 +170,7 @@ async def run(args):
 
     fm = farm.Farm()
 
-    examples = Train(args.path)
+    examples = Train(args.path, paths=args.paths)
 
     fm.add(examples)
 
@@ -178,6 +181,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', default='.')
+    parser.add_argument('--paths', default=[], nargs='+')
 
     args = parser.parse_args()
     magic.run(run(args))
