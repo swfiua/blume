@@ -2,6 +2,7 @@
 import code
 import asyncio
 import sys
+from pathlib import Path
 
 if sys.platform != 'emscripten':
     import readline
@@ -23,6 +24,7 @@ class Console(magic.Ball):
 
         super().__init__()
 
+        self.history = Path('~/.blume_history').expanduser()
         if kwargs:
             self.__dict__.update(kwargs)
 
@@ -51,6 +53,9 @@ class Console(magic.Ball):
             completer = rlcompleter.Completer(names)
             readline.set_completer(completer.complete)
             readline.parse_and_bind("tab: complete")
+            readline.set_auto_history(True)
+            if self.history.exists():
+                readline.read_history_file(self.history)
 
         if sys.platform != 'emscripten':
             
@@ -106,6 +111,7 @@ Your wish is my command!
                         """
                         result = await result
                         if result is not None: print(result)
+                    readline.write_history_file(self.history)
                 except Exception as e:
                     print("exception")
                     print(e)
