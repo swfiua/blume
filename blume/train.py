@@ -33,6 +33,7 @@ class Train(magic.Ball):
         self.size = 1024
         self.rotation = -1
         self.clip = None
+        self.cmap = None
         self.min_entropy = .0
 
         self.boost = 0
@@ -137,10 +138,10 @@ class Train(magic.Ball):
 
         ax = await self.get()
         ax.axis('off')
-        cmap = magic.random_colour()
-        cmap='prism_r'
-        import matplotlib
-        print(cmap, matplotlib.colormaps[cmap])
+        if self.cmap:
+            cmap = self.cmap
+        else:
+            cmap = magic.random_colour()
         ax.imshow(image, cmap=cmap)
         
         ax.show()
