@@ -33,10 +33,6 @@ from matplotlib import pyplot as plt
 
 from traceback import print_exc
 
-# hmm, sympy is a whole universe of stuff
-from sympy import *
-from einsteinpy.symbolic import predefined
-
 from blume import magic
 from blume import farm as fm
 
@@ -51,8 +47,9 @@ class Dss(magic.Ball):
         self.size = 50
         self.aaa = magic.modes
         
-        self.alpha, self.beta, self.gamma, self.delta = symbols(
-            'alpha beta gamma delta')
+        self.alpha, self.beta, self.gamma, self.delta = [
+            1, 0, 0, math.pi / 2]
+            
 
     def set_abcd(self):
 
@@ -64,15 +61,16 @@ class Dss(magic.Ball):
 
     def constraints(self):
 
-        print(self.alpha**2 - self.gamma**2 >= 1.)
-
-        print(self.alpha > 0)
 
         a, b, c, d = self.alpha, self.beta, self.gamma, self.delta
 
-        print((a * b - c * d) <= (a*a - c*c - 1) * (b*b - d*d -1))
+        print('a, b, c, d', a, b, c, d)
+        print('a >= 1', a >= 1)
+        print('a**2 - c**2 >= 0.', a**2 - c**2 >= 0.)
+        print('b*b - d*d + 1 >= 0', b*b - d*d + 1 >= 0)
+        print('(a * b - c * d) <= (a*a - c*c - 1) * (b*b - d*d + 1)',
+              (a * b - c * d) <= (a*a - c*c - 1) * (b*b - d*d + 1))
 
-        print((a*d - b*c) <= (a*a - c*c - b*b + d*d -1))
 
     def blue_shift_time(self, alpha=None, delta=None):
         """ """
@@ -87,6 +85,18 @@ class Dss(magic.Ball):
 
         return predefined.DeSitter()
 
+    def generic_case(self):
+        """ generic case
+
+        Isometries can be applied to make b = c = 0,
+        a = cosh(phi) and d = cos(theta)
+
+
+        """
+        assert 0 <= self.theta <= math.pi
+        assert 0 <= self.phi
+        a = math.cosh(self.phi)
+        d = math.cos(self.theta)
 
     async def run(self):
 
