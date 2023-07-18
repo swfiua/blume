@@ -553,26 +553,21 @@ class Interact(Ball):
 
     def set_ball(self, ball):
 
-        try:
-            if isinstance(ball, dict):
-                attrs = deque(ball.keys())
+        if not isinstance(ball, Ball):
+            try:
+
                 ball = Wrapper(ball)
-            else:
-                attrs = deque(sorted(vars(ball).keys()))
-                
-            if len(attrs) == 0:
-                print(vars(ball))
-                print(f'{ellipsis(repr(ball))} has no attributes to interact with')
-                return
+                attrs = deque(Wrapper.attrs)
             
-        except Exception as e:
-            print(e)
-            print('oops no can interact', ellipsis(repr(ball)))
-            return
+            except Exception as e:
+                print(e)
+                print('oops no can interact', ellipsis(repr(ball)))
+                return
+        else:
+            attrs = deque(sorted(vars(ball)))
 
         self.attrs = attrs
         self.ball = ball
-
 
 
     async def back(self):
@@ -613,7 +608,7 @@ class Interact(Ball):
         print('XXXXX re_interact', current, type(obj))
 
         try:
-            await self.to_table(obj)
+            obj = await self.to_table(obj)
         except:
             raise
         
@@ -627,16 +622,21 @@ class Interact(Ball):
         table = Table(obj)
         print(table.colnames)
 
-        for ix, xx in enumerate(table.colnames):
-            
-            ax = await self.get()
+        key = table.colnames[0]
+        
+        for col in table.colnames[1:]:
+            print('plotting', col)
+            try:
+                ax = await self.get()
 
-            for yy in table.colnames[ix+1:]:
-                print('plotting', xx, yy)
-                ax.plot(table[xx], table[yy], label=yy)
-                ax.set_xlabel(xx)
-                ax.legend()
-            ax.show()
+                ax.plot(table[col])
+                ax.set_xlabel(col)
+
+                ax.show()
+            except:
+                pass
+
+        return table
         
     def show_current(self):
 
@@ -769,7 +769,22 @@ class Wrapper:
 
     def __init__(self, ball):
 
-        self.__dict__.update(ball)
+        if isinstance(ball, dict):
+            self.__dict__.update(ball)
+            self.attrs = self.__dict__.keys()
+
+        if hasattr(ball, 'colnames'):
+            names = {}
+            for name in ball.colnames:
+                names[name] = ball[name]
+            
+            self.__dict__update(names)
+            self.attrs = ball.colnames
+        
+
+        # keep a reference to the full thing
+        self.ball = ball
+
 
         
             

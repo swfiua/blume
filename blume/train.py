@@ -137,7 +137,11 @@ class Train(magic.Ball):
 
         ax = await self.get()
         ax.axis('off')
-        ax.imshow(image, cmap=magic.random_colour())
+        cmap = magic.random_colour()
+        cmap='prism_r'
+        import matplotlib
+        print(cmap, matplotlib.colormaps[cmap])
+        ax.imshow(image, cmap=cmap)
         
         ax.show()
 
