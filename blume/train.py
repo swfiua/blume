@@ -30,6 +30,7 @@ class Train(magic.Ball):
 
         parser = self.get_parser()
 
+        # sets attributes from parsed args
         self.update(parser.parse_args(args))
 
         def reverse():
@@ -46,6 +47,9 @@ class Train(magic.Ball):
         parser.add_argument('--path', default='.')
         parser.add_argument('--paths', default=[], nargs='+')
         parser.add_argument('--clip', type=float, default=0)
+        parser.add_argument('--clipr', type=float, default=0)
+        parser.add_argument('--clipg', type=float, default=0)
+        parser.add_argument('--clipb', type=float, default=0)
         parser.add_argument('--scale', type=float, default=0)
         parser.add_argument('--size', type=int, default=1024)
         parser.add_argument('--rotation', type=int, default=-1)
@@ -150,16 +154,8 @@ class Train(magic.Ball):
 
         return msg
             
-        
-    async def run(self):
-
-        idx = 0
-        #if len(self.paths) > 1:
-        #    idx = random.randint(0, len(self.paths)-1)
-
-        path = self.paths[idx]
-        self.paths.rotate(self.rotation)
-
+    def get_image(self, path):
+        """ Turn path into an image """
         if str(path) in self.bads:
             return
 
@@ -185,15 +181,53 @@ class Train(magic.Ball):
         except:
             # maybe its fits
             if path.suffix == '.fits':
-                image = await self.fits_open(path)
-                
+                image = self.fits_open(path)
+
         if self.clip:
-
             image = np.clip(image, 0, self.clip)
-
         if self.boost:
             image = self.booster(image)
 
+        return image
+
+    def get_rgb(self):
+        """ Turn next three paths into an rgb """
+        layers = []
+        for ix, c in enumerate('rgb'):
+            path = self.paths[ix]
+            image = self.get_image(path)
+            clip = getattr(self, 'clip' + c) or self.clip
+            if self.clip:
+                image.clip(clip)
+                image /= clip
+            else:
+                image /= image.max()
+            
+            layers.append(image)
+            self.paths.rotate(self.rotation)
+
+        rgb = np.array(layers).T
+        (c,w,h) = rgb.shape
+        self.rgbi = rgb
+        
+        return rgb
+    
+    async def run(self):
+
+        #if len(self.paths) > 1:
+        #    idx = random.randint(0, len(self.paths)-1)
+
+
+        path = self.paths[0]
+
+        if self.rgb:
+            image = self.get_rgb()
+            print('rgb image shape', image.shape)
+        else:
+            image = self.get_image(path)
+
+        self.paths.rotate(self.rotation)
+                
         mininfo = self.min_entropy
         if mininfo:
             entropy = image.entropy()
@@ -215,12 +249,12 @@ class Train(magic.Ball):
         
         ax.show()
 
-    async def fits_open(self, path):
+    def fits_open(self, path):
 
         from astropy.io import fits
         
         tab = fits.open(path)
-        print(tab.info())
+        #print(tab.info())
         for item in tab:
             print(item.size)
         if isinstance(item.size, int):
@@ -229,7 +263,19 @@ class Train(magic.Ball):
             #await self.show_stats(item)
             pass
 
-        print(tab[1].header)
+        keys = ['title',
+                #'origin',
+                'duration',
+                #'date', 'date-beg', 'date-end',
+                'filter',
+                'mu_dec', 'mu_ra',
+                ]
+
+        # there are other tables with simpler headers
+        hdr = tab[0].header
+        for key in keys:
+            print(key, hdr[key.upper()])
+        
         self.tab = tab
         return tab[1].data
 
