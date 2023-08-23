@@ -33,6 +33,8 @@ class Train(magic.Ball):
         # sets attributes from parsed args
         self.update(parser.parse_args(args))
 
+        self.extent = None
+
         def reverse():
             """ U turn if U want 2 """
             self.rotation *= -1
@@ -57,7 +59,7 @@ class Train(magic.Ball):
         parser.add_argument('--min_entropy', type=float, default=.0)
         parser.add_argument('--boost', type=float, default=0)
         parser.add_argument('--rgb', action='store_true', default=False)
-
+        
         return parser
         
 
@@ -94,7 +96,7 @@ class Train(magic.Ball):
         else:
             self.paths = [Path(path) for path in self.paths]
         self.paths = deque(sorted(self.paths))
-        self.scan()
+        #self.scan()
         
         print('PATHS', len(self.paths))
         self.bans = ['embedding', '_runner', 'tick_labels']
@@ -193,20 +195,23 @@ class Train(magic.Ball):
     def get_rgb(self):
         """ Turn next three paths into an rgb """
         layers = []
-        for ix, c in enumerate('rgb'):
+        for ix, c in enumerate('rgb'): 
             path = self.paths[ix]
             image = self.get_image(path)
+            print("RGB", image.shape, path)
             clip = getattr(self, 'clip' + c) or self.clip
             if self.clip:
                 image.clip(clip)
                 image /= clip
             else:
                 image /= image.max()
-            
-            layers.append(image)
+
+            layers.append(image[::-1].T)
+            #layers.append(image.T)
             self.paths.rotate(self.rotation)
 
         rgb = np.array(layers).T
+        print('RRRRRRRRRRRRRRR', rgb.shape)
         (c,w,h) = rgb.shape
         self.rgbi = rgb
         
@@ -240,12 +245,14 @@ class Train(magic.Ball):
             print('publishing', path, image.size)
 
         ax = await self.get()
-        ax.axis('off')
+        #ax.axis('off')
         if self.cmap:
             cmap = self.cmap
         else:
             cmap = magic.random_colour()
-        ax.imshow(image, cmap=cmap)
+
+        print('EEEEEEEEEEEEE', self.extent)
+        ax.imshow(image, cmap=cmap, extent=self.extent)
         
         ax.show()
 
@@ -263,19 +270,36 @@ class Train(magic.Ball):
             #await self.show_stats(item)
             pass
 
-        keys = ['title',
-                #'origin',
-                'duration',
-                #'date', 'date-beg', 'date-end',
-                'filter',
-                'mu_dec', 'mu_ra',
-                ]
+        keys = [
+            ['title',
+             #'origin',
+             'duration',
+             #'date', 'date-beg', 'date-end',
+             'filter',
+             'mu_dec', 'mu_ra'],
+            ['crpix1', 'crpix2', 'crval1', 'crval2',],
+            [ 'crdelt1', 'crdelt2'],
+        ]
 
         # there are other tables with simpler headers
-        hdr = tab[0].header
-        for key in keys:
-            print(key, hdr[key.upper()])
-        
+        for ix in 0, 1:
+            hdr = tab[ix].header
+            for key in keys[ix]:
+                print(key, hdr[key.upper()])
+
+        # figure out extents of image
+        v1 = hdr['crval1']; v2 = hdr['crval2']
+        p1 = hdr['crpix1']; p2 = hdr['crpix2']
+        d1 = hdr['cdelt1']; d2 = hdr['cdelt2']
+
+        ww, hh = tab[1].shape
+        extent = [v1 - (p1 * d1), v1 + ((hh-p1) * d1),
+                  v2 - (p2 * d2), v2 + ((ww-p2) * d2)]
+        print('extent', extent)
+        print(hh, p1, ww, p2)
+        self.extent = extent
+        xx, yy = tab[1].shape
+        print(xx, yy)
         self.tab = tab
         return tab[1].data
 
