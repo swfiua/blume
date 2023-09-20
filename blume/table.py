@@ -20,7 +20,7 @@ Thanks to John Gill for providing the class and table.
 
 """
 
-from matplotlib import artist, cbook, docstring
+from matplotlib import artist, cbook
 from matplotlib.artist import Artist, allow_rasterization
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
@@ -258,7 +258,6 @@ class Cell(Rectangle):
         # Simply use a multiple (self.HPAD) of font size as padding
         return self.get_fontsize() * self.HPAD
 
-    @docstring.dedent_interpd
     def set_text_props(self, **kwargs):
         """
         Update the text properties.
@@ -759,11 +758,6 @@ class Table(Artist):
         """
         return self._cells
 
-# not sure what this does -- augment table with kwdoc from artist?
-docstring.interpd.update(Table=artist.kwdoc(Table))
-
-
-@docstring.dedent_interpd
 def table(ax,
           cellText=None, cellColours=None,
           cellLoc='right', colWidths=None,
