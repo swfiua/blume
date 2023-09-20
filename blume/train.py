@@ -184,7 +184,9 @@ class Train(magic.Ball):
             # maybe its fits
             if path.suffix == '.fits':
                 image = self.fits_open(path)
-
+            else:
+                raise
+        
         if self.clip:
             image = np.clip(image, 0, self.clip)
         if self.boost:
@@ -197,6 +199,7 @@ class Train(magic.Ball):
         layers = []
         for ix, c in enumerate('rgb'): 
             path = self.paths[ix]
+            print("PATH", path)
             image = self.get_image(path)
             print("RGB", image.shape, path)
             clip = getattr(self, 'clip' + c) or self.clip
