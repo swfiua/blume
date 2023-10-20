@@ -24,6 +24,8 @@ class Console(magic.Ball):
 
         super().__init__()
 
+        self.prompt = '>>> '
+
         self.history = Path('~/.blume_history').expanduser()
         if kwargs:
             self.__dict__.update(kwargs)
@@ -62,7 +64,7 @@ class Console(magic.Ball):
             self.stdin_relay = magic.spawn(self.relay_stdin())
 
 
-    async def relay_stdin(self, txt='>>> '):
+    async def relay_stdin(self, txt=None):
         """ Put stdin into a queue 
 
         This is useful(?) since code below can just wait on that
@@ -73,7 +75,7 @@ class Console(magic.Ball):
         loop = asyncio.get_running_loop()
         while True:
             key = await loop.run_in_executor(
-                None, input, '>>> ')
+                None, input, txt or self.prompt)
 
             await self.put(key, 'stdin')
             
@@ -119,8 +121,6 @@ Your wish is my command!
                 #await self.put(result, 'stdout')
 
 
-        
-            
 
 if __name__ == '__main__':
 
