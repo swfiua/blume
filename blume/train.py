@@ -69,16 +69,19 @@ class Train(magic.Ball):
 
         if not choices:
             print(self.path, 'has no sub directories')
+            parent = self.path.parent
+            choices = [x for x in parent.glob('*') if x.is_dir()]
 
-        else:
-            # pick at rando from choices
-            self.path = random.choice(choices)
-            print(self.path)
-            await self.start()
+        # pick at rando from choices
+        self.path = random.choice(choices)
+        print(self.path)
+        self.paths = None # trigger reload
+        await self.start()
         
     async def back(self):
         self.path = self.path.parent
         print(self.path)
+        self.paths = None # trigger reload
         await self.start()
 
     async def start(self):

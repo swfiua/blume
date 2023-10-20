@@ -221,7 +221,7 @@ class Ball:
             self.update(kwargs)
         
         self.paused = False
-        self.sleep = .8
+        self.sleep = .01
 
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
@@ -1605,10 +1605,12 @@ class Carpet(Ball):
 
         ax.show()
 
-    async def replay_history(self):
+    async def replay_history(self, maxback=None):
 
         # take a copy of the current history
         hlen = len(self.history)
+        hlen = min(max(*self.size), hlen)
+        
 
         # need to throw away one axis in the queue
         await self.get()

@@ -305,14 +305,16 @@ class MagicPlot(Ball):
 
 
             
-def run(farm=None, dump=False):
+def run(farm=None, balls=None, dump=False):
 
     if farm is None:
         farm = Farm()
 
-        magic_plotter = MagicPlot()
-        farm.add(magic_plotter)
-        farm.shep.path.append(magic_plotter)
+        if balls is None:
+            balls = MagicPlot()
+
+        for ball in balls:
+            farm.add(ball)
 
     print('set up the farm .. move to start for added thrills? or not?') 
     #farm.setup()
