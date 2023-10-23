@@ -1780,23 +1780,46 @@ async def canine(ball):
     With a bit more work when building things ... TheMagicRoundAbout time?
 
     Update: trying to accommodate balls where run is just a function.
+
+    Try to accommodate coroutines and couroutine functions.
     
     """
 
     print('dog chasing ball:', ball)
     runs = 0
-    while True:
-        if not ball.paused:
 
+    if isinstance(ball, Ball):
+        run = ball.run
+    else:
+        run = ball
+
+    sleepy = 0
+    while True:
+        if hasattr(ball, 'paused'):
+            paused = ball.paused
+        else:
+            paused = False
+            
+        if not paused:
             try:
-                result = ball.run()
+                # gymnastics to deal with callables coroutines
+                # or coroutinefunctions
+                if inspect.iscoroutine(run):
+                    result = run
+                else:
+                    result = run()
+
+                # now if it is a coroutine
                 if inspect.iscoroutine(result):
                     #print(f'canine awaits result {runs} for {ball}')
                     await result
             
                 runs += 1
 
-                await sleep(ball.sleep)
+                if hasattr(ball, 'sleep'):
+                    sleepy = ball.sleep
+                await sleep(sleepy)
+
             except asyncio.CancelledError:
                 print(f'cancelled running of {ball} after {runs} runs')
                 raise
@@ -1852,6 +1875,11 @@ async def relay(channel, callback, with_message=False):
             except:
                 traceback.print_exc()
 
+def runner(ball):
+
+    TheMagicRoundAbout.put_nowait(ball, 'run')
+    
+                
 if __name__ == '__main__':
     
     
