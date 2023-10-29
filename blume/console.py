@@ -113,7 +113,8 @@ Your wish is my command!
                         """
                         result = await result
                         if result is not None: print(result)
-                    readline.write_history_file(self.history)
+
+                    readline and readline.write_history_file(self.history)
                 except Exception as e:
                     print("exception")
                     print(e)
