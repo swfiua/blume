@@ -73,6 +73,7 @@ class Console(magic.Ball):
         """
 
         loop = asyncio.get_running_loop()
+
         while True:
             key = await loop.run_in_executor(
                 None, input, txt or self.prompt)
@@ -93,12 +94,11 @@ Your wish is my command!
         print(banner)
 
         while True:
-
             key = await self.get('stdin')
 
             # Single character inputs => put them into the
             # Magic RoundAbout
-            if len(key.strip()) == 1:
+            if len(key.strip()) == 1 and not self.console.buffer:
                 char = key.strip()
                 await self.put(char, char)
             else:
@@ -113,6 +113,9 @@ Your wish is my command!
                         """
                         result = await result
                         if result is not None: print(result)
+                    else:
+                        if result:
+                            [print(x) for x in self.console.buffer]
 
                     readline and readline.write_history_file(self.history)
                 except Exception as e:
