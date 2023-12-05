@@ -1400,6 +1400,15 @@ class Table:
         
         """
 
+def show():
+
+    try:
+        plt.show(block=False)
+    except:
+        # sometimes backends have show without block parameter?  
+        plt.show()
+
+        
 
 class Carpet(Ball):
     """ Current status: history just added, wormholes opened.
@@ -1445,26 +1454,7 @@ class Carpet(Ball):
         self.image = plt.figure()
         print("GOT IMAGE", self.image)
 
-        # for emscripten and html5_canvas
-        # need an easy way to use any id as the root element.
-        # for now, its 'canvas'
-        if hasattr(self.image.canvas, "create_root_element"):
-            from js import document
-            print('FIGURE CANVAS', self.image.canvas.create_root_element)
-            def create_root_element():
-                return document.getElementById('canvas')
-
-            # monkey patch
-            self.image.canvas.create_root_element = create_root_element
-        else:
-            print('CANVAS has no create_root_element')
-            
         self.background = self.image.add_axes((0,0,1,1))
-        try:
-            plt.show(block=False)
-        except:
-            # sometimes backends have show without block parameter?  
-            plt.show()
 
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)

@@ -93,6 +93,7 @@ Your wish is my command!
 
         print(banner)
 
+        # print(self.prompt, end='')
         while True:
             key = await self.get('stdin')
 
@@ -113,11 +114,16 @@ Your wish is my command!
                         """
                         result = await result
                         if result is not None: print(result)
+                        #print(self.prompt, end='')
                     else:
                         if result:
                             [print(x) for x in self.console.buffer]
-
+                        else:
+                            pass
+                            #print()
+                            #print(self.prompt, end='')
                     readline and readline.write_history_file(self.history)
+
                 except Exception as e:
                     print("exception")
                     print(e)
