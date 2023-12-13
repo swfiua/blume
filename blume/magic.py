@@ -222,6 +222,7 @@ class Ball:
         
         self.paused = False
         self.sleep = .01
+        self.tasks = Tasks()
 
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
@@ -304,7 +305,8 @@ class Ball:
         pass
 
     async def run(self):
-        pass
+
+        await self.tasks.run()
 
 class Axe:
     """ A matplotlib axis that has some extra methods 
@@ -1817,6 +1819,51 @@ async def canine(ball):
             except:
                 print_exc()
                 raise
+
+class Task:
+
+    def __init__(self,
+                 task,
+                 args=None,
+                 kwargs=None,
+                 active=True,
+                 plot=True):
+
+        self.task = task
+        self.args = args or []
+        self.kwargs = kwargs or {}
+        self.active = active
+        self.result = None
+        self.plot = plot
+
+    async def run(self):
+
+        args = self.args.copy()
+        if self.plot:
+            ax = await magic.TheMagicRoundAbout.get()
+            args = [ax] + args
+
+        self.result = await self.task(*args, **self.kwargs)
+
+    
+class Tasks:
+
+    def __init__(self, tasks=None):
+
+        self.tasks = deque()
+
+    def add(self, task, plot=False, *args, active=True, **kwargs):
+        """ Add a task """
+        self.tasks.append(Task(task, args, kwargs, active, plot))
+
+    async def run(self, sleep=0):
+        """ Run the tasks """
+        for task in self.tasks:
+            await task.run()
+
+            # take a nap between tasks
+            await asyncio.sleep(0)
+            
 
 
 async def runme():
