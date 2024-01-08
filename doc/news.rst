@@ -8,6 +8,46 @@ What's happening with the `blume.table.Table`?
 
 My adventures in *matplotlib* land continue.
 
+2024/01/02
+==========
+
+Another year and still no table!
+
+I have been using blume quite a lot with my main project, `gotu`.
+That is currently the best place to look for how I am using blume.
+
+Adding the console has returned me to the REPL.  The farm no longer
+pops up a matplotlib figure when it starts, you now have to type::
+
+  magic.show()
+
+In the console to show the figure.
+
+After that 'r' will run the current object, which can be obtained as::
+
+  cc = shepherd.current()
+
+You can then manipulate attributes from the console and watch as it
+changes the plots.
+
+If you find yourself wanting to run some co-routine, just call::
+
+  magic.runner(coroutine)
+
+I have been using `astropy` quite extensively and am trying to build a
+generic viewer browsing astropy data using astropy's Table objects. 
+
+  
+2023/12/12
+==========
+
+I have spent a lot of this year working with `astropy` and tables from
+the same.  I mostly use the blume console now for running simple
+python programs that run magic.Ball objects in the blume.farm.Farm.
+
+
+
+
 2023/1/1
 ========
 
