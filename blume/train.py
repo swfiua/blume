@@ -256,7 +256,7 @@ class Train(magic.Ball):
             print('publishing', path, image.size)
 
         ax = await self.get()
-        #ax.axis('off')
+        ax.axis('off')
         if self.cmap:
             cmap = self.cmap
         else:
