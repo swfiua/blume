@@ -11,6 +11,7 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 import random
+import traceback
 
 import numpy as np
 
@@ -230,15 +231,19 @@ class Train(magic.Ball):
 
 
         path = self.paths[0]
+        self.paths.rotate(self.rotation)
 
         if self.rgb:
             image = self.get_rgb()
             print('rgb image shape', image.shape)
         else:
-            image = self.get_image(path)
+            try:
+                image = self.get_image(path)
+            except Exception as e:
+                traceback.print_exception(e)
+                self.paths.rotate(self.rotation)
+                return
 
-        self.paths.rotate(self.rotation)
-                
         mininfo = self.min_entropy
         if mininfo:
             entropy = image.entropy()

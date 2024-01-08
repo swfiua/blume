@@ -471,7 +471,7 @@ class Axe:
         """ Return a fresh axis """
         
         try:
-            return self.carpet.get_nowait()
+            return TheMagicRoundAbout.get_nowait()
         except asyncio.queues.QueueEmpty:
             return self
 
