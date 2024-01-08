@@ -559,7 +559,7 @@ class Interact(Ball):
             try:
 
                 ball = Wrapper(ball)
-                attrs = deque(Wrapper.attrs)
+                attrs = deque(ball.attrs)
             
             except Exception as e:
                 print(e)
@@ -612,7 +612,7 @@ class Interact(Ball):
         try:
             obj = await self.to_table(obj)
         except:
-            raise
+            print('hmm... not a table?')
         
         self.history.append(self.ball)
         self.set_ball(obj)
@@ -782,12 +782,15 @@ class Wrapper:
             
             self.__dict__update(names)
             self.attrs = ball.colnames
-        
+        else:
+            self.attrs = ball.__dict__.keys()
 
         # keep a reference to the full thing
         self.ball = ball
 
+    def __getattr__(self, attr):
 
+        return getattr(self.ball, attr)
         
             
 class Spell:
