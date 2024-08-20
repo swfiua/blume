@@ -8,6 +8,7 @@ What's happening with the `blume.table.Table`?
 
 My adventures in *matplotlib* land continue.
 
+
 2024/01/02
 ==========
 
@@ -33,6 +34,19 @@ changes the plots.
 If you find yourself wanting to run some co-routine, just call::
 
   magic.runner(coroutine)
+
+This will run the co-routine repeatedly, which may not be what you
+want!  It may appear there is no way of stopping it, which is where
+*.blume_history* comes in useful.  Retrieve your previous command,
+then run it and it will stop.  Failing that ctrl-C is your friend.
+
+I added history to the console, and it is saved in ~/.blume_history.
+Apoloties to anyone who was writing an epic novel, influenced by James
+Joyce' Bloomsday, and though that .blume_history was just the perfect
+name.
+
+I am using these tools from a terminal on a linux machine, so
+`readline` customisations also work.
 
 I have been using `astropy` quite extensively and am trying to build a
 generic viewer browsing astropy data using astropy's Table objects. 

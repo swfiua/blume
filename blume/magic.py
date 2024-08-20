@@ -112,6 +112,8 @@ import dateutil
 
 import functools
 
+import time
+
 #import curio
 import asyncio
 curio = asyncio
@@ -185,6 +187,8 @@ class RoundAbout:
             print(f'magic queue {name} is full.  size={qq.qsize()}')
 
         return item
+
+    axe = get_nowait
     
     async def get(self, name=None):
 
@@ -223,6 +227,7 @@ class Ball:
         self.paused = False
         self.sleep = .01
         self.tasks = Tasks()
+        self.meta = {}
 
         # ho hum update event_map to control ball?
         # this should be done via roundabout,
@@ -327,6 +332,7 @@ class Axe:
 
         self.delegate = delegate
         self.carpet = carpet
+        self.meta = dict(x='x', y='y')
 
     def __getattr__(self, attr):
 
@@ -419,6 +425,29 @@ class Axe:
         # add patch to the background
         self.carpet.background.add_artist(self.img)
         
+    async def mscatter(self):
+        """ still figuring this out
+
+        does the Axe have a table?
+
+        or nested tables.
+        """
+        meta = self.carpet.meta
+        x = meta['x']
+        y = meta['y']
+        self.delegate.scatter(x, y)
+
+    async def mplot(self, table=None):
+        pass
+
+    async def mimshow(self):
+        pass
+
+    def mlegend(self):
+
+        from matplotlib import legend
+        handles, labels = legend._get_legend_handles_labels([self])
+        if len(handles) <= 10: self.legend()
         
     def get_full_bbox(self):
         # FIXME -- this needs to take account of padding of the figure
@@ -475,7 +504,6 @@ class Axe:
         except asyncio.queues.QueueEmpty:
             return self
 
-            
 
 class PatchColours:
 
@@ -597,6 +625,18 @@ class Interact(Ball):
         self.show_current()
         print()
 
+        # show attributes
+        self.show_attr_table()
+
+    def show_attr_table(self):
+        
+        msg = []
+        for key in self.attrs:
+            value = getattr(self.ball, key)
+            rep = ellipsis(repr(value))
+            msg.append([key, rep, type(value)])
+
+        self.put_nowait(msg, 'help')
 
     async def re_interact(self):
         """ Recursively interact mode 
@@ -617,6 +657,7 @@ class Interact(Ball):
         self.history.append(self.ball)
         self.set_ball(obj)
         self.show_current()
+        self.show_attr_table()
 
 
     async def to_table(self, obj):
@@ -657,6 +698,7 @@ class Interact(Ball):
 
         self.attrs.rotate(-1)
 
+        self.show_attr_table()
         self.show_current()
 
     async def prev_attr(self):
@@ -664,6 +706,7 @@ class Interact(Ball):
         self.attrs.rotate()
         attr = self.attrs[0]
 
+        self.show_attr_table()
         self.show_current()
 
 
@@ -690,6 +733,7 @@ class Interact(Ball):
 
         print(f'{key}: {value}')
         self.show_current()
+        self.show_attr_table()
 
     def double(self):
         """ i double """
@@ -1393,17 +1437,26 @@ class Table:
     A list of dictionaries, and ways to explore them?
     """
     
-    def __init__self(self, path=None, data=None, meta_data=None):
+    def __init__self(self, path=None, data=None, **meta):
         """ Turn what we are given into a table """
 
         self.path = path or Path()
-        self.data = data
-        self.meta_data = meta_data
+        self.data = data or None
+        self.meta = meta
         
-        """ now what?  look at data with a magic spell and get meta data.
+    async def show(self):
+        """ Table show yourself """
+        plottype = meta['type'] or self.plot
         
-        
-        """
+    async def scatter(self, table=None):
+        ax = await TheMagicRoundAbout.get()
+
+    async def plot(self, table=None):
+        pass
+
+    async def imshow(self):
+        pass
+            
 
 def show():
 
@@ -1839,7 +1892,18 @@ class Task:
         self.result = None
         self.plot = plot
 
+    def __repr__(self):
+
+        return f'{self.task.__doc__}, active={self.active}'
+
+    def toggle(self):
+
+        self.active = not self.active
+        
     async def run(self):
+
+        if not self.active:
+            return
 
         args = self.args.copy()
         if self.plot:
@@ -1858,6 +1922,11 @@ class Tasks:
     def add(self, task, plot=False, *args, active=True, **kwargs):
         """ Add a task """
         self.tasks.append(Task(task, args, kwargs, active, plot))
+
+    def set_active(self, value=True):
+
+        for task in self.tasks:
+            self.active = value        
 
     async def run(self, sleep=0):
         """ Run the tasks """
