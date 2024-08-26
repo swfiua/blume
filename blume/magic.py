@@ -1467,7 +1467,7 @@ class TableCounts:
     """ Yet another table-like thing
 
     This one counts things in grids and shows
-    images, with imshow.
+    images of those things, with imshow.
     """
 
     def __init__(self, width=200, height=200,
@@ -1509,9 +1509,13 @@ class TableCounts:
             
             self.grid[ybucket, xbucket] += weight
 
-    async def show(self, tmra):
+    async def show(self, xname=None, yname=None):
 
+        tmra = TheMagicRoundAbout
         y, x, yy, xx = self.inset
+
+        xname = xname or self.xname
+        yname = yname or self.yname
 
         # take inset
         grid = self.grid[x:xx, y:yy]
@@ -1534,13 +1538,14 @@ class TableCounts:
 
         ax = await tmra.get()
         extent = (minx, maxx, miny, maxy)
-        
+
+        cmap = random_colour()
         ax.imshow(xnorms,
                   origin='lower',
                   aspect='auto',
                   extent=extent,
-                  cmap=magic.random_colour())
-        ax.set_title(f'Normalised by {self.xname}')
+                  cmap=cmap)
+        ax.set_title(f'{xname} v {yname}, normalised by {xname}')
         ax.show()
 
         ax = await tmra.get()
@@ -1548,8 +1553,8 @@ class TableCounts:
                   origin='lower',
                   aspect='auto',
                   extent=extent,
-                  cmap=magic.random_colour())
-        ax.set_title(f'Normalised by {self.yname}')
+                  cmap=cmap)
+        ax.set_title(f'{xname} v {yname}, normalised by {yname}')
         ax.show()
 
 
@@ -1572,7 +1577,12 @@ class TableCounts:
             ax.show()
 
         ax = await tmra.get()
-        ax.imshow(grid, origin='lower', aspect='auto', extent=extent)
+        ax.set_title(f'{xname} v {yname}')
+        ax.imshow(grid,
+                  origin='lower',
+                  aspect='auto',
+                  extent=extent,
+                  cmap=cmap)
         ax.show()
             
 
