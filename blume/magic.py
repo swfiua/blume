@@ -1470,7 +1470,7 @@ class TableCounts:
     images of those things, with imshow.
     """
 
-    def __init__(self, width=200, height=200,
+    def __init__(self, width=512, height=512,
                  minx=0, maxx=1,
                  miny=0, maxy=1,
                  xname='x', yname='y',
@@ -1512,7 +1512,7 @@ class TableCounts:
     async def show(self, xname=None, yname=None):
 
         tmra = TheMagicRoundAbout
-        y, x, yy, xx = self.inset
+        x, y, xx, yy = self.inset
 
         xname = xname or self.xname
         yname = yname or self.yname
