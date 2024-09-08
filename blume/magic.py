@@ -238,16 +238,20 @@ class Ball:
         self.add_filter('w', self.wakey)
         #self.add_filter(' ', self.toggle_pause)
         self.add_filter('W', self.dump_roundabout)
-        self.add_filter('j', self.status)
+        #self.add_filter('j', self.status)
 
     def add_filter(self, key=None, coro=None, name='keys'):
 
         filters = self.filters[name]
         if key is None:
-            for char in coro.__name__:
+            # FIXME - what if name is short?
+            # check rest of alphabet?
+            # do these filters even belong here -- actually can be
+            # handy!
+            for char in coro.__name__ + coro.__name__.upper():
                 if char not in filters:
                     key = char
-
+                    
         self.filters[name][key] = coro
 
 
@@ -527,10 +531,9 @@ class PatchColours:
 
 Colours = PatchColours()
 
-    
 
-class Interact(Ball):
-
+class InteractBase(Ball):
+    """ Base class for interactive table stuff """
     def __init__(self, ball):
 
         super().__init__()
@@ -538,25 +541,18 @@ class Interact(Ball):
         self.history = deque()
         self.set_ball(ball)
 
-        self.add_filter('0', self.toggle)
-        self.add_filter('1', self.add_one)
-        self.add_filter('3', self.sub_one)
-        self.add_filter('2', self.double)
-        self.add_filter('4', self.half)
-        self.add_filter('5', self.flipsign)
-        self.add_filter('8', self.rcycle)
-        self.add_filter('9', self.cycle)
-        self.add_filter('x', self.tenx)
-        self.add_filter('z', self.tenth)
-        self.add_filter('m', self.add_m)
-        self.add_filter('c', self.shorten)
-
-        self.add_filter('.', self.next_attr)
-        self.add_filter(',', self.prev_attr)
-        self.add_filter('enter', self.re_interact)
+        # escape goes up one
         self.add_filter('escape', self.back)
 
-        self.add_filter('i', self.interact)
+    
+    def set_ball(self, ball):
+
+        self.ball = ball
+        self.set_attrs()
+
+    def set_attrs(self):
+
+        self.attrs = deque(sorted(vars(self.ball)))
 
     async def run(self):
         """When this is triggered it usually means I
@@ -581,25 +577,6 @@ class Interact(Ball):
         # and switch ourself off
         await self.put(self, 'run')
 
-    def set_ball(self, ball):
-
-        if not isinstance(ball, Ball):
-            try:
-
-                ball = Wrapper(ball)
-                attrs = deque(ball.attrs)
-            
-            except Exception as e:
-                print(e)
-                print('oops no can interact', ellipsis(repr(ball)))
-                return
-        else:
-            attrs = deque(sorted(vars(ball)))
-
-        self.attrs = attrs
-        self.ball = ball
-
-
     async def back(self):
         """ pop back in history """
 
@@ -609,6 +586,89 @@ class Interact(Ball):
         ball = self.history.pop()
         self.set_ball(ball)
 
+    def show_attr_table(self):
+        
+        msg = []
+        for key in self.attrs:
+            value = getattr(self.ball, key)
+            rep = ellipsis(repr(value))
+            msg.append([key, rep, type(value)])
+
+        self.put_nowait(msg, 'help')
+
+    def show_current(self):
+
+        attr = self.current()
+        value = repr(getattr(self.ball, attr))
+        result = (attr, ellipsis(value))
+        print(*result)
+        #self.put_nowait(str(result), 'help')
+
+
+    def current(self):
+        """ Return current attr """
+        return self.attrs[0]
+
+    async def next_attr(self):
+
+        self.attrs.rotate(-1)
+
+        self.show_attr_table()
+        self.show_current()
+
+    async def prev_attr(self):
+
+        self.attrs.rotate()
+        attr = self.attrs[0]
+
+        self.show_attr_table()
+        self.show_current()
+
+    def interact(self):
+        """ Go into interactive mode 
+        
+        hmm.... worm can time
+        """
+        from pprint import pprint
+        for key, value in sorted(vars(self.ball).items()):
+            rep = ellipsis(repr(value))
+            print(key, rep, type(value))
+            
+
+        print()
+        self.show_current()
+        print()
+
+        # show attributes
+        self.show_attr_table()
+
+class Interact(InteractBase):
+
+    def __init__(self, ball):
+
+        super().__init__(ball)
+        
+        self.history = deque()
+        self.set_ball(ball)
+
+        self.add_filter('0', self.toggle)
+        self.add_filter('1', self.add_one)
+        self.add_filter('3', self.sub_one)
+        self.add_filter('2', self.double)
+        self.add_filter('4', self.half)
+        self.add_filter('5', self.flipsign)
+        self.add_filter('8', self.rcycle)
+        self.add_filter('9', self.cycle)
+        self.add_filter('x', self.tenx)
+        self.add_filter('z', self.tenth)
+        self.add_filter('m', self.add_m)
+        self.add_filter('c', self.shorten)
+
+        self.add_filter('.', self.next_attr)
+        self.add_filter(',', self.prev_attr)
+        self.add_filter('enter', self.re_interact)
+
+        self.add_filter('i', self.interact)
 
     def interact(self):
         """ Go into interactive mode 
@@ -649,10 +709,10 @@ class Interact(Ball):
         obj = getattr(self.ball, current)
         print('XXXXX re_interact', current, type(obj))
 
-        try:
-            obj = await self.to_table(obj)
-        except:
-            print('hmm... not a table?')
+        #try:
+        #    obj = await self.to_table(obj)
+        #except:
+        #    print('hmm... not a table?')
         
         self.history.append(self.ball)
         self.set_ball(obj)
@@ -681,34 +741,6 @@ class Interact(Ball):
 
         return table
         
-    def show_current(self):
-
-        attr = self.current()
-        value = repr(getattr(self.ball, attr))
-        result = (attr, ellipsis(value))
-        print(*result)
-        #self.put_nowait(str(result), 'help')
-
-
-    def current(self):
-        """ Return current attr """
-        return self.attrs[0]
-
-    async def next_attr(self):
-
-        self.attrs.rotate(-1)
-
-        self.show_attr_table()
-        self.show_current()
-
-    async def prev_attr(self):
-
-        self.attrs.rotate()
-        attr = self.attrs[0]
-
-        self.show_attr_table()
-        self.show_current()
-
 
     def operate(self, op=operator.add, b=2):
         
@@ -813,6 +845,29 @@ class Interact(Ball):
             value.popleft()
             print(f'new head {value[0]}')
 
+
+class RoutineRunner(InteractBase):
+
+    def __init__(self, ball):
+
+        super().__init__(ball)
+        
+
+    def set_filters(self):
+
+        for ix, coro in enumerate(self.attrs):
+            self.add_filter(str(ix), getattr(self.ball, coro))
+
+    def set_attrs(self):
+        
+        coros = inspect.getmembers(self.ball, inspect.iscoroutinefunction)
+        self.attrs = deque(coro[0] for coro in coros)
+        self.set_filters()
+
+    async def runner(self, coro):
+
+        await self.put(coro, 'run')
+            
 class Wrapper:
 
     def __init__(self, ball):
@@ -838,8 +893,9 @@ class Wrapper:
 
         return getattr(self.ball, attr)
         
+    def __setattr__(self, attr, value):
 
-
+        self.ball.__setattr__(attr, value)
 
     
 class Spell:
@@ -1043,6 +1099,7 @@ class Shepherd(Ball):
         self.add_filter('x', self.status)
 
         self.add_filter('i', self.interact)
+        self.add_filter('j', self.routine_runner)
 
         # make a little sleepy
         self.sleep *= 10
@@ -1053,8 +1110,6 @@ class Shepherd(Ball):
         
         hmm.... worm can time
         """
-
-
         # Now if interaction has
         current = self.current()
         if current is not self.interaction.ball:
@@ -1067,6 +1122,18 @@ class Shepherd(Ball):
             self.generate_key_relays()
             self.put_nowait('interact', 'gkr')
 
+    async def routine_runner(self):
+        """ Go into routine runner mode """
+
+        current = self.current()
+
+        rr = RoutineRunner(current)
+        rr.interact()
+        
+        if rr not in self.path:
+            self.path.append(rr)
+            self.generate_key_relays()
+            self.put_nowait('interact', 'gkr')
         
     def current(self):
 
@@ -1148,7 +1215,7 @@ class Shepherd(Ball):
         # FIXME? 
         msg = []
         for sheep, key, callback in self.generate_key_bindings(name=name):
-            doc = self.doc_firstline(callback)
+            doc = doc_firstline(callback)
             msg.append([key, sheep.__class__.__name__,  doc])
 
         textmsg = '\n'.join([' '.join(x) for x in msg])
@@ -1162,16 +1229,6 @@ class Shepherd(Ball):
             # curiously, maxsize - 1 is the critical size at which it seems
             # to hang.
             self.put_nowait(msg, 'help')
-
-    def doc_firstline(self, value):
-        """ Return first line of doc """
-
-        doc = value.__doc__
-        if doc:
-            return doc.split('\n')[0]
-        else:
-            return value.__name__
-            #return "????"
 
     async def helper(self):
         """ Task to run if you want help on the carpet 
@@ -1407,6 +1464,16 @@ class Shepherd(Ball):
 
         return f'shepherd of flock degree {len(self.flock)}'
 
+def doc_firstline(value):
+    """ Return first line of doc """
+
+    doc = value.__doc__
+    if doc:
+        return doc.split('\n')[0]
+    else:
+        return value.__name__
+
+    
 def get_widths(msg):
 
     # find max len of string for each column
@@ -1484,6 +1551,7 @@ class TableCounts:
         self.xname = xname
         self.yname = yname
         self.inset = inset or (1, 1, -1, -1)
+        self.axes = {}
 
     def reset(self, width=None, height=None):
 
@@ -1540,6 +1608,7 @@ class TableCounts:
         extent = (minx, maxx, miny, maxy)
 
         cmap = random_colour()
+        axes = self.axes
         ax.imshow(xnorms,
                   origin='lower',
                   aspect='auto',
@@ -1547,6 +1616,7 @@ class TableCounts:
                   cmap=cmap)
         ax.set_title(f'{xname} v {yname}, normalised by {xname}')
         ax.show()
+        axes['xnorms'] = ax
 
         ax = await tmra.get()
         ax.imshow(ynorms,
@@ -1556,7 +1626,7 @@ class TableCounts:
                   cmap=cmap)
         ax.set_title(f'{xname} v {yname}, normalised by {yname}')
         ax.show()
-
+        axes['ynorms'] = ax
 
         # see what a grid sample looks like
         csize = width * height
@@ -1575,6 +1645,7 @@ class TableCounts:
 
             ax.scatter(xx, yy)
             ax.show()
+            axes['sample'] = ax
 
         ax = await tmra.get()
         ax.set_title(f'{xname} v {yname}')
@@ -1584,7 +1655,9 @@ class TableCounts:
                   extent=extent,
                   cmap=cmap)
         ax.show()
-            
+        axes['nonorm'] = ax
+
+        return axes
 
 def show():
 
@@ -2038,7 +2111,12 @@ class Task:
             ax = await magic.TheMagicRoundAbout.get()
             args = [ax] + args
 
-        self.result = await self.task(*args, **self.kwargs)
+        result = self.task(*args, **self.kwargs)
+
+        if inspect.iscoroutine(result):
+            result = await result
+
+        self.result = result
 
     
 class Tasks:
