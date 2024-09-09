@@ -1085,6 +1085,7 @@ class Shepherd(Ball):
         self.path = [self]
 
         self.interaction = Interact(self.path[-1])
+        self.road_runner = RoutineRunner(self.path[-1])
 
         self.add_filter('h', self.show_help)
         self.add_filter('n', self.next_ball)
@@ -1127,7 +1128,11 @@ class Shepherd(Ball):
 
         current = self.current()
 
-        rr = RoutineRunner(current)
+        rr = self.road_runner
+
+        if current is not rr.ball:
+            rr.set_ball(current)
+
         rr.interact()
         
         if rr not in self.path:
