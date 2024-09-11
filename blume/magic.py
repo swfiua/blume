@@ -1491,7 +1491,6 @@ def get_widths(msg):
     # now normalise
     total = sum(widths)
     widths = [x/total for x in widths]
-    print('WWWWWWWWWWWW', widths)
     return widths
 
     
