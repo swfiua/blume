@@ -401,9 +401,12 @@ class Axe:
         #self.yaxis.set_visible(False)
         self.axis('off')
 
-    def colorbar(self, mappable):
+    async def show_colorbar(self, mappable):
 
-        self.figure.colorbar(mappable, self)
+        ax = await TheMagicRoundAbout.get()
+        
+        self.figure.colorbar(mappable, ax, self)
+        ax.show()
 
     def hide_axes(self):
 
@@ -1245,19 +1248,25 @@ class Shepherd(Ball):
         print('xxHELPER STARTING UPxx')
         while True:
             msg = await self.get('help')
+
             ax = await self.get()
+
+            #ax = self.image.add_subplot([0,0,1,1])
+            #ax.delegate = ax
+
             try:
                 if isinstance(msg, str):
                     msg = [[msg]]
 
                 widths = get_widths(msg)
+                
                 tab = table.table(
                     ax.delegate, cellText=msg, bbox=(0,0,1,1),
                     cellLoc='center',
                     colWidths=widths)
 
-                foo = tab[0,0]
-                foo.set_text_props(multialignment='left')
+                tab.scale_alpha(0.6)
+
             except:
                 print(msg)
                 print("HELPER CAUGHT AN EXCEPTION")
@@ -1266,6 +1275,7 @@ class Shepherd(Ball):
 
             ax.axis('off')
             ax.show()
+            #self.image.canvas.draw_idle()
 
 
     async def start(self):
@@ -1545,7 +1555,8 @@ class TableCounts:
                  minx=0, maxx=1,
                  miny=0, maxy=1,
                  xname='x', yname='y',
-                 inset=None):
+                 inset=None,
+                 colorbar=True):
         
         self.grid = np.zeros((width, height))
         self.minx = minx
@@ -1555,6 +1566,7 @@ class TableCounts:
         self.xname = xname
         self.yname = yname
         self.inset = inset or (1, 1, -1, -1)
+        self.colorbar = colorbar
         self.axes = {}
 
     def reset(self, width=None, height=None):
@@ -1653,12 +1665,15 @@ class TableCounts:
 
         ax = await tmra.get()
         ax.set_title(f'{xname} v {yname}')
-        ax.imshow(grid,
-                  origin='lower',
-                  aspect='auto',
-                  extent=extent,
-                  cmap=cmap)
+        img = ax.imshow(grid,
+                   origin='lower',
+                   aspect='auto',
+                   extent=extent,
+                   cmap=cmap)
         ax.show()
+        if self.colorbar:
+            await ax.show_colorbar(img)
+        
         axes['nonorm'] = ax
 
         return axes
@@ -1707,6 +1722,7 @@ class Carpet(Ball):
         self.expanded = None
         self.output = None
         self.showing = {}
+        self.table = None
 
         self.history = deque(maxlen=random.randint(10, 20))
 
@@ -2005,7 +2021,9 @@ class Carpet(Ball):
         self.showing[gg] = axe
 
         self.image.canvas.draw_idle()
-        
+
+    def set_table(self):
+        pass
 
     def hide(self, axe):
 
