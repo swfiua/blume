@@ -42,12 +42,25 @@ class Talk(magic.Ball):
                 epaths.append(path)
            
         self.paths = magic.deque(epaths)
-
+        self.text = True
         self.load()
-
+        
         self.add_filter(' ', self.next)
+        self.add_filter('enter', self.next_path)
+        self.add_filter('backspace', self.previous)
         self.add_filter('<', self.lower_alpha)
         self.add_filter('>', self.raise_alpha)
+        self.add_filter('t', self.toggle_text)
+
+    async def toggle_text(self):
+
+        self.text = not self.text
+        await self.display()
+
+    def next_path(self):
+
+        self.paths.rotate()
+        self.load()
 
     def load(self):
         """ Load a file of restructured text
@@ -62,43 +75,63 @@ class Talk(magic.Ball):
 
         # start the section ball rolling
         self.node = parse_rst(txt)
-        self.child_numbers = magic.deque([0])
 
-    def set_section(self):
+        self.nodes = magic.deque(self.generate_sections())
+
+    def generate_sections(self):
+
+        indices = magic.deque([0])
+
+        while True:
+            section = self.find_next_section(indices)
+            if not section: break
+            yield section
+
+    def find_next_section(self, indices):
 
         section = self.node.first_child_matching_class(
-            nodes.section, start=self.child_numbers[-1])
+            nodes.section, start=indices[-1])
 
+        print('finding', indices, section)
         if section is None:
             # go back up a level
-            self.child_numbers.pop()
+            indices.pop()
             self.node = self.node.parent
-            if self.child_numbers:
-                self.set_section()
-            else:
-                print("The End!!!!")
-                return
+            if indices:
+                return self.find_next_section(indices)
+
+            # nothing left
+            return
         else:
-            self.child_numbers.append(0)
+            indices[-1] = section + 1 # start at next next time
+            indices.append(0)
+            
         self.node = self.node.children[section]
+        return self.node
 
     def find_children(self):
-        
+
+        node = self.nodes[0]
         self.sections = magic.deque(
-            [x for x in self.node.findall(nodes.section) if x.parent == self.node])
+            [x for x in node.findall(nodes.section) if x.parent == node])
         self.paras = magic.deque(
-            [x for x in self.node.findall(nodes.paragraph) if x.parent == self.node])
+            [x for x in node.findall(nodes.paragraph) if x.parent == node])
         self.images = magic.deque(
-            [x for x in self.node.findall(nodes.image) if x.parent == self.node])
+            [x for x in node.findall(nodes.image) if x.parent == node])
 
     async def next(self):
 
-        self.set_section()
+        self.nodes.rotate(-1)
+        
         self.find_children()
         await self.display()
-        self.child_numbers[-1] += 1
-        print(self.child_numbers, self.node['names'])
+
         
+    async def previous(self):
+
+        self.nodes.rotate(1)
+        self.find_children()
+        await self.display()
 
     async def display(self):
                  
@@ -106,14 +139,16 @@ class Talk(magic.Ball):
         for para in self.paras:
             msg.append([para.astext()])
 
+        node = self.nodes[0]
         self.ax = ax = self.get_nowait()
-        title = self.node.first_child_matching_class(nodes.title)
+        title = node.first_child_matching_class(nodes.title)
         if title is not None:
-            title = self.node.children[title]
+            title = node.children[title]
             ax.set_title(title.astext())
         else:
             print('No title', self.section)
 
+        if not self.text: msg = None
         self.tab = table_text(ax, msg, self.images)
         ax.show()
 
@@ -141,7 +176,7 @@ def table_text(ax, msg, images=[], alpha=0.5):
         image = random.choice(images)
 
         image = Image.open(image['uri'])
-        ax.imshow(image)
+        ax.imshow(image, aspect='auto')
 
     if not msg or not msg[0]:
         return
@@ -150,7 +185,9 @@ def table_text(ax, msg, images=[], alpha=0.5):
     tab = table.table(
         ax.delegate, cellText=msg, bbox=(0,0,1,1),
         cellLoc='center',
-        colWidths=widths)
+        colWidths=widths,
+        visible_edges='open',
+    )
 
     for key in tab._cells.keys():
         tab[key].set_alpha(alpha)
