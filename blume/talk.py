@@ -165,7 +165,7 @@ def table_text(ax, msg, images=[], alpha=.5):
         image = random.choice(images)
 
         image = Image.open(image['uri'])
-        ax.imshow(image, aspect='auto')
+        ax.imshow(image)
 
     if not msg or not msg[0]:
         return
@@ -175,7 +175,8 @@ def table_text(ax, msg, images=[], alpha=.5):
         ax.delegate, cellText=msg, bbox=(0,0,1,1),
         cellLoc='center',
         colWidths=widths,
-        edges='open'
+        edgeColour=None,
+        #edges='vertical'
     )
 
     tab.scale_alpha(0.6)

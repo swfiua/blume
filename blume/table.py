@@ -775,7 +775,7 @@ def table(ax,
           rowLabels=None, rowColours=None, rowLoc='left',
           colLabels=None, colColours=None, colLoc='center',
           edges='closed',
-          edgeColour=None,
+          edgeColour='k',
           cellEdgeColours=None,
           rowEdgeColours=None,
           colEdgeColours=None,
@@ -897,10 +897,6 @@ def table(ax,
                     f"Each row in 'cellColours' must have {cols} columns")
     else:
         cellColours = ['w' * cols] * rows
-
-    if edgeColour is None:
-        # default edge color is black
-        edgeColour = 'k'
 
     if cellEdgeColours is not None:
         if len(cellEdgeColours) != rows:
