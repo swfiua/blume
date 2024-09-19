@@ -305,13 +305,34 @@ class MagicPlot(Ball):
 
 
             
+
+async def start_and_run(farm):
+
+    print('starting farm')
+    await farm.start()
+
+    print('running farm')
+    runner = await farm.run()
+
+        
 def run(farm=None, balls=None, dump=False):
 
+    """ Start a Farm running
+
+    balls: list of balls to add to the farm
+
+    farm: existing farm, new one is created for you.
+    """
     if farm is None:
         farm = Farm()
 
         if balls is None:
             balls = MagicPlot()
+
+        try:
+            balls = iter(balls)
+        except TypeError:
+            balls = [balls]         # cope with single ball
 
         for ball in balls:
             farm.add(ball)
@@ -326,15 +347,7 @@ def run(farm=None, balls=None, dump=False):
 
     magic.run(start_and_run(farm))  
 
-async def start_and_run(farm):
 
-    print('starting farm')
-    await farm.start()
-
-    print('running farm')
-    runner = await farm.run()
-
-        
 if __name__ == '__main__':
     
     
