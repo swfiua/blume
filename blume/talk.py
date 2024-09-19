@@ -26,27 +26,15 @@ def parse_rst(txt):
 class Talk(magic.Ball):
 
 
-    def __init__(self, paths=None):
+    def __init__(self, path):
 
         super().__init__()
-        if not paths:
-            paths = magic.Path('.').glob('*.rst')
-
-        # expand directories
-        epaths = []
-        for path in paths:
-            path = magic.Path(path)
-            if path.is_dir():
-                epaths = epaths + path.glob('*.rst')
-            else:
-                epaths.append(path)
-           
-        self.paths = magic.deque(epaths)
+        
+        self.path = magic.Path(path)
         self.text = True
         self.load()
         
         self.add_filter(' ', self.next)
-        self.add_filter('enter', self.next_path)
         self.add_filter('backspace', self.previous)
         self.add_filter('<', self.lower_alpha)
         self.add_filter('>', self.raise_alpha)
@@ -57,10 +45,6 @@ class Talk(magic.Ball):
         self.text = not self.text
         await self.display()
 
-    def next_path(self):
-
-        self.paths.rotate()
-        self.load()
 
     def load(self):
         """ Load a file of restructured text
@@ -69,9 +53,9 @@ class Talk(magic.Ball):
 
         Set things up to go through so we can navigate through sections.
         """
-        print(f'Loading {self.paths[0]}')
+        print(f'Loading {self.path}')
         
-        txt = self.paths[0].open().read()
+        txt = self.path.open().read()
 
         # start the section ball rolling
         self.node = parse_rst(txt)
@@ -148,29 +132,35 @@ class Talk(magic.Ball):
         else:
             print('No title', self.section)
 
+        await magic.sleep(0)
         if not self.text: msg = None
         self.tab = table_text(ax, msg, self.images)
         ax.show()
 
     def lower_alpha(self):
 
-        self.scale_alpha(0.9)
-
-    def raise_alpha(self):
-        self.scale_alpha(1/0.9)
-
-    def scale_alpha(self, factor=0.9):
-        alpha = None
-        for key, cell in self.tab._cells.items():
-            if alpha is None:
-                alpha = cell.get_alpha()
-                alpha *= factor
-                alpha = min(1., max(alpha, 0.0))
-                
-            cell.set_alpha(alpha)
+        print('lowering alpha')
+        #self.tab.scale_alpha(0.9)
+        self.tab.scale_alpha(0.9)
         self.ax.show()
 
-def table_text(ax, msg, images=[], alpha=0.5):
+    def raise_alpha(self):
+        print('raising alpha')
+        #self.tab.scale_alpha(1/0.9)
+        self.tab.scale_alpha(1/0.9)
+        self.ax.show()
+
+    def scale_alpha(self, factor=0.9):
+        """ Scale the alpha for all cells """
+        alpha = None
+        for cell in self.tab._cells.values():
+            if alpha is None:
+                alpha = cell.get_alpha() or 1.
+                alpha *= factor
+                alpha = min(1., max(alpha, 0.0))
+            cell.set_alpha(alpha)
+
+def table_text(ax, msg, images=[], alpha=.5):
 
     if images:
         image = random.choice(images)
@@ -186,11 +176,13 @@ def table_text(ax, msg, images=[], alpha=0.5):
         ax.delegate, cellText=msg, bbox=(0,0,1,1),
         cellLoc='center',
         colWidths=widths,
-        visible_edges='open',
+        edges='open'
     )
 
-    for key in tab._cells.keys():
-        tab[key].set_alpha(alpha)
+    tab.scale_alpha(0.6)
+    #for key in tab._cells.keys():
+    #    tab[key].set_alpha(alpha)
+    #tab.scale_alpha(alpha)
 
     return tab
 
@@ -216,12 +208,8 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('path', default=[], nargs='*')
+    parser.add_argument('path', default='index.rst')
     
     args = parser.parse_args()
     
-    talk = Talk(args.path)
-
-    land = farm.Farm()
-    land.add(talk)
-    magic.run(farm.start_and_run(land))
+    farm.run(balls=[Talk(args.path)])
