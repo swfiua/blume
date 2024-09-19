@@ -1722,7 +1722,6 @@ class Carpet(Ball):
         self.expanded = None
         self.output = None
         self.showing = {}
-        self.table = None
 
         self.history = deque(maxlen=random.randint(10, 20))
 
@@ -2022,8 +2021,6 @@ class Carpet(Ball):
 
         self.image.canvas.draw_idle()
 
-    def set_table(self):
-        pass
 
     def hide(self, axe):
 

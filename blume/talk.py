@@ -132,7 +132,6 @@ class Talk(magic.Ball):
         else:
             print('No title', self.section)
 
-        await magic.sleep(0)
         if not self.text: msg = None
         self.tab = table_text(ax, msg, self.images)
         ax.show()
