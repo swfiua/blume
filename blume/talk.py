@@ -104,47 +104,16 @@ class Talk(magic.Ball):
             [x for x in node.findall(nodes.image) if x.parent == node])
 
         for image in self.images:
-            ax.show(image)
+            ax = await self.get()
+            img = Image.open(image['uri'])
+            ax.imshow(img)
 
         msg = []
         for para in self.paras:
             msg.append([para.astext()])
 
-        self.ax = ax = self.get_nowait()
-        title = node.first_child_matching_class(nodes.title)
-        if title is not None:
-            title = node.children[title]
-            ax.set_title(title.astext())
-        else:
-            print('No title', self.section)
-
-        widths = get_widths(msg)
-        tab = table.table(
-            self.foreground, cellText=msg, bbox=(0,0,1,1),
-            cellLoc='center',
-            colWidths=widths,
-            edgeColour=None,
-        )
-
+        self.put_nowait(msg, 'help')
         
-
-    return tab
-
-
-    def lower_alpha(self):
-
-        print('lowering alpha')
-        #self.tab.scale_alpha(0.9)
-        self.alpha *= 0.9
-        self.tab.set_alpha(self.alpha)
-        self.ax.show()
-
-    def raise_alpha(self):
-        print('raising alpha')
-        self.alpha = min(self.alpha/0.9, 1.)
-        self.tab.set_alpha(self.alpha)
-        self.ax.show()
-
 
 
 

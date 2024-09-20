@@ -1270,7 +1270,7 @@ class Shepherd(Ball):
                 continue
 
             self.carpet.add_table(tab)
-            #self.image.canvas.draw_idle()
+            self.image.canvas.draw_idle()
 
 
     async def start(self):
@@ -1729,6 +1729,8 @@ class Carpet(Ball):
 
         self.background = self.image.add_axes((0,0,1,1))
         self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1, alpha=0.1)
+        self.foreground.patch.set_alpha(0.)
+        self.tables = deque()
         
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
@@ -1758,14 +1760,14 @@ class Carpet(Ball):
         alpha *= 0.9
         self.foreground.set_alpha(alpha)
         
-        self.image.canvas.draw_idle()
+        self.draw()
 
     def raise_alpha(self):
 
         alpha = self.foreground.get_alpha()
         alpha /= 0.9
         self.foreground.set_alpha(alpha)
-        self.image.canvas.draw_idle()
+        self.draw()
 
     def log_events(self):
 
@@ -2032,8 +2034,12 @@ class Carpet(Ball):
         
         self.showing[gg] = axe
 
-        self.image.canvas.draw_idle()
+        self.draw()
 
+    def draw(self):
+        """ trigger a redraw """
+        self.image.canvas.draw_idle()
+    
 
     def hide(self, axe):
 
@@ -2048,7 +2054,7 @@ class Carpet(Ball):
             
         self.tables.append(table)
         
-        self.image.canvas.draw_idle()
+        self.draw()
 
     def toggle_table(self):
         """  Show/hide table """
@@ -2056,6 +2062,7 @@ class Carpet(Ball):
         if self.tables:
             visible = tab.get_visible()
             tab.set_visible(not visible)
+        self.draw()
 
 
 async def canine(ball):
