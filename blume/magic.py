@@ -1249,10 +1249,6 @@ class Shepherd(Ball):
         while True:
             msg = await self.get('help')
 
-            ax = await self.get()
-
-            #ax = self.image.add_subplot([0,0,1,1])
-            #ax.delegate = ax
 
             try:
                 if isinstance(msg, str):
@@ -1261,11 +1257,11 @@ class Shepherd(Ball):
                 widths = get_widths(msg)
                 
                 tab = table.table(
-                    ax.delegate, cellText=msg, bbox=(0,0,1,1),
+                    self.carpet.foreground, cellText=msg, bbox=(0,0,1,1),
                     cellLoc='center',
                     colWidths=widths)
 
-                tab.scale_alpha(0.6)
+                tab.set_alpha(0.6)
 
             except:
                 print(msg)
@@ -1273,8 +1269,7 @@ class Shepherd(Ball):
                 print_exc()
                 continue
 
-            ax.axis('off')
-            ax.show()
+            self.carpet.add_table(tab)
             #self.image.canvas.draw_idle()
 
 
@@ -1723,7 +1718,7 @@ class Carpet(Ball):
         self.output = None
         self.showing = {}
 
-        self.history = deque(maxlen=random.randint(10, 20))
+        self.history = deque(maxlen=random.randint(50, 100))
 
         self.axes = deque()
         self.lookup = dict()
@@ -1733,7 +1728,8 @@ class Carpet(Ball):
         print("GOT IMAGE", self.image)
 
         self.background = self.image.add_axes((0,0,1,1))
-
+        self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1, alpha=0.1)
+        
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
@@ -1752,8 +1748,24 @@ class Carpet(Ball):
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
         self.add_filter('F', self.toggle_expand2)
-        #self.add_filter(' ', self.toggle_pause)
+        self.add_filter('<', self.lower_alpha)
+        self.add_filter('>', self.raise_alpha)
+        self.add_filter('t', self.toggle_table)
 
+    def lower_alpha(self):
+
+        alpha = self.foreground.get_alpha()
+        alpha *= 0.9
+        self.foreground.set_alpha(alpha)
+        
+        self.image.canvas.draw_idle()
+
+    def raise_alpha(self):
+
+        alpha = self.foreground.get_alpha()
+        alpha /= 0.9
+        self.foreground.set_alpha(alpha)
+        self.image.canvas.draw_idle()
 
     def log_events(self):
 
@@ -1966,8 +1978,9 @@ class Carpet(Ball):
         naxes = len(self.image.axes)
 
         showing = self.showing.values()
+
         for ax in self.image.axes:
-            if ax is self.background:
+            if ax is self.background or ax is self.foreground:
                 continue
 
             try:
@@ -2026,7 +2039,24 @@ class Carpet(Ball):
 
         if axe.get_visible():
             axe.set_visible(False)
+
+    def add_table(self, table):
+        """ Add a table to the carpet and show it """
+
+        if self.tables:
+            self.tables[-1].set_visible(False)
+            
+        self.tables.append(table)
         
+        self.image.canvas.draw_idle()
+
+    def toggle_table(self):
+        """  Show/hide table """
+        tab = self.tables[-1]
+        if self.tables:
+            visible = tab.get_visible()
+            tab.set_visible(not visible)
+
 
 async def canine(ball):
     """ A sheep dog, something to control when it pauses and sleeps

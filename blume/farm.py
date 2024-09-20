@@ -126,7 +126,7 @@ class Farm(Ball):
 
         self.add_node(self.shep)
 
-        self.add(Params())
+        #self.add(Params())
         self.add(clock)
 
         # connections
@@ -137,6 +137,7 @@ class Farm(Ball):
 
         # initial path this needs more thought - let's do it in start()
         self.shep.set_path([self.shep, self.carpet])
+        self.shep.carpet = carpet
 
 
         

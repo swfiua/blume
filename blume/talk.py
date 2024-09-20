@@ -32,19 +32,11 @@ class Talk(magic.Ball):
         
         self.path = magic.Path(path)
         self.text = True
+        self.alpha = 0.7
         self.load()
         
         self.add_filter(' ', self.next)
         self.add_filter('backspace', self.previous)
-        self.add_filter('<', self.lower_alpha)
-        self.add_filter('>', self.raise_alpha)
-        self.add_filter('t', self.toggle_text)
-
-    async def toggle_text(self):
-
-        self.text = not self.text
-        await self.display()
-
 
     def load(self):
         """ Load a file of restructured text
@@ -93,37 +85,31 @@ class Talk(magic.Ball):
         self.node = self.node.children[section]
         return self.node
 
-    def find_children(self):
+    async def next(self):
 
+        self.nodes.rotate(-1)
+        await self.display()
+        
+    async def previous(self):
+
+        self.nodes.rotate(1)
+        await self.display()
+
+    async def display(self):
+                 
         node = self.nodes[0]
-        self.sections = magic.deque(
-            [x for x in node.findall(nodes.section) if x.parent == node])
         self.paras = magic.deque(
             [x for x in node.findall(nodes.paragraph) if x.parent == node])
         self.images = magic.deque(
             [x for x in node.findall(nodes.image) if x.parent == node])
 
-    async def next(self):
+        for image in self.images:
+            ax.show(image)
 
-        self.nodes.rotate(-1)
-        
-        self.find_children()
-        await self.display()
-
-        
-    async def previous(self):
-
-        self.nodes.rotate(1)
-        self.find_children()
-        await self.display()
-
-    async def display(self):
-                 
         msg = []
         for para in self.paras:
             msg.append([para.astext()])
 
-        node = self.nodes[0]
         self.ax = ax = self.get_nowait()
         title = node.first_child_matching_class(nodes.title)
         if title is not None:
@@ -132,59 +118,35 @@ class Talk(magic.Ball):
         else:
             print('No title', self.section)
 
-        if not self.text: msg = None
-        self.tab = table_text(ax, msg, self.images)
-        ax.show()
+        widths = get_widths(msg)
+        tab = table.table(
+            self.foreground, cellText=msg, bbox=(0,0,1,1),
+            cellLoc='center',
+            colWidths=widths,
+            edgeColour=None,
+        )
+
+        
+
+    return tab
+
 
     def lower_alpha(self):
 
         print('lowering alpha')
         #self.tab.scale_alpha(0.9)
-        self.tab.scale_alpha(0.9)
+        self.alpha *= 0.9
+        self.tab.set_alpha(self.alpha)
         self.ax.show()
 
     def raise_alpha(self):
         print('raising alpha')
-        #self.tab.scale_alpha(1/0.9)
-        self.tab.scale_alpha(1/0.9)
+        self.alpha = min(self.alpha/0.9, 1.)
+        self.tab.set_alpha(self.alpha)
         self.ax.show()
 
-    def scale_alpha(self, factor=0.9):
-        """ Scale the alpha for all cells """
-        alpha = None
-        for cell in self.tab._cells.values():
-            if alpha is None:
-                alpha = cell.get_alpha() or 1.
-                alpha *= factor
-                alpha = min(1., max(alpha, 0.0))
-            cell.set_alpha(alpha)
 
-def table_text(ax, msg, images=[], alpha=.5):
 
-    if images:
-        image = random.choice(images)
-
-        image = Image.open(image['uri'])
-        ax.imshow(image)
-
-    if not msg or not msg[0]:
-        return
-
-    widths = get_widths(msg)
-    tab = table.table(
-        ax.delegate, cellText=msg, bbox=(0,0,1,1),
-        cellLoc='center',
-        colWidths=widths,
-        edgeColour=None,
-        #edges='vertical'
-    )
-
-    tab.scale_alpha(0.6)
-    #for key in tab._cells.keys():
-    #    tab[key].set_alpha(alpha)
-    #tab.scale_alpha(alpha)
-
-    return tab
 
 def get_widths(msg):
 

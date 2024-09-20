@@ -758,15 +758,10 @@ class Table(Artist):
         """
         return self._cells
 
-    def scale_alpha(self, factor=0.9):
+    def set_alpha(self, value):
         """ Scale the alpha for all cells """
-        alpha = None
         for key, cell in self._cells.items():
-            if alpha is None:
-                alpha = cell.get_alpha() or 1.
-                alpha *= factor
-                alpha = min(1., max(alpha, 0.0))
-            cell.set_alpha(alpha)
+            cell.set_alpha(value)
         
 
 def table(ax,
