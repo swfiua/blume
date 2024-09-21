@@ -1729,7 +1729,8 @@ class Carpet(Ball):
 
         self.background = self.image.add_axes((0,0,1,1))
         self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1, alpha=0.1)
-        self.foreground.patch.set_alpha(0.)
+        self.foreground.patch.set_facecoalpha(0.)
+        self.foreground.axis('off')
         self.tables = deque()
         
         # keyboard handling
