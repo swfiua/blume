@@ -1250,6 +1250,7 @@ class Shepherd(Ball):
             msg = await self.get('help')
 
             try:
+                if not msg: msg = 'no message'
                 if isinstance(msg, str):
                     msg = [[msg]]
 
@@ -1724,6 +1725,7 @@ class Carpet(Ball):
         self.add_filter('<', self.lower_alpha)
         self.add_filter('>', self.raise_alpha)
         self.add_filter('t', self.toggle_table)
+        self.add_filter('T', self.toggle_table_edges)
 
     def lower_alpha(self):
 
