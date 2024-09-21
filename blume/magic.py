@@ -1702,7 +1702,7 @@ class Carpet(Ball):
         self.foreground.patch.set_alpha(0.)
         self.foreground.axis('off')
         self.foreground.set_alpha(.8)
-        self.table_edge_colours = deque(('k', None))
+        self.table_edge_colours = deque((None, 'k'))
         self.tables = deque()
         
         # keyboard handling
@@ -2038,6 +2038,10 @@ class Carpet(Ball):
             self.tables[-1].set_visible(False)
 
         self.tables.append(table)
+        colour = self.table_edge_colours[-1]
+        for cell in table._cells.values():
+            cell.set_edgecolor(colour)
+
         table.set_alpha(self.foreground.get_alpha())
         
         self.draw()
@@ -2054,8 +2058,8 @@ class Carpet(Ball):
 
         tab = self.tables[-1]
 
-        colour = self.table_edge_colours[-1]
         self.table_edge_colours.rotate()
+        colour = self.table_edge_colours[-1]
         
         for cell in tab._cells.values():
             cell.set_edgecolor(colour)
