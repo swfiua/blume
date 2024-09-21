@@ -107,14 +107,14 @@ class Talk(magic.Ball):
             ax = await self.get()
             img = Image.open(image['uri'])
             ax.imshow(img)
+            ax.axis('off')
+            ax.show()
 
         msg = []
         for para in self.paras:
             msg.append([para.astext()])
 
         self.put_nowait(msg, 'help')
-        
-
 
 
 def get_widths(msg):

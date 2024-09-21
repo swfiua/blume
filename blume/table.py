@@ -760,6 +760,7 @@ class Table(Artist):
 
     def set_alpha(self, value):
         """ Scale the alpha for all cells """
+        super().set_alpha(value)
         for key, cell in self._cells.items():
             cell.set_alpha(value)
         

@@ -1236,6 +1236,7 @@ class Shepherd(Ball):
             # if the queue is getting full, then we don't want to hang here.
             # curiously, maxsize - 1 is the critical size at which it seems
             # to hang.
+            print('submitting to help')
             self.put_nowait(msg, 'help')
 
     async def helper(self):
@@ -1245,10 +1246,8 @@ class Shepherd(Ball):
         """
         from blume.legend import Grid
 
-        print('xxHELPER STARTING UPxx')
         while True:
             msg = await self.get('help')
-
 
             try:
                 if isinstance(msg, str):
@@ -1262,6 +1261,8 @@ class Shepherd(Ball):
                     colWidths=widths)
 
                 tab.set_alpha(0.6)
+                self.carpet.add_table(tab)
+                self.carpet.draw()
 
             except:
                 print(msg)
@@ -1269,8 +1270,6 @@ class Shepherd(Ball):
                 print_exc()
                 continue
 
-            self.carpet.add_table(tab)
-            self.image.canvas.draw_idle()
 
 
     async def start(self):
@@ -1278,20 +1277,15 @@ class Shepherd(Ball):
 
         FIXME: make it simple
         """
-        print('STARTING SHEPHERD')
         for sheep, info in self.flock.nodes.items():
             if sheep is self:
-                print("skipping starting myself")
-                #self.running[self] = True
                 continue
                 
-            print('starting', sheep)
             # just start all the nodes 
             dolly = sheep.start()
             if inspect.iscoroutine(dolly):
                 await dolly
             
-            print('info', info)
             if info.get('background'):
                 # run in background
                 runner = spawn(canine(sheep))
@@ -1328,7 +1322,6 @@ class Shepherd(Ball):
     async def task_watcher(self):
 
         while True:
-            print('Task q size', self.select('task').qsize())
             task = await self.get('task')
             if task.cancelled():
                 continue
@@ -1345,19 +1338,13 @@ class Shepherd(Ball):
 
         path management.
         """
-        print(f'what is next?: {self.path}')
-        print(f'wtf is going on?')
         current = self.current()
-        print(f'current is {current}')
                 
-        print(f'doing nodes manipulation')
         nodes = [n for n in self.flock.nodes if n not in self.path]
 
         if nodes:
             self.path.append(nodes[0])
         
-        #print('oldgrey', self.current())
-        #await self.generate_key_relays()
         self.put_nowait('done', 'gkr')
         
         self.put_nowait(str(self.current()), 'help')
@@ -1370,7 +1357,7 @@ class Shepherd(Ball):
         """ Move up path """
         if len(self.path) > 1:
             del self.path[-1]
-        print(f'up new path: {self.path}')
+
         self.generate_key_relays()
         self.put_nowait(str(self.current()), 'help')
         self.put_nowait('done', 'gkr')
@@ -1425,15 +1412,6 @@ class Shepherd(Ball):
 
         Pass messages along.
         """
-        
-        
-        #for sheep in self.flock:
-            #print(f'shepherd running {sheep in self.running} {sheep}')
-            #print(f'   {sheep.status()}')
-        #print('SHEPHERD RUN')
-        # delegated to hub
-        #print('shepstart')
-        #nx.draw(self.flock)
         colours = []
         for sheep in self.flock:
             c = 'blue'
@@ -1447,10 +1425,6 @@ class Shepherd(Ball):
 
             colours.append(c)
             
-        #ax = await self.get()
-        
-        #nx.draw_networkx(self.flock, node_color=colours, ax=ax)
-
     async def quit(self):
         """ Cancel all the tasks """
 
@@ -1464,10 +1438,6 @@ class Shepherd(Ball):
                 print(f'cancel failed for {task}')
                 print(e)
 
-        #print('remaining tasks')
-        #for task in asyncio.all_tasks():
-        #    if not task.cancelled():
-        #        print(task)
         
 
     def __str__(self):
@@ -1725,12 +1695,12 @@ class Carpet(Ball):
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
         self.image = plt.figure()
-        print("GOT IMAGE", self.image)
 
         self.background = self.image.add_axes((0,0,1,1))
-        self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1, alpha=0.1)
-        self.foreground.patch.set_facecoalpha(0.)
+        self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1)
+        self.foreground.patch.set_alpha(0.)
         self.foreground.axis('off')
+        self.foreground.set_alpha(.8)
         self.tables = deque()
         
         # keyboard handling
@@ -1759,6 +1729,11 @@ class Carpet(Ball):
 
         alpha = self.foreground.get_alpha()
         alpha *= 0.9
+        
+        for tab in self.tables:
+            if tab.get_visible():
+                tab.set_alpha(alpha)
+                
         self.foreground.set_alpha(alpha)
         
         self.draw()
@@ -1766,9 +1741,15 @@ class Carpet(Ball):
     def raise_alpha(self):
 
         alpha = self.foreground.get_alpha()
-        alpha /= 0.9
+        alpha = min(1., alpha/0.9)
+
+        for tab in self.tables:
+            if tab.get_visible():
+                tab.set_alpha(alpha)
+        
         self.foreground.set_alpha(alpha)
         self.draw()
+
 
     def log_events(self):
 
@@ -2052,8 +2033,9 @@ class Carpet(Ball):
 
         if self.tables:
             self.tables[-1].set_visible(False)
-            
+
         self.tables.append(table)
+        table.set_alpha(self.foreground.get_alpha()) 
         
         self.draw()
 
