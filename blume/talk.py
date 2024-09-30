@@ -98,21 +98,38 @@ class Talk(magic.Ball):
     async def display(self):
                  
         node = self.nodes[0]
-        self.paras = magic.deque(
-            [x for x in node.findall(nodes.paragraph) if x.parent == node])
-        self.images = magic.deque(
+
+        images = magic.deque(
             [x for x in node.findall(nodes.image) if x.parent == node])
 
-        for image in self.images:
+        
+        for image in images:
             ax = await self.get()
-            img = Image.open(image['uri'])
+            try:
+                img = Image.open(image['uri'])
+            except FileNotFoundError as e:
+                print(e)
+                continue
+
             ax.imshow(img)
             ax.axis('off')
             ax.show()
 
-        msg = []
-        for para in self.paras:
-            msg.append([para.astext()])
+        title = node.first_child_matching_class(nodes.Titular)
+
+        msg = [[node[title].astext()]]
+
+        for item in [x for x in node.findall(nodes.paragraph) if x.parent == node]:
+
+            if isinstance(item, nodes.paragraph):
+                msg.append([item.astext()])
+                
+            if isinstance(item, nodes.math):
+                # FIXME, fix taybell.table so we can do math
+                msg.append(item.astext())
+
+            if isinstance(item, nodes.section):
+                msg.append(item.astext())
 
         self.put_nowait(msg, 'help')
 

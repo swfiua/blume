@@ -1520,15 +1520,17 @@ class TableCounts:
     def __init__(self, width=512, height=512,
                  minx=0, maxx=1,
                  miny=0, maxy=1,
+                 title=None,
                  xname='x', yname='y',
                  inset=None,
-                 colorbar=True):
+                 colorbar=False):
         
         self.grid = np.zeros((width, height))
         self.minx = minx
         self.maxx = maxx
         self.miny = miny
         self.maxy = maxy
+        self.title = title
         self.xname = xname
         self.yname = yname
         self.inset = inset or (1, 1, -1, -1)
@@ -1591,12 +1593,15 @@ class TableCounts:
 
         cmap = random_colour()
         axes = self.axes
+        ax.set_xlabel(self.xname); ax.set_ylabel(self.yname)
         ax.imshow(xnorms,
                   origin='lower',
                   aspect='auto',
                   extent=extent,
                   cmap=cmap)
-        ax.set_title(f'{xname} v {yname}, normalised by {xname}')
+
+        title = self.title or f'{xname} v {yname}'
+        ax.set_title(f'{title}, normalised by {xname}')
         ax.show()
         axes['xnorms'] = ax
 
@@ -1606,7 +1611,7 @@ class TableCounts:
                   aspect='auto',
                   extent=extent,
                   cmap=cmap)
-        ax.set_title(f'{xname} v {yname}, normalised by {yname}')
+        ax.set_title(f'{title}, normalised by {yname}')
         ax.show()
         axes['ynorms'] = ax
 
@@ -1630,7 +1635,7 @@ class TableCounts:
             axes['sample'] = ax
 
         ax = await tmra.get()
-        ax.set_title(f'{xname} v {yname}')
+        ax.set_title(f'{title}')
         img = ax.imshow(grid,
                    origin='lower',
                    aspect='auto',

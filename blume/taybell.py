@@ -40,10 +40,13 @@ class Cell:
 
 class Table:
 
-    def __init__(self, data):
+    def __init__(self, **kwargs):
 
-        self.data = data
+        self.data = {}
+        self.style = {}
 
+        self.name = None
+        
     def add_cell(self, cell, *args, **kwargs):
         pass
 
