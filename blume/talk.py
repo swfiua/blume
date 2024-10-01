@@ -68,7 +68,6 @@ class Talk(magic.Ball):
         section = self.node.first_child_matching_class(
             nodes.section, start=indices[-1])
 
-        print('finding', indices, section)
         if section is None:
             # go back up a level
             indices.pop()
@@ -115,21 +114,21 @@ class Talk(magic.Ball):
             ax.axis('off')
             ax.show()
 
-        title = node.first_child_matching_class(nodes.Titular)
-
-        msg = [[node[title].astext()]]
-
-        for item in [x for x in node.findall(nodes.paragraph) if x.parent == node]:
-
+        title = node[node.first_child_matching_class(nodes.Titular)]
+        
+        msg = [[title.astext()], [' ']]
+        para = []
+        for item in [x for x in
+                     node.findall() if x.parent is node]:
             if isinstance(item, nodes.paragraph):
                 msg.append([item.astext()])
                 
-            if isinstance(item, nodes.math):
-                # FIXME, fix taybell.table so we can do math
-                msg.append(item.astext())
+            if isinstance(item, nodes.math_block):
+                msg.append(['$' + item.astext() + '$'])
 
             if isinstance(item, nodes.section):
-                msg.append(item.astext())
+                title = item[item.first_child_matching_class(nodes.Titular)]
+                msg.append([title.astext()])
 
         self.put_nowait(msg, 'help')
 
