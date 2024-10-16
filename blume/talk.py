@@ -98,10 +98,10 @@ class Talk(magic.Ball):
                  
         node = self.nodes[0]
 
-        images = magic.deque(
-            [x for x in node.findall(nodes.image) if x.parent == node])
+        # find images whose parent is this node
+        images = [x for x in node.findall(nodes.image) if x.parent == node]
 
-        
+        # display the images
         for image in images:
             ax = await self.get()
             try:
@@ -114,10 +114,13 @@ class Talk(magic.Ball):
             ax.axis('off')
             ax.show()
 
+        # Get the section title
         title = node[node.first_child_matching_class(nodes.Titular)]
         
-        msg = [[title.astext()], [' ']]
+        msg = [[title.astext()], ['']]
         para = []
+
+        # show paragraphs, math_blocks and sections of this node
         for item in [x for x in
                      node.findall() if x.parent is node]:
             if isinstance(item, nodes.paragraph):

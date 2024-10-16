@@ -55,11 +55,9 @@ import math
 import random
 from pathlib import Path
 
-from . import magic
+from . import magic, farm
 
-from . import farm as fm
-
-TABLE = 'gaiadr2.gaia_source'
+TABLE = 'gaiadr3.gaia_source'
 TABLE_SIZE=1692919134
 
 COLUMNS = ('source_id', 'random_index', 'ra', 'dec', 'parallax', 'radial_velocity')
@@ -100,14 +98,18 @@ class Milky(Ball):
         self.bix = 0
         self.topn = topn
         self.level = 6
+        self.set_level_arrays()
         self.plots = False
         self.sagastar = False
         self.clip = 25  # either side
 
-        self.keys = deque(('r_est', 'radial_velocity'))
+        self.keys = deque(('radial_velocity', 'r_est'))
 
         self.coord = deque((('C', 'G'), 'C', 'E'))
         
+        self.ra = np.zeros(0)
+        self.dec = np.zeros(0)
+        self.cdata = np.zeros(0)
 
     async def start(self):
         """ start async task to read/download data """
@@ -116,10 +118,10 @@ class Milky(Ball):
         # load any bunches there are
         # for now, keep them separate
         path = Path()
-        for bunch in path.glob('bunch*.fits'):
+        for bunch in path.glob('bunch*.fits.gz'):
             if bunch.exists():
-                table = Table.read(bunch)
-                self.bunches.append(table)
+                #table = Table.read(bunch)
+                self.bunches.append(bunch)
 
             if len(self.bunches) == self.nbunch:
                 break
@@ -127,7 +129,7 @@ class Milky(Ball):
             await curio.sleep(0)
 
         # launch a task to get more bunches, if needed
-        self.sampler = await magic.spawn(self.get_samples())
+        await self.get_samples()
 
     async def get_samples(self):
 
@@ -135,12 +137,10 @@ class Milky(Ball):
 
             squeal = self.get_squeal()
 
-
             # take sample
             bid = len(self.bunches)
-            path = Path(f'bunch_{bid}.fits')
-            bunch = await curio.create_task(
-                get_sample(squeal, str(path)))
+            path = Path(f'bunch_{bid}.fits.gz')
+            bunch = get_sample(squeal, str(path))
 
             self.bunches.append(bunch)
             
@@ -193,7 +193,17 @@ class Milky(Ball):
 
         self.bix
 
+    def set_level_arrays(self, level=None):
+        """ Set the healpix level """
+        print('LEVEL CHANGE', level, self.level)
+        level = self.level = level or (self.level or 6)
+        nside = 2 ** level
 
+        self.npix = hp.nside2npix(nside)
+        self.hpxmap = np.zeros(self.npix)
+        self.radvel = np.zeros(self.npix)
+
+            
     async def run(self):
 
         if not self.bunches:
@@ -213,141 +223,128 @@ class Milky(Ball):
         sagdec = coordinates.Angle('-29d0m28.118s')
         print(f'sag A* {sagra.deg} {sagdec}')
 
-        npix = hp.nside2npix(nside)
-        hpxmap = np.zeros(npix, dtype=float)
-        radvel = np.zeros(npix, dtype=float)
+        npix = self.npix
+        hpxmap = self.hpxmap
+        radvel = self.radvel
         #radvel += 2000
 
-        ra = np.zeros(0)
-        dec = np.zeros(0)
-        dist = np.zeros(0)
-        cdata = np.zeros(0)
-        
         key = self.keys[0]
 
         # get a table
-        table = self.bunches.popleft()
-        self.bunches.append(table)
+        table = Table.read(self.bunches[-1])
+        self.bunches.rotate()
 
-        if True:
 
-            if self.level != level:
-                print('LEVEL CHANGE', level, self.level)
-                level = self.level
-                nside = 2 ** level
+        # Rotate the view
+        rot = hp.rotator.Rotator(coord=self.coord[0], deg=False)
 
-                npix = hp.nside2npix(nside)
-                hpxmap = np.zeros(npix, dtype=np.float)
-                radvel = np.zeros(npix, dtype=np.float)
+        rra, ddec = rot(
+            [x['ra'] for x in table],
+            [x['dec'] for x in table])
 
-            # Rotate the view
-            rot = hp.rotator.Rotator(coord=self.coord[0], deg=False)
+        self.ra = np.concatenate((self.ra, rra))
+        self.dec = np.concatenate((self.dec, ddec))
+        
+        badval = 1e20
+        count = 0
 
-            rra, ddec = rot(
-                [x['ra'] for x in table],
-                [x['dec'] for x in table])
+        # set up healpix array view
+        for row in table:
+            sid = 'source_id'
+            if sid not in row.colnames:
+                sid = sid.upper()
 
-            ra = np.concatenate((ra, rra))
-            dec = np.concatenate((dec, ddec))
-            dist = np.concatenate((dist, [x['r_est'] for x in table]))
+            try:
+                ix = row[sid] >> 35
+            except Exception:
+                print(row)
+                raise
+            ix //= 4**(12 - level)
+            #ix = row['source_id'] >> 35
+
+            rv = row[key]
+
+            hpxmap[ix] += 1
+
+            if rv != badval:
+                radvel[ix] = rv
+                count += 1
+
+        print(f'observations: {count}  mean: {radvel.mean()}')
+
+        dkey = table[key]
+        print(dkey.mean())
+        
+        dkey.fill_value = dkey.mean()
+
+        
+        dkey.fill_value = -400
+        print(dkey.min())
+        self.cdata = np.concatenate((
+            self.cdata,
+            dkey.filled()))
             
-            badval = 1e20
-            count = 0
+        #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
+        #ma = hp.ma(radvel, badval)
+        #from collections import Counter
+        #ma.mask = np.logical_not(ma.mask)
 
-            # set up healpix array view
-            for row in table:
+        #mask = radvel != 1e20
+        #print(Counter(mask).most_common(4))
 
-                ix = row['source_id'] >> 35
-                ix //= 4**(12 - level)
-                #ix = row['source_id'] >> 35
+        #radvel = np.where(mask, radvel, np.zeros(npix))
 
-                rv = row[key]
+        
+        vmin, vmax = np.percentile(radvel, (self.clip, 100-self.clip))
+        coord = self.coord[0]
+        fig = plt.gcf()
+        ax = await self.get()
+        axes = set(fig.axes)
+        hp.mollview(radvel,
+                    coord=coord,
+                    nest=True,
+                    cmap=magic.random_colour(),
+                    fig=ax.figure.number,                    
+                    max=vmax,
+                    min=vmin,
+                    bgcolor='grey',
+                    cbar=False,
+                    title='radial_velocity')
 
-                hpxmap[ix] += 1
-
-                if rv != badval:
-                    radvel[ix] = rv
-                    count += 1
-
-            print(f'observations: {count}  mean: {radvel.mean()}')
-
-            dkey = table[key]
-            print(dkey.mean())
             
-            dkey.fill_value = dkey.mean()
+        if self.sagastar:
+            # show a point at the origin
+            #ax.scatter([0.0], [0.0])
 
-            
-            dkey.fill_value = -400
-            print(dkey.min())
-            cdata = np.concatenate((
-                cdata,
-                dkey.filled()))
-                
-            #hp.mollview(radvel / hpxmap, coord=('C', 'G'), nest=True)
-            #ma = hp.ma(radvel, badval)
-            #from collections import Counter
-            #ma.mask = np.logical_not(ma.mask)
-
-            #mask = radvel != 1e20
-            #print(Counter(mask).most_common(4))
-
-            #radvel = np.where(mask, radvel, np.zeros(npix))
-
-            vmin, vmax = np.percentile(radvel, (self.clip, 100-self.clip))
-            coord = self.coord[0]
-            hp.mollview(radvel,
+            hp.projplot(sagra.deg, sagdec.deg,
+                        'ro',
+                        lonlat=True,
                         coord=coord,
-                        nest=True,
-                        cmap=magic.random_colour(),
-                        max=vmax,
-                        min=vmin)
+                        fig=ax.figure.number)
 
-            
+        #hp.graticule()
+        axe = fig.axes[-1]
+        ax.set_axes(axe)
 
-            if self.sagastar:
-                # show a point at the origin
-                plt.scatter([0.0], [0.0])
+        for ix, aa in enumerate(fig.axes):
+            if aa not in axes:
+                print(f'{ix} of {len(axes)} {aa} is new')
 
-                hp.projplot(sagra.deg, sagdec.deg,
-                            'ro',
-                            lonlat=True,
-                            coord=coord)
-        
-            #hp.graticule()
-            await self.put(magic.fig2data(plt))
+        ax = await self.get()
 
-            hp.mollview(hpxmap, coord=coord, nest=True,
-                        cmap=magic.random_colour())
+        axes = set(fig.axes)
+        hp.mollview(hpxmap, coord=coord, nest=True,
+                    cmap=magic.random_colour(),
+                    fig=ax.figure.number,
+                    bgcolor='grey',
+                    cbar=False)
 
-            await self.put(magic.fig2data(plt))
+        for ix, aa in enumerate(fig.axes):
+            if aa not in axes:
+                print(f'xx {ix} of {len(axes)} {aa} is new')
 
-
-            if self.plots:
-                plt.close()
-
-                plt.scatter(table['ra'], table['r_est'])
-                await self.put(magic.fig2data(plt))
-        
-                plt.scatter(table['dec'], table['r_est'])
-                await self.put(magic.fig2data(plt))
-
-            plt.close()
-            fig = plt.figure()
-            fig.add_subplot(111, projection='polar',
-                            facecolor='grey')
-
-            dist = dist.clip(max=6000)
-
-
-            vmin, vmax = np.percentile(cdata, (self.clip, 100-self.clip))
-            plt.scatter(dec,
-                        dist,
-                        s=0.1,
-                        c=cdata.clip(vmin, vmax),
-                        cmap=magic.random_colour())
-            plt.colorbar()
-            #await self.put(magic.fig2data(plt))
-            await curio.sleep(self.sleep)
+        axe = fig.axes[-1]
+        ax.set_axes(axe)
 
 
     async def rotate_view(self):
@@ -364,29 +361,16 @@ class Milky(Ball):
 
         
 
-def main(args):
-
-    milky = Milky(args.bunch, args.topn)
-
-    farm = fm.Farm()
-    farm.add(milky)
-
-    # farm strageness, whilst I figure out how it should work
-    # add to path to get key events at start 
-    farm.shep.path.append(milky)
-
-    fm.run(farm)
-
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-bunch', type=int, default=1)
+
     parser.add_argument('-topn', type=int, default=10)
 
-
-    main(main(parser.parse_args()))
+    args = parser.parse_args()
+    farm.run(balls=[Milky(args.bunch, args.topn)])
     
 
     

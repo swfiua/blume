@@ -384,16 +384,24 @@ class Axe:
         parms = dict(projection=name, visible = False)
 
         pax = ax.figure.subplots(subplot_kw=parms)
+        self.set_axes(pax)
 
+    def set_axes(self, pax):
+        """ Replace current delegate ax with pax
+
+        Hack to help with cases where something else creates
+        the axes.
+        """
+        ax = self.delegate
         self.delegate = pax
         self.position(ax)
         self.carpet.lookup[id(pax)] = self
-
         if hasattr(ax, 'img'):
             ax.img.remove()
 
         # now delete ax
         ax.remove()
+
 
     def simplify(self):
 
@@ -1550,7 +1558,7 @@ class TableCounts:
         xinc = (self.maxx - self.minx) / width
         yinc = (self.maxy - self.miny) / height
 
-        for x, y in zip(xlist, ylist):
+        for ix, (x, y) in enumerate(zip(xlist, ylist)):
 
             xbucket = int((x-self.minx) // xinc)
             ybucket = int((y-self.miny) // yinc)
@@ -1558,8 +1566,13 @@ class TableCounts:
                 continue
             if ybucket <= 0 or ybucket >= height:
                 continue
-            
-            self.grid[ybucket, xbucket] += weight
+
+            try:
+                wgt = weight[ix]
+            except:
+                wgt = weight
+                
+            self.grid[ybucket, xbucket] += wgt
 
     async def show(self, xname=None, yname=None):
 
@@ -1694,7 +1707,7 @@ class Carpet(Ball):
         self.output = None
         self.showing = {}
 
-        self.history = deque(maxlen=random.randint(50, 100))
+        self.history = deque(maxlen=random.randint(25, 50))
 
         self.axes = deque()
         self.lookup = dict()
@@ -1982,10 +1995,11 @@ class Carpet(Ball):
                 raise
 
             if (axe not in self.history and
-                axe not in showing and
-                hasattr(axe, 'img')):
+                axe not in showing):
                 
-                axe.img.remove()
+                if hasattr(axe, 'img'):
+                    axe.img.remove()
+
                 ax.figure.delaxes(ax)
                 del self.lookup[id(ax)]
                 del ax
