@@ -1,7 +1,7 @@
 """
 healpy and healpix helpers.
 """
-
+import psutil
 from math import *
 import healpy
 import numpy as np
@@ -17,15 +17,26 @@ class PixelCounter(magic.Ball):
 
         self.nside = nside or 2 ** 6
         self.xsize = xsize or 1000
-        self.coords = magic.deque([['C', 'G'], ['E', 'G'], ['E', 'C']])
-        self.rot = pi
+        self.coords = magic.deque([['C', 'G'], ['E', 'G'], ['E', 'C'], None])
+        self.rot = [pi, 0., 0.]
         self.nest = True
 
-        self.reset()
+        self.setup()
 
-    def reset(self):
+    def setup(self):
         
         self.pixels = np.zeros(healpy.nside2npix(self.nside))
+
+    async def reset(self, value=0., ring=True):
+        """ reset the pixels """
+        self.pixels[:] = value
+
+        if ring:
+            self.pixels = healpy.reorder(self.pixels, r2n=True)
+
+    async def ixrange(self):
+        """ reset the pixels """
+        self.pixels = np.arange(len(self.pixels))
 
     def ix2pixel(self, ix):
 
@@ -59,32 +70,80 @@ class PixelCounter(magic.Ball):
 
         self.pixels[ix] += weight
 
+
+    def showmem(self, label=None):
+
+        ps = psutil.Process()
+
+        if not hasattr(self, 'lastmem'):
+            self.lastmem = 0
+
+        current = ps.memory_info().rss
+        print(f'{label} {current/1e8:.2} {(current-self.lastmem) / 1e6:.2}')
+
+        self.lastmem = current
+            
+                    
     async def run(self):
 
 
         ax = await magic.TheMagicRoundAbout.get()
 
         ax.projection('mollweide')
+        ax.simplify()
 
+        
         img, theta, phi = self.pix2image()
 
+        
         cmap = magic.random_colour()
         ax.pcolormesh(phi - pi, theta - pi/2, img, cmap=cmap)
 
         ax.show()
 
-        rot = healpy.Rotator(rot=[self.rot, 0.], coord=self.coords[0])
-
+        rot = healpy.Rotator(rot=self.rot, coord=self.coords[0])
+        #rot = None
         img, theta, phi = self.pix2image(rot)
 
         ax = await magic.TheMagicRoundAbout.get()
 
         ax.projection('mollweide')
-
+        ax.simplify()
+    
         ax.pcolormesh(phi-pi, theta - pi/2, img, cmap=cmap)
-
+        
         ax.show()
 
+
+    def pcolormeshtest(self):
+    
+        from matplotlib import pyplot
+        import time
+
+        fig, ax = pyplot.subplots(subplot_kw=dict(projection='mollweide'))
+
+        
+        img, theta, phi = self.pix2image()
+        self.showmem('bbbb')
+
+
+        for x in range(1000):
+            self.showmem('loop')
+            cmap = magic.random_colour()
+
+            print(len(phi), len(theta), img.shape)
+            collection = ax.pcolormesh(phi - pi, theta - pi/2, img, cmap=cmap)
+
+            pyplot.show(block=False)
+            time.sleep(1.)
+            fig.delaxes(ax)
+            #ax.remove()
+            print(collection)
+            collection.remove()
+            fig, ax = pyplot.subplots(subplot_kw=dict(projection='mollweide'),
+                                      num=1)
+
+            
 
 if __name__ == '__main__':
 

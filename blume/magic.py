@@ -385,6 +385,7 @@ class Axe:
 
         pax = ax.figure.subplots(subplot_kw=parms)
         self.set_axes(pax)
+        self.meta['projection'] = name
 
     def set_axes(self, pax):
         """ Replace current delegate ax with pax
@@ -401,6 +402,7 @@ class Axe:
 
         # now delete ax
         ax.remove()
+        del ax
 
 
     def simplify(self):
@@ -1706,6 +1708,7 @@ class Carpet(Ball):
         self.expanded = None
         self.output = None
         self.showing = {}
+        self.meta = {}
 
         self.history = deque(maxlen=random.randint(25, 50))
 
@@ -1970,6 +1973,7 @@ class Carpet(Ball):
 
         keys = dict(visible=False)
 
+        # subplot_mosaic has had a per_subplot_kw since 3.7
         picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
 
         for key, ax in picture.items():
@@ -1994,17 +1998,29 @@ class Carpet(Ball):
                 print(f'WHOA {id(ax)} {type(ax)} missing from lookup')
                 raise
 
+                
             if (axe not in self.history and
                 axe not in showing):
-                
-                if hasattr(axe, 'img'):
-                    axe.img.remove()
-
                 ax.figure.delaxes(ax)
-                del self.lookup[id(ax)]
-                del ax
 
+                meta_key = tuple(axe.meta.items())
+                if meta_key in self.meta:
+                    self.delete_axe(self.meta[meta_key])
+                else:
+                    axe.clear()
 
+                print(f'adding {meta_key} to carpet.meta {len(self.meta)}')
+                self.meta[meta_key] = axe
+
+    def delete_axe(self, axe):
+        
+        if hasattr(axe, 'img'):
+            axe.img.remove()
+
+        del self.lookup[id(axe.delegate)]
+
+        
+        
     async def run(self):
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
