@@ -108,10 +108,6 @@ class SkyMap(magic.Ball):
         
     async def run(self):
 
-        fig = plt.figure()
-
-        fig.clear()
-                
         #ax = fig.add_axes((0,0,1,1), projection='mollweide')
         ax = await self.get()
         ax.projection('mollweide')
@@ -348,7 +344,6 @@ class Spiral(magic.Ball):
         #await self.put(magic.fig2data(plt))
 
         # close previous plot if there is one
-        plt.close()
 
         rr = np.arange(self.rmin, self.rmax, 10)
         #vv = [self.v(r) for r in rr]
@@ -362,17 +357,15 @@ class Spiral(magic.Ball):
         #print('spiral', len(rr), len(rdot))
 
         if self.details:
-            ax = plt.subplot(121)
+            ax = await self.get()
             ax.plot(rr, vv, label='velocity')
             ax.plot(rr, ii, label='vinert')
             ax.plot(rr, rdot, label='rdot')
             #ax.plot(rr, energy, label='energy')
             ax.legend(loc=0)
-
-            ax = plt.subplot(122)
             ax.plot(rr, rdd, label='rdoubledot')
             ax.legend(loc=0)
-            await self.put()
+            ax.show()
 
         thetadot = vv/rr;
 
@@ -386,13 +379,13 @@ class Spiral(magic.Ball):
 
 
         B = self.B
-        ax = plt.subplot(111, projection='polar')
+        ax = await self.get()
+        ax.projection('polar')
         ax.plot(thetaValues - (B * tvalues), rr)
         ax.plot(thetaValues - (B * tvalues) + math.pi, rr)
 
-        await self.put(magic.fig2data(plt))
+        await ax.show()
             
-        plt.close()
 
 
 def pick(x, v, vmin, vmax):
