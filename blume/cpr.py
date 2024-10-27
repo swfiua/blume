@@ -384,7 +384,7 @@ class Spiral(magic.Ball):
         ax.plot(thetaValues - (B * tvalues), rr)
         ax.plot(thetaValues - (B * tvalues) + math.pi, rr)
 
-        await ax.show()
+        ax.show()
             
 
 
