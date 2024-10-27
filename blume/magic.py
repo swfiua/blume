@@ -2009,7 +2009,7 @@ class Carpet(Ball):
                 else:
                     axe.clear()
 
-                print(f'adding {meta_key} to carpet.meta {len(self.meta)}')
+                #print(f'adding {meta_key} to carpet.meta {len(self.meta)}')
                 self.meta[meta_key] = axe
 
     def delete_axe(self, axe):
@@ -2078,7 +2078,8 @@ class Carpet(Ball):
             cell.set_edgecolor(colour)
 
         table.set_alpha(self.foreground.get_alpha())
-        
+        self.foreground.set_visible(True)
+
         self.draw()
 
     def toggle_table(self):
@@ -2087,6 +2088,8 @@ class Carpet(Ball):
         if self.tables:
             visible = tab.get_visible()
             tab.set_visible(not visible)
+            self.foreground.set_visible(not visible)
+            
         self.draw()
 
     def toggle_table_edges(self):
