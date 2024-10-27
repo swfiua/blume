@@ -26,6 +26,7 @@ class PixelCounter(magic.Ball):
     def setup(self):
         
         self.pixels = np.zeros(healpy.nside2npix(self.nside))
+        self.counts = np.zeros(healpy.nside2npix(self.nside))
 
     async def reset(self, value=0., ring=True):
         """ reset the pixels """
@@ -42,14 +43,16 @@ class PixelCounter(magic.Ball):
 
         return ix // (self.nside * self.nside)
 
-    def pix2image(self, rot=None):
+    def pix2image(self, rot=None, pixels=None):
 
         phis = np.linspace(0, 2*pi, self.xsize)
         thetas = np.linspace(0, pi, self.xsize//2)
 
         theta, phi = np.meshgrid(thetas, phis)
 
-        pixels = self.pixels
+        if pixels is None:
+            pixels = self.pixels
+
         if rot:
             #pixels = pixels[healpy.nest2ring(self.nside, range(len(pixels)))]
             #pixels = pixels[healpy.ring2nest(self.nside, range(len(pixels)))]
@@ -69,6 +72,7 @@ class PixelCounter(magic.Ball):
             wgt = weight
 
         self.pixels[ix] += weight
+        self.counts[ix] += 1
 
 
     def showmem(self, label=None):
@@ -113,6 +117,18 @@ class PixelCounter(magic.Ball):
         ax.pcolormesh(phi-pi, theta - pi/2, img, cmap=cmap)
         
         ax.show()
+
+        # if we were given weights, this should be true
+        if (self.pixels != self.counts).any():
+            # show the counts
+            ax = await magic.TheMagicRoundAbout.get()
+            ax.projection('mollweide')
+            ax.simplify()
+    
+            img, theta, phi = self.pix2image(rot, pixels=self.counts)
+            ax.pcolormesh(phi-pi, theta - pi/2, img, cmap=cmap)
+        
+            ax.show()
 
 
     def pcolormeshtest(self):
