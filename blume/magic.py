@@ -588,7 +588,7 @@ class InteractBase(Ball):
         await self.put(self.ball, 'run')
 
         # and switch ourself off
-        await self.put(self, 'run')
+        #await self.put(self, 'run')
 
     async def back(self):
         """ pop back in history """
