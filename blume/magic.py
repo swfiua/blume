@@ -1880,8 +1880,6 @@ class Carpet(Ball):
         self.history.rotate(n)
 
         # we want to replace the current axes with the value we pop
-        qq = self.select()
-
         pos = await self.get()
         ax = self.history.popleft()
         ax.position(pos)
@@ -1903,7 +1901,7 @@ class Carpet(Ball):
         # need to throw away one axis in the queue
         await self.get()
         for hh in range(hlen):
-            await self.history_rotate(1)
+            await self.history_rotate(-1)
         
     def toggle_expand2(self):
         """ ask figure to expand the axes to fill the space """

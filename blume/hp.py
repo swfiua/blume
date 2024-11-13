@@ -15,10 +15,10 @@ class PixelCounter(magic.Ball):
 
         super().__init__(**kwargs)
 
-        self.nside = nside or 2 ** 6
+        self.nside = nside or 2 ** 7
         self.xsize = xsize or 1000
         self.coords = magic.deque([['C', 'G'], ['E', 'G'], ['E', 'C'], None])
-        self.rot = [pi, 0., 0.]
+        self.rot = [0., 180.,  0.]
         self.nest = True
 
         self.setup()
@@ -41,7 +41,9 @@ class PixelCounter(magic.Ball):
 
     def ix2pixel(self, ix):
 
-        return ix // (self.nside * self.nside)
+        pix = int(ix // ((4**12) / (self.nside * self.nside)))
+
+        return pix
 
     def pix2image(self, rot=None, pixels=None):
 
