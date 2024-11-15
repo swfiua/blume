@@ -1743,7 +1743,7 @@ class Carpet(Ball):
 
         self.add_filter('S', self.save)
         self.add_filter('E', self.toggle_expand)
-        self.add_filter('F', self.toggle_expand2)
+        self.add_filter('F', self.toggle_expand_foreground)
         self.add_filter('<', self.lower_alpha)
         self.add_filter('>', self.raise_alpha)
         self.add_filter('t', self.toggle_table)
@@ -1904,17 +1904,21 @@ class Carpet(Ball):
         for hh in range(hlen):
             await self.history_rotate()
         
-    def toggle_expand2(self):
-        """ ask figure to expand the axes to fill the space """
-        fig = self.image
+    def toggle_expand_foreground(self):
+        """ ask figure to expand the foreground axes to fill the space """
+        position = self.foreground.get_position()
+        if position.extents[0] == 0:
+            self.foreground.set_position((0.1, 0.1, 0.8, 0.8))
+        else:
+            self.foreground.set_position((0., 0., 1., 1.))
 
-        fig.subplots_adjust(hspace=0, wspace=0)
+        self.draw()
         
-    def toggle_expand(self, names=None):
+    def toggle_expand(self, names=None, fig=None):
         """ Toggle making each axis fill its space """
         names = names or ["left", "bottom", "right", "top", "wspace", "hspace"]
 
-        fig = self.image
+        fig = fig or self.image
         if not self.expanded:
 
             self.expanded = {}
@@ -1931,6 +1935,8 @@ class Carpet(Ball):
             print(self.expanded)
             fig.subplots_adjust(**self.expanded)
             self.expanded = None
+
+        self.draw()
         
     async def poll(self):
         """ Gui Loop """
@@ -2058,7 +2064,6 @@ class Carpet(Ball):
     def draw(self):
         """ trigger a redraw """
         self.image.canvas.draw_idle()
-    
 
     def hide(self, axe):
 
