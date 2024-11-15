@@ -1900,8 +1900,9 @@ class Carpet(Ball):
 
         # need to throw away one axis in the queue
         await self.get()
+        self.history.reverse()
         for hh in range(hlen):
-            await self.history_rotate(-1)
+            await self.history_rotate()
         
     def toggle_expand2(self):
         """ ask figure to expand the axes to fill the space """
