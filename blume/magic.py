@@ -1535,7 +1535,7 @@ class TableCounts:
                  inset=None,
                  colorbar=False):
         
-        self.grid = np.zeros((width, height))
+        self.grid = np.zeros((3, width, height))
         self.minx = minx
         self.maxx = maxx
         self.miny = miny
@@ -1549,13 +1549,13 @@ class TableCounts:
 
     def reset(self, width=None, height=None):
 
-        if width is None: width = self.grid.shape[0]
-        if height is None: height = self.grid.shape[1]
-        self.grid = np.zeros((width, height))
+        if width is None: width = self.grid.shape[1]
+        if height is None: height = self.grid.shape[2]
+        self.grid = np.zeros((3, width, height))
         
     def update(self, xlist, ylist, weight=1):
 
-        width, height = self.grid.shape
+        three, width, height = self.grid.shape
 
         xinc = (self.maxx - self.minx) / width
         yinc = (self.maxy - self.miny) / height
@@ -1574,7 +1574,36 @@ class TableCounts:
             except:
                 wgt = weight
                 
-            self.grid[ybucket, xbucket] += wgt
+            self.grid[0][ybucket, xbucket] += 1
+            self.grid[1][ybucket, xbucket] += wgt
+            self.grid[2][ybucket, xbucket] += wgt * wgt
+
+    async def stats(self):
+
+        tmra = TheMagicRoundAbout
+        counts = self.grid[0]
+        totals = self.grid[1]
+        squares = self.grid[2]
+
+        n = sum(sum(counts))
+        mean = sum(sum(totals)) / n
+        sqrs = sum(sum(squares)) / n
+
+        denoms = sum(counts.copy())
+        denoms[denoms==0] = 1
+        means = sum(totals)/denoms
+
+        ax = await tmra.get()
+
+        ax.plot(means)
+        ax.show()
+        
+        std = sqrs - (mean * mean)
+        if std > 0:
+            std = std ** 0.5
+        print(f'n:    {n}')
+        print(f'mean: {mean}')
+        print(f'std:  {std}')
 
     async def show(self, xname=None, yname=None):
 
@@ -1585,11 +1614,11 @@ class TableCounts:
         yname = yname or self.yname
 
         # take inset
-        grid = self.grid[x:xx, y:yy]
+        grid = self.grid[:, x:xx, y:yy]
 
         # adjust minx, maxx, miny, maxy for inset
         minx, maxx, miny, maxy = self.minx, self.maxx, self.miny, self.maxy
-        height, width = self.grid.shape
+        three, height, width = grid.shape
         
         xinc = (maxx - minx) / width
         yinc = (maxy - miny) / height
@@ -1598,10 +1627,8 @@ class TableCounts:
         miny += yinc * y
         maxy += yinc * yy
         
-        height, width = grid.shape
-
-        xnorms = grid / (sum(grid)+1)
-        ynorms = (grid.T / (sum(grid.T)+1)).T
+        xnorms = grid[1] / (sum(grid[1])+1)
+        ynorms = (grid[1].T / (sum(grid[1].T)+1)).T
 
         ax = await tmra.get()
         extent = (minx, maxx, miny, maxy)
@@ -1630,10 +1657,22 @@ class TableCounts:
         ax.show()
         axes['ynorms'] = ax
 
+        ax = await tmra.get()
+        ax.set_title(f'{title}')
+        img = ax.imshow(grid[1],
+                   origin='lower',
+                   aspect='auto',
+                   extent=extent,
+                   cmap=cmap)
+        ax.show()
+        if self.colorbar:
+            await ax.show_colorbar(img)
+
         # see what a grid sample looks like
         csize = width * height
+
         choices = list(range(csize))
-        weights = grid.flatten()
+        weights = grid[1].flatten()
         
         if sum(weights):
             sample = random.choices(choices, weights=weights, k=1566)
@@ -1649,16 +1688,6 @@ class TableCounts:
             ax.show()
             axes['sample'] = ax
 
-        ax = await tmra.get()
-        ax.set_title(f'{title}')
-        img = ax.imshow(grid,
-                   origin='lower',
-                   aspect='auto',
-                   extent=extent,
-                   cmap=cmap)
-        ax.show()
-        if self.colorbar:
-            await ax.show_colorbar(img)
         
         axes['nonorm'] = ax
 
@@ -1749,6 +1778,11 @@ class Carpet(Ball):
         self.add_filter('t', self.toggle_table)
         self.add_filter('T', self.toggle_table_edges)
 
+        self.add_filter('k', self.rotate_table)
+
+        # handle single digit multiplier magic
+        self.argcount = None
+
     def lower_alpha(self):
 
         alpha = self.foreground.get_alpha()
@@ -1806,12 +1840,24 @@ class Carpet(Ball):
     def keypress(self, event):
         """ Take keypress events put them out there """
 
-        #print('mosaic carpet handling', event)
-        # use select here to get actual magic curio queue
-        # where put can magically be a coroutine or a function according
-        # to context.
         qq = self.select(event.key)
-        qq.put_nowait(event)
+
+        n = self.argcount
+        # set self.argcount if it is in integer
+        try:
+            self.argcount = int(event.key)
+
+            # if this key is a digit, we don't want an argcount
+            # .. things would get strange fast
+            n = None
+        except ValueError:
+            # not an integer, so pass
+            self.argcount = None
+
+        n = n or 1
+
+        for item in range(n):
+            qq.put_nowait(event)
 
     async def save(self):
         """ Save current image """
@@ -2085,6 +2131,23 @@ class Carpet(Ball):
         self.foreground.set_visible(True)
 
         self.draw()
+
+    def rotate_table(self):
+        """ Rotate tables """
+        tab = self.tables[-1]
+        tab.set_visible(False)
+        self.tables.rotate()
+        tab = self.tables[-1]
+        tab.set_visible(True)
+
+        self.draw()
+    
+    def zoom_table(self):
+        """ Collapse table, show parts?
+
+        probably needs to be part of table?
+        """
+        pass
 
     def toggle_table(self):
         """  Show/hide table """
