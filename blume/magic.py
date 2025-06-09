@@ -1667,6 +1667,7 @@ class TableCounts:
         ax.show()
         if self.colorbar:
             await ax.show_colorbar(img)
+        axes['nonorm'] = ax
 
         # see what a grid sample looks like
         csize = width * height
@@ -1689,8 +1690,6 @@ class TableCounts:
             axes['sample'] = ax
 
         
-        axes['nonorm'] = ax
-
         return axes
 
 def show():
@@ -1753,7 +1752,7 @@ class Carpet(Ball):
         self.foreground.axis('off')
         self.foreground.set_alpha(.8)
         self.table_edge_colours = deque((None, 'k'))
-        self.tables = deque()
+        self.tables = deque(maxlen=20)
         
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)

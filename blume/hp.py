@@ -1,7 +1,6 @@
 """
 healpy and healpix helpers.
 """
-import psutil
 from math import *
 import healpy
 import numpy as np
@@ -79,6 +78,7 @@ class PixelCounter(magic.Ball):
 
     def showmem(self, label=None):
 
+        import psutil
         ps = psutil.Process()
 
         if not hasattr(self, 'lastmem'):
