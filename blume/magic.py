@@ -141,6 +141,10 @@ from . import table
 
 Parser = argparse.ArgumentParser
 
+def luke(value):
+    """ use the source """
+    print(inspect.getsource(value))
+
 
 class RoundAbout:
     """ Pass self around.
@@ -417,6 +421,8 @@ class Axe:
         
         self.figure.colorbar(mappable, ax, self)
         ax.show()
+
+        return ax
 
     def hide_axes(self):
 
@@ -925,7 +931,7 @@ class Spell:
     
     """
 
-    def __init__(self, cache=None):
+    def __init__(self, cache=None, keys=None):
         """  
         
         Older idea, updated::
@@ -943,6 +949,10 @@ class Spell:
 
         # casts by keyword
         self.casts = {}
+        if keys:
+            for key in keys:
+                self.casts[key] = int
+
         self.date_parse = date_parse = dateutil.parser.parser().parse
         self.upcast = {None: int, int: float, float: date_parse, date_parse: str}
         self.fill = {None: None, int: 0, float: 0.0, date_parse: None, str: ''}
@@ -964,13 +974,15 @@ class Spell:
 
         sniff = sniff or self.sniff
 
-        keys = data[0].keys()
+        keys = self.casts.keys() or data[0].keys()
 
         casts = self.casts
         
         upcast = self.upcast
-        
-        for row in data[-self.sniff:]:
+
+        upcasts = set()
+        for ix, row in enumerate(data[-sniff:]):
+            print(ix)
             for key in keys:
                 value = row[key].strip()
                 if value:
@@ -978,6 +990,13 @@ class Spell:
                         casts.setdefault(key, int)(value)
                     except:
                         casts[key] = upcast[casts[key]]
+                        upcasts.add(key)
+                        print(ix, sniff, 'upcasting', key, casts[key])
+
+        # see if anything not upcast
+        for key in keys:
+            if key not in upcasts:
+                print(key, 'never upcast')
                     
         # look for a (first) date key - probably should looke
         # for all dates, really we are looking for an index here
@@ -1010,7 +1029,11 @@ class Spell:
                 if not value.strip():
                     value = fill.setdefault(cast)
 
-                result[key] = cast(value)
+                try:
+                    result[key] = cast(value)
+                except:
+                    print('cannot cast', key, value)
+                    raise
             yield result
 
     def fields(self):
@@ -1666,7 +1689,10 @@ class TableCounts:
                    cmap=cmap)
         ax.show()
         if self.colorbar:
-            await ax.show_colorbar(img)
+            ax = await ax.show_colorbar(img)
+
+            ax.set_title(f'{title} colormap')
+            
         axes['nonorm'] = ax
 
         # see what a grid sample looks like
@@ -1686,6 +1712,7 @@ class TableCounts:
             yy = np.array([miny + ((int(x/width)) * yinc) for x in sample])
 
             ax.scatter(xx, yy)
+            ax.set_title(title)
             ax.show()
             axes['sample'] = ax
 
@@ -2032,6 +2059,7 @@ class Carpet(Ball):
             self.axes.append(axe)
             self.lookup[id(ax)] = axe
 
+
     def delete_old_axes(self):
 
         naxes = len(self.image.axes)
@@ -2233,6 +2261,10 @@ async def canine(ball):
             except asyncio.CancelledError:
                 print(f'cancelled running of {ball} after {runs} runs')
                 raise
+
+            except RuntimeError:
+                # assume already awaited co-routine
+                break
 
             except:
                 print_exc()

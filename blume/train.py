@@ -8,12 +8,14 @@ Displays them
 Press h for help.
 """
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageSequence
 import numpy as np
 import random
 import traceback
 
 import numpy as np
+
+import scipy
 
 from collections import deque, defaultdict, Counter
 import time
@@ -21,7 +23,7 @@ import argparse
 
 from blume import magic
 from blume import farm
-
+from matplotlib import transforms
 
 class Train(magic.Ball):
 
@@ -39,9 +41,15 @@ class Train(magic.Ball):
         def reverse():
             """ U turn if U want 2 """
             self.rotation *= -1
+
+        self.image_rotation = None
         self.add_filter('u', reverse)
         self.add_filter('d', self.down)
         self.add_filter('b', self.back)
+
+        # support gif's
+        self.image_sequence = None
+        self.image_rotation = None
 
     def get_parser(self):
         """ Use argparse to get arguments from command line """
@@ -228,21 +236,32 @@ class Train(magic.Ball):
 
         #if len(self.paths) > 1:
         #    idx = random.randint(0, len(self.paths)-1)
-
+        
 
         path = self.paths[0]
-        self.paths.rotate(self.rotation)
 
         if self.rgb:
             image = self.get_rgb()
             print('rgb image shape', image.shape)
         else:
             try:
-                image = self.get_image(path)
-            except Exception as e:
-                traceback.print_exception(e)
-                self.paths.rotate(self.rotation)
-                return
+                if not self.image_sequence:
+                    raise StopIteration
+                
+                image = next(self.image_sequence)
+                
+            except StopIteration:
+                try:
+                    ####image = self.get_image(path)
+                    image = Image.open(path)
+                    self.paths.rotate(self.rotation)
+                    self.image_sequence = ImageSequence.Iterator(image)
+                    print([x for x in self.image_sequence])
+                    self.image_sequence = ImageSequence.Iterator(image)
+                    image = next(self.image_sequence)
+                except Exception as e:
+                    traceback.print_exception(e)
+                    return
 
         mininfo = self.min_entropy
         if mininfo:
@@ -263,6 +282,10 @@ class Train(magic.Ball):
             cmap = magic.random_colour()
 
         print('EEEEEEEEEEEEE', self.extent)
+
+        if self.image_rotation:
+            image = scipy.ndimage.rotate(image, self.image_rotation)
+
         ax.imshow(image, cmap=cmap, extent=self.extent)
         
         ax.show()
