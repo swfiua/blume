@@ -2134,6 +2134,26 @@ class Carpet(Ball):
 
         self.draw()
 
+        # if in termux do some magic
+        self.termux_draw()
+
+    def termux_draw(self):
+        import os
+        import shutil
+
+
+        
+        if 'TERMUX_VERSION' not in os.environ:
+            return
+
+        self.image.savefig('latest.png')
+        import climage
+        
+        ts = shutil.get_terminal_size()
+        print(climage.convert(
+            'latest.png',
+            width=ts.columns))
+
     def draw(self):
         """ trigger a redraw """
         self.image.canvas.draw_idle()
