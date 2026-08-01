@@ -7,6 +7,7 @@ Displays them
 
 Press h for help.
 """
+import os
 from pathlib import Path
 from PIL import Image, ImageSequence
 import numpy as np
@@ -46,11 +47,19 @@ class Train(magic.Ball):
         self.add_filter('u', reverse)
         self.add_filter('d', self.down)
         self.add_filter('b', self.back)
+        self.add_filter('L', self.link)
+                
 
         # support gif's
         self.image_sequence = None
         self.image_rotation = None
 
+    def link(self):
+        """ Create a link to current path """
+        path = self.paths[-1]
+
+        os.symlink(path, path.name)
+        
     def get_parser(self):
         """ Use argparse to get arguments from command line """
 

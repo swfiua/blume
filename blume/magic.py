@@ -89,6 +89,7 @@ the photons.
 import random
 
 import math
+import statistics
 
 import datetime
 
@@ -113,6 +114,8 @@ import dateutil
 import functools
 
 import time
+
+from pprint import pprint as pp
 
 #import curio
 import asyncio
@@ -361,17 +364,14 @@ class Axe:
     def show(self):
         """ Show the axes """
         self.set_visible(True)
-        if not hasattr(self, 'img'):
-            self._blank()
-        else:
-            self.img.set_visible(True)
+        #self.patch.set_facecolor(Colours.next())
+        self.patch.set_visible(True)
         self.carpet.show(self)
 
     def hide(self):
         """ Hide the axes """
         self.set_visible(False)
-        if hasattr(self, 'img'):
-            self.img.set_visible(False)
+        self.patch.set_visible(False)
         self.carpet.hide(self)
 
     def please_draw(self):
@@ -401,8 +401,6 @@ class Axe:
         self.delegate = pax
         self.position(ax)
         self.carpet.lookup[id(pax)] = self
-        if hasattr(ax, 'img'):
-            ax.img.remove()
 
         # now delete ax
         ax.remove()
@@ -433,21 +431,6 @@ class Axe:
 
         return id(self.delegate)
 
-    def _blank(self):
-
-        fig = self.figure
-
-        bb = self.get_full_bbox()
-
-        self.img = patches.Rectangle(
-            bb.p0,
-            bb.width, bb.height,
-            facecolor=Colours.next()
-        )
-
-        # add patch to the background
-        self.carpet.background.add_artist(self.img)
-        
     async def mscatter(self):
         """ still figuring this out
 
@@ -608,10 +591,10 @@ class InteractBase(Ball):
     def show_attr_table(self):
         
         msg = []
-        for key in self.attrs:
+        for ix, key in enumerate(self.attrs):
             value = getattr(self.ball, key)
             rep = ellipsis(repr(value))
-            msg.append([key, rep, type(value)])
+            msg.append([ix, key, rep, type(value)])
 
         self.put_nowait(msg, 'help')
 
@@ -1231,7 +1214,6 @@ class Shepherd(Ball):
             listener = spawn(relay(key, callback))
             self.relays.add(listener)
 
-        self.put_nowait('gkr', 'oldgrey')
 
     def generate_key_bindings(self, name='keys'):
 
@@ -1333,7 +1315,7 @@ class Shepherd(Ball):
         # add a task to watch tasks
         self.watcher = spawn(self.task_watcher())
 
-        print('sending out ready message to oldgrey')
+        print('sending out ready message to gkr')
         self.put_nowait('ready', 'gkr')
         #await self.watch_roundabouts()
 
@@ -1402,7 +1384,6 @@ class Shepherd(Ball):
 
         #print(f'down new path: {self.path}')
         #await self.put(str(self.current()), 'help')
-        #await self.put('done', 'oldgrey')
 
     async def toggle_run(self, sheep=None):
         """ Toggle run status of sheep """
@@ -1775,12 +1756,13 @@ class Carpet(Ball):
 
         self.background = self.image.add_axes((0,0,1,1))
         self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1)
+        self.foreground.patch.set_visible(False)
         self.foreground.patch.set_alpha(0.)
         self.foreground.axis('off')
         self.foreground.set_alpha(.8)
         self.table_edge_colours = deque((None, 'k'))
         self.tables = deque(maxlen=20)
-        
+        self.showtables = True
         # keyboard handling
         self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
@@ -1803,6 +1785,7 @@ class Carpet(Ball):
         self.add_filter('>', self.raise_alpha)
         self.add_filter('t', self.toggle_table)
         self.add_filter('T', self.toggle_table_edges)
+        self.add_filter('v', self.toggle_showtables)
 
         self.add_filter('k', self.rotate_table)
 
@@ -1816,6 +1799,7 @@ class Carpet(Ball):
         
         for tab in self.tables:
             if tab.get_visible():
+                print('setting alpha to', alpha)
                 tab.set_alpha(alpha)
                 
         self.foreground.set_alpha(alpha)
@@ -1975,6 +1959,10 @@ class Carpet(Ball):
         self.history.reverse()
         for hh in range(hlen):
             await self.history_rotate()
+
+    def toggle_showtables(self):
+
+        self.showtables = not self.showtables
         
     def toggle_expand_foreground(self):
         """ ask figure to expand the foreground axes to fill the space """
@@ -2092,11 +2080,7 @@ class Carpet(Ball):
 
     def delete_axe(self, axe):
         
-        if hasattr(axe, 'img'):
-            axe.img.remove()
-
         del self.lookup[id(axe.delegate)]
-
         
         
     async def run(self):
@@ -2175,7 +2159,7 @@ class Carpet(Ball):
             cell.set_edgecolor(colour)
 
         table.set_alpha(self.foreground.get_alpha())
-        self.foreground.set_visible(True)
+        self.foreground.set_visible(self.showtables)
 
         self.draw()
 
@@ -2406,7 +2390,20 @@ async def relay(channel, callback, with_message=False):
 def runner(ball):
 
     TheMagicRoundAbout.put_nowait(ball, 'run')
+
+
+def describe(array, nquants=4):
+
+    if len(array) < 2: return
     
+    results = dict(
+        mean=statistics.mean(array),
+        stdev=statistics.stdev(array),
+        minimum=min(array),
+        maximum=max(array),
+        quantiles=statistics.quantiles(array, n=nquants))
+
+    return results
                 
 if __name__ == '__main__':
     
