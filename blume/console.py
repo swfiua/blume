@@ -99,9 +99,21 @@ Your wish is my command!
 
             # Single character inputs => put them into the
             # Magic RoundAbout
+            key = key.strip()
+
+            count = 1
+            if len(key) == 2 and not self.console.buffer:
+                try:
+                    count = int(key[0])
+                    key = key[1:]
+                except ValueError:
+                    pass
+                    
+
             if len(key.strip()) == 1 and not self.console.buffer:
                 char = key.strip()
-                await self.put(char, char)
+                for n in range(count):
+                    await self.put(char, char)
             else:
                 try:
                     result = self.console.push(key)
