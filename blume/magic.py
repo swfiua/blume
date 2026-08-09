@@ -363,15 +363,10 @@ class Axe:
 
     def show(self):
         """ Show the axes """
-        self.set_visible(True)
-        #self.patch.set_facecolor(Colours.next())
-        self.patch.set_visible(True)
         self.carpet.show(self)
 
     def hide(self):
         """ Hide the axes """
-        self.set_visible(False)
-        self.patch.set_visible(False)
         self.carpet.hide(self)
 
     def please_draw(self):
@@ -2104,6 +2099,10 @@ class Carpet(Ball):
 
     def show(self, axe):
 
+        axe.set_visible(True)
+        #self.patch.set_facecolor(Colours.next())
+        axe.patch.set_visible(True)
+        
         gg = self.get_axe_geometry(axe)
 
         if gg in self.showing:
@@ -2122,9 +2121,21 @@ class Carpet(Ball):
         self.termux_draw()
 
     def termux_draw(self):
+        """ Draw tge current figure on a terminal.
+
+        inspired by termux on android
+
+        uses the climage library to dump
+        the current figure as terminal
+        colour codes.
+
+        if TERMUX_VERSION is not set it does nothing.
+
+        Also saves figure as latest.png
+        
+        """
         import os
         import shutil
-
 
         
         if 'TERMUX_VERSION' not in os.environ:
@@ -2144,8 +2155,8 @@ class Carpet(Ball):
 
     def hide(self, axe):
 
-        if axe.get_visible():
-            axe.set_visible(False)
+        axe.patch.set_visible(False)
+        axe.set_visible(False)
 
     def add_table(self, table):
         """ Add a table to the carpet and show it """
