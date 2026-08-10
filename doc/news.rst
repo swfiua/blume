@@ -9,6 +9,28 @@ What's happening with the `blume.table.Table`?
 My adventures in *matplotlib* land continue.
 
 
+2026/08/10
+==========
+
+I have been using blume in termux terminals on Android.
+
+Together with the climage library, it can now display the current
+figure using terminal colour codes. If it sees the TERMUX_VERSION in
+the environment it displays images in the terminal and creates
+latest.png in tge working directory.
+
+The resolution is poor unless you shrink the font size, when it is
+good to view images with blume.train.
+
+The terminal now has special handling if you enter a digit followed by
+a character. It now behaves as though that character has been pressed
+n times, for example 6z is the same as entering z 6 times.
+
+I also think i fixed an annoying bug with axes not showing.
+
+I should do a release.
+
+
 2024/01/02
 ==========
 
