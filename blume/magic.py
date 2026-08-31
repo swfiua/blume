@@ -939,7 +939,7 @@ class Spell:
         self.sniff = 10
         
         
-    def spell(self, data):
+    def spell(self, data, verbose=False):
         """ Apply casts to data
         
         Would like this to be dynamic, updating the casts as we go """
@@ -948,7 +948,7 @@ class Spell:
         yield from self.cast_data(data)
         
         
-    def find_casts(self, data, sniff=10):
+    def find_casts(self, data, sniff=10, verbose=False):
 
         sniff = sniff or self.sniff
 
@@ -960,7 +960,7 @@ class Spell:
 
         upcasts = set()
         for ix, row in enumerate(data[-sniff:]):
-            print(ix)
+            if verbose: print(ix)
             for key in keys:
                 value = row[key].strip()
                 if value:
@@ -969,12 +969,12 @@ class Spell:
                     except:
                         casts[key] = upcast[casts[key]]
                         upcasts.add(key)
-                        print(ix, sniff, 'upcasting', key, casts[key])
+                        if verbose: print(ix, sniff, 'upcasting', key, casts[key])
 
         # see if anything not upcast
         for key in keys:
             if key not in upcasts:
-                print(key, 'never upcast')
+                if verbose: print(key, 'never upcast')
                     
         # look for a (first) date key - probably should looke
         # for all dates, really we are looking for an index here
@@ -985,11 +985,11 @@ class Spell:
                 return
 
 
-    def check_casts(self, data, sniff=10):
+    def check_casts(self, data, sniff=10, verbose=False):
 
-        self.find_casts(data, sniff)
+        self.find_casts(data, sniff, verbose=verbose)
 
-    def cast_data(self, data):
+    def cast_data(self, data, verbose=False):
 
         casts = self.casts
 
@@ -1000,7 +1000,7 @@ class Spell:
             result = {}
             for key, value in row.items():
                 if key not in casts:
-                    print(key)
+                    if verbose: print(key)
                     continue
                 
                 cast = casts[key] 
@@ -1010,7 +1010,7 @@ class Spell:
                 try:
                     result[key] = cast(value)
                 except:
-                    print('cannot cast', key, value)
+                    if verbose: print('cannot cast', key, value)
                     raise
             yield result
 
