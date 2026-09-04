@@ -1246,7 +1246,6 @@ class Shepherd(Ball):
             # if the queue is getting full, then we don't want to hang here.
             # curiously, maxsize - 1 is the critical size at which it seems
             # to hang.
-            print('submitting to help')
             self.put_nowait(msg, 'help')
 
     async def helper(self):
