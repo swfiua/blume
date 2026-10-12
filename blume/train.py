@@ -49,7 +49,7 @@ class Train(magic.Ball):
         self.add_filter('b', self.back)
         self.add_filter('L', self.link)
                 
-
+        self.downsample = 8
         # support gif's
         self.image_sequence = None
         self.image_rotation = None
@@ -265,12 +265,15 @@ class Train(magic.Ball):
                     image = Image.open(path)
                     self.paths.rotate(self.rotation)
                     self.image_sequence = ImageSequence.Iterator(image)
-                    print([x for x in self.image_sequence])
-                    self.image_sequence = ImageSequence.Iterator(image)
                     image = next(self.image_sequence)
                 except Exception as e:
                     traceback.print_exception(e)
                     return
+
+        if self.downsample:
+            width, height = image.size
+            if width/self.downsample > 250:
+                image = image.resize((width//self.downsample, height//self.downsample))
 
         mininfo = self.min_entropy
         if mininfo:
@@ -284,6 +287,7 @@ class Train(magic.Ball):
             print('publishing', path, image.size)
 
         ax = await self.get()
+        ax.meta['path'] = path
         ax.axis('off')
         if self.cmap:
             cmap = self.cmap
@@ -296,7 +300,7 @@ class Train(magic.Ball):
             image = scipy.ndimage.rotate(image, self.image_rotation)
 
         ax.imshow(image, cmap=cmap, extent=self.extent)
-        
+        self.image = image
         ax.show()
 
     def fits_open(self, path):

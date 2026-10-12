@@ -1737,31 +1737,12 @@ class Carpet(Ball):
         self.simple = False
         self.expanded = None
         self.output = None
-        self.showing = {}
-        self.meta = {}
-
-        self.history = deque(maxlen=random.randint(25, 50))
-
-        self.axes = deque()
-        self.lookup = dict()
         #self.savefig_dpi = 3000
         #self.image = plt.figure(constrained_layout=True, facecolor='grey')
-        self.image = plt.figure()
-
-        self.background = self.image.add_axes((0,0,1,1))
-        self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1)
-        self.foreground.patch.set_visible(False)
-        self.foreground.patch.set_alpha(0.)
-        self.foreground.axis('off')
-        self.foreground.set_alpha(.8)
-        self.table_edge_colours = deque((None, 'k'))
-        self.tables = deque(maxlen=20)
-        self.showtables = True
-        # keyboard handling
-        self.image.canvas.mpl_connect('key_press_event', self.keypress)
 
         # let's see everything
         #self.log_events()
+        self.create_figure()
 
         self.add_filter('+', self.more)
         self.add_filter('=', self.more)
@@ -1780,12 +1761,51 @@ class Carpet(Ball):
         self.add_filter('t', self.toggle_table)
         self.add_filter('T', self.toggle_table_edges)
         self.add_filter('v', self.toggle_showtables)
+        self.add_filter('C', self.clear)
+        self.add_filter('D', self.show_meta)
 
         self.add_filter('k', self.rotate_table)
 
         # handle single digit multiplier magic
         self.argcount = None
 
+    def show_meta(self):
+
+        if not self.history: return
+        
+        print(self.history[-1].meta)
+
+    def create_figure(self):
+        """ Create the figure """
+        self.image = plt.figure()
+
+        self.background = self.image.add_axes((0,0,1,1))
+        self.foreground = self.image.add_axes((0.1,0.1,.8, .8), zorder=1)
+        self.foreground.patch.set_visible(False)
+        self.foreground.patch.set_alpha(0.)
+        self.foreground.axis('off')
+        self.foreground.set_alpha(.8)
+        self.table_edge_colours = deque((None, 'k'))
+        self.tables = deque(maxlen=20)
+        self.showtables = True
+        # keyboard handling
+        self.image.canvas.mpl_connect('key_press_event', self.keypress)
+        
+        self.showing = {}
+        self.meta = {}
+
+        self.history = deque(maxlen=random.randint(25, 50))
+
+        self.axes = deque()
+        self.lookup = dict()
+
+    def clear(self):
+
+        self.image.clear()
+        del self.image
+        self.create_figure()
+        show()
+        
     def lower_alpha(self):
 
         alpha = self.foreground.get_alpha()
@@ -1939,6 +1959,7 @@ class Carpet(Ball):
             self.image.delaxes(pos.delegate)
         del pos
 
+        print(ax.meta)
         ax.show()
 
     async def replay_history(self, maxback=None):
@@ -2023,7 +2044,10 @@ class Carpet(Ball):
     def generate_mosaic(self):
 
         # first try and delete some stuff
-        self.delete_old_axes()
+        #self.delete_old_axes()
+
+        #if random.random() > 0.9:
+        #    self.image.clear()
 
         # set up the square mosaic for current size
         mosaic = []
@@ -2043,12 +2067,12 @@ class Carpet(Ball):
 
 
     def delete_old_axes(self):
-
-        naxes = len(self.image.axes)
+        """ Not sure if this ever does anything useful """
+        naxes = len(self.image._localaxes)
 
         showing = self.showing.values()
 
-        for ax in self.image.axes:
+        for ax in self.image._localaxes:
             if ax is self.background or ax is self.foreground:
                 continue
 
@@ -2057,20 +2081,21 @@ class Carpet(Ball):
             except:
                 print(f'WHOA {id(ax)} {type(ax)} missing from lookup')
                 raise
-
+            
                 
-            if (axe not in self.history and
-                axe not in showing):
-                ax.figure.delaxes(ax)
+            if (axe in self.history):
+                print('axe in history', axe)
+                continue
+            
+            if axe in showing:
+                print('axe in showing', axe)
+                continue
+            
+            print('deleting axes', ax)
+            ax.clear()
+            ax.figure.delaxes(ax)
 
-                meta_key = tuple(axe.meta.items())
-                if meta_key in self.meta:
-                    self.delete_axe(self.meta[meta_key])
-                else:
-                    axe.clear()
-
-                #print(f'adding {meta_key} to carpet.meta {len(self.meta)}')
-                self.meta[meta_key] = axe
+            self.delete_axe(axe)
 
     def delete_axe(self, axe):
         
