@@ -343,7 +343,7 @@ class Axe:
 
         self.delegate = delegate
         self.carpet = carpet
-        self.meta = dict(x='x', y='y')
+        #self.meta = dict(x='x', y='y')
 
     def __getattr__(self, attr):
 
@@ -1733,15 +1733,10 @@ class Carpet(Ball):
         self.sleep = 0.01
 
         # grid related
-        self.size = [1, 1]  # wibni Interact operations worked sanely here
+        self.size = [10, 10]  # wibni Interact operations worked sanely here
         self.simple = False
         self.expanded = None
-        self.output = None
-        #self.savefig_dpi = 3000
-        #self.image = plt.figure(constrained_layout=True, facecolor='grey')
-
-        # let's see everything
-        #self.log_events()
+        self.picture = {}
         self.create_figure()
 
         self.add_filter('+', self.more)
@@ -1797,7 +1792,6 @@ class Carpet(Ball):
         self.history = deque(maxlen=random.randint(25, 50))
 
         self.axes = deque()
-        self.lookup = dict()
 
     def clear(self):
 
@@ -1912,12 +1906,9 @@ class Carpet(Ball):
         await self.rebuild()    
 
     async def rebuild(self):
-        self.hideall()
-        #self.generate_mosaic()
+        #self.hideall()
+        self.generate_mosaic()
 
-        print('replay history', len(self.history))
-
-        await self.replay_history()
 
     def hideall(self):
 
@@ -2041,29 +2032,46 @@ class Carpet(Ball):
         self.tasks = [poll_task]
         print("DONE STARTED carpet")
 
-    def generate_mosaic(self):
+    def generate_mosaic(self, mosaic=None):
+        """ Takes a mosaic and turns it into Axes
 
-        # first try and delete some stuff
-        #self.delete_old_axes()
+        The mosaic needs to be a list of lists, with each list
+        (or row) the same length.
 
-        #if random.random() > 0.9:
-        #    self.image.clear()
-
+        Lists can be nested.
+        """
         # set up the square mosaic for current size
-        mosaic = []
-        mosaic = np.arange(self.size[0] * self.size[1])
-        mosaic = mosaic.reshape(*self.size)
+        if mosaic is None:
+            mosaic = []
+            for x in range(self.size[0]):
+                mosaic.append([repr(dict(x=x, y=y)) for y in range(self.size[1])])
+
+        self.size = [len(mosaic), len(mosaic[0])]
 
         keys = dict(visible=False)
 
         # subplot_mosaic has had a per_subplot_kw since 3.7
         picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
 
-        for key, ax in picture.items():
-            ax.meta = dict(key=key)
-            axe = Axe(ax, self)
+        while self.axes:
+            axe = self.axes.popleft()
+            axe.hide()
+
+        keys = list(picture.keys())
+        random.shuffle(keys)
+        
+        for key in keys:
+            if key in self.picture:
+                self.picture[key].position(picture[key])
+                axe = self.picture[key]
+                axe.position(picture[key])
+                axe.show()
+            else:
+                axe = Axe(picture[key], self)
+                self.picture[key] = axe
+
+            axe.meta = eval(key)
             self.axes.append(axe)
-            self.lookup[id(ax)] = axe
 
 
     def delete_old_axes(self):
@@ -2110,7 +2118,9 @@ class Carpet(Ball):
         if not self.axes:
             self.generate_mosaic()
             
-        axe = self.axes.popleft()
+        axe = self.axes[0]
+        self.axes.rotate()
+        # axe.clear()
         if self.simple:
             axe.simplify()
             axe.grid(True)
@@ -2350,6 +2360,73 @@ class Task:
 
         self.result = result
 
+class Tile(Ball):
+    """A mosaic tile
+
+    Want each tile to have it's own feed of axes
+
+    The goal is for a tile to become a mosaic.
+
+    When you run a tile, it runs the submosaic.
+
+    So I took a closer look at suplot_mosaic, what it returns and what
+    it expects.
+
+    The basic idea is there should be a set of named axes and the
+    mosaic uses the names to identify which axis should be which cell.
+
+    Any cell can itself be a grid of grids, in which case the entries are again names.
+
+    Now to make it more fun if we have meta data that we can turn into a name we can have
+    a process that loops round the names, grabs the axis clears the old and adds the new.
+
+    But we want to start with meta data.
+
+    Create it for each path.
+
+    Now the layout uses the meta data to create the mosaic -- more pictures, finer detail
+
+    there is a chicken and egg problem -- so just randomly throw paths into cells, create
+    meta data.
+
+    now when resolution is increased, only show images matching the meta data.
+
+    """
+    def __init__(self):
+        pass
+
+    def get_nowait(self):
+        pass
+    
+    async def get(self):
+        """ Have our own """
+        pass
+    async def run(self):
+        pass
+
+class Tapis(Ball):
+    """ A matrix of tiles and tapis
+
+    Nested mosaics is the goal, but how to control it all?
+
+    To get matplotlib to do it's thing we just need to generate the
+    full mosaic and ask for a mosaic of axes.
+
+    Axe's need to be throw-away, but some caching is useful to keep
+    matplotlib responsive.
+
+    Need a way to select a set of tiles.
+
+    Zoom the mosaic.
+
+    meta data may help.
+    """
+
+    def __init__(self):
+
+        self.history = deque(maxlen=random.randint(9-25))
+                             
+    
     
 class Tasks:
 

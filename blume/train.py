@@ -9,7 +9,8 @@ Press h for help.
 """
 import os
 from pathlib import Path
-from PIL import Image, ImageSequence
+from PIL import Image, ImageSequence, ExifTags
+import exif
 import numpy as np
 import random
 import traceback
@@ -48,12 +49,30 @@ class Train(magic.Ball):
         self.add_filter('d', self.down)
         self.add_filter('b', self.back)
         self.add_filter('L', self.link)
+        self.add_filter('X', self.xif)
                 
         self.downsample = 8
         # support gif's
         self.image_sequence = None
         self.image_rotation = None
 
+    def xif(self):
+
+        xf = exif.Image(open(self.paths[0], 'rb'))
+
+        fields = xf.list_all()
+        keys = ['datetime', 'gps_latitude', 'gps_altitude', 'gps_longitude', 'gps_timestamp']
+        results = {}
+        for key in keys:
+            if key in fields:
+                results[key] = xf[key]
+        
+        print()
+        for k, v in results.items(): print(k, v)
+
+        self.put_nowait([(k,v) for k,v in results.items()], 'help')
+
+        
     def link(self):
         """ Create a link to current path """
         path = self.paths[-1]
@@ -256,10 +275,10 @@ class Train(magic.Ball):
             try:
                 if not self.image_sequence:
                     raise StopIteration
-                
+
                 image = next(self.image_sequence)
                 
-            except StopIteration:
+            except:
                 try:
                     ####image = self.get_image(path)
                     image = Image.open(path)
@@ -268,6 +287,7 @@ class Train(magic.Ball):
                     image = next(self.image_sequence)
                 except Exception as e:
                     traceback.print_exception(e)
+                    self.paths.rotate(self.rotation)
                     return
 
         if self.downsample:
@@ -282,19 +302,18 @@ class Train(magic.Ball):
                 print('skipping  ', path, image.size, 'entropy:', entropy)
                 return
             else:
-                print('publishing', path, image.size, 'entropy:', entropy)
-        else:
-            print('publishing', path, image.size)
+                print('entropy', path, image.size, 'entropy:', entropy)
+
 
         ax = await self.get()
+        ax.clear()
         ax.meta['path'] = path
+        print('publishing', ax.meta, image.size)
         ax.axis('off')
         if self.cmap:
             cmap = self.cmap
         else:
             cmap = magic.random_colour()
-
-        print('EEEEEEEEEEEEE', self.extent)
 
         if self.image_rotation:
             image = scipy.ndimage.rotate(image, self.image_rotation)
@@ -302,6 +321,8 @@ class Train(magic.Ball):
         ax.imshow(image, cmap=cmap, extent=self.extent)
         self.image = image
         ax.show()
+
+        #self.xif()
 
     def fits_open(self, path):
 
@@ -366,6 +387,20 @@ class Train(magic.Ball):
         print('boost change in entropy:', newt - ent)
 
         return im
+
+def degminsec2float(degs, mins, secs):
+
+    return degs + (mins/60.) + (secs/3600.)
+    
+class TrainTile(magic.Tile):
+    """ Attempt to create a nested Train
+
+
+    How to handle history?
+    """
+    def __init__(self):
+        pass
+    
 
 async def run(args=None):
 
