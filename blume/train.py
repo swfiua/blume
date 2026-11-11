@@ -50,6 +50,7 @@ class Train(magic.Ball):
         self.add_filter('b', self.back)
         self.add_filter('L', self.link)
         self.add_filter('X', self.xif)
+        #self.add_filter('m', self.make_mosaic)
                 
         self.downsample = 8
         # support gif's

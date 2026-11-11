@@ -1907,6 +1907,7 @@ class Carpet(Ball):
 
     async def rebuild(self):
         #self.hideall()
+        await self.get()
         self.generate_mosaic()
 
 
@@ -2073,42 +2074,6 @@ class Carpet(Ball):
             axe.meta = eval(key)
             self.axes.append(axe)
 
-
-    def delete_old_axes(self):
-        """ Not sure if this ever does anything useful """
-        naxes = len(self.image._localaxes)
-
-        showing = self.showing.values()
-
-        for ax in self.image._localaxes:
-            if ax is self.background or ax is self.foreground:
-                continue
-
-            try:
-                axe = self.lookup[id(ax)]
-            except:
-                print(f'WHOA {id(ax)} {type(ax)} missing from lookup')
-                raise
-            
-                
-            if (axe in self.history):
-                print('axe in history', axe)
-                continue
-            
-            if axe in showing:
-                print('axe in showing', axe)
-                continue
-            
-            print('deleting axes', ax)
-            ax.clear()
-            ax.figure.delaxes(ax)
-
-            self.delete_axe(axe)
-
-    def delete_axe(self, axe):
-        
-        del self.lookup[id(axe.delegate)]
-        
         
     async def run(self):
         # nobody waiting for axes, don't add to the queue
