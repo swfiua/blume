@@ -49,7 +49,7 @@ class Train(magic.Ball):
         self.add_filter('d', self.down)
         self.add_filter('b', self.back)
         self.add_filter('L', self.link)
-        self.add_filter('X', self.xif)
+        self.add_filter('X', self.pxif)
         #self.add_filter('m', self.make_mosaic)
                 
         self.downsample = 8
@@ -57,23 +57,37 @@ class Train(magic.Ball):
         self.image_sequence = None
         self.image_rotation = None
 
-    def xif(self):
+    def xif(self, path=None):
 
-        xf = exif.Image(open(self.paths[0], 'rb'))
+        
+        xf = exif.Image(open(path or self.paths[0], 'rb'))
 
         fields = xf.list_all()
-        keys = ['datetime', 'gps_latitude', 'gps_altitude', 'gps_longitude', 'gps_timestamp']
         results = {}
+
+        def dms(d, m, s):
+            return d + m/60 + s/3600
+ 
+        keys = ['datetime', 'gps_latitude', 'gps_altitude', 'gps_longitude', 'gps_timestamp']
+        angles = set(('gps_latitude', 'gps_longitude'))
         for key in keys:
             if key in fields:
                 results[key] = xf[key]
-        
+                if key in angles:
+                    results[key] = dms(*results[key])
+
+        return results
+
+    def pxif(self):
+
+        xif = self.xif()
+
         print()
         for k, v in results.items(): print(k, v)
 
         self.put_nowait([(k,v) for k,v in results.items()], 'help')
 
-        
+
     def link(self):
         """ Create a link to current path """
         path = self.paths[-1]
@@ -309,6 +323,7 @@ class Train(magic.Ball):
         ax = await self.get()
         ax.clear()
         ax.meta['path'] = path
+        ax.meta.update(self.xif(path))
         print('publishing', ax.meta, image.size)
         ax.axis('off')
         if self.cmap:

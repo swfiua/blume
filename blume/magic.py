@@ -343,6 +343,7 @@ class Axe:
 
         self.delegate = delegate
         self.carpet = carpet
+        self.meta = {}
         #self.meta = dict(x='x', y='y')
 
     def __getattr__(self, attr):
@@ -358,8 +359,14 @@ class Axe:
 
     def position(self, target):
         """ Set position to that of target """
-        sps = self.get_subplotspec()
         self.set_subplotspec(target.get_subplotspec())
+
+    def swap_position(self, target):
+        """ Set position to that of target and vice versa """
+        mysps = self.get_subplotspec()
+        targetsps = target.get_subplotspec()
+        self.set_subplotspec(targetsps)
+        target.set_subplotspec(mysps)
 
     def show(self):
         """ Show the axes """
@@ -1736,7 +1743,7 @@ class Carpet(Ball):
         self.size = [10, 10]  # wibni Interact operations worked sanely here
         self.simple = False
         self.expanded = None
-        self.picture = {}
+        self.picture = {}  # all the axes we have seen
         self.create_figure()
 
         self.add_filter('+', self.more)
@@ -1744,6 +1751,7 @@ class Carpet(Ball):
         self.add_filter('-', self.less)
         self.add_filter('a', self.add_row)
         self.add_filter('c', self.add_column)
+        self.add_filter('g', self.shuffle_mosaic)
 
         self.add_filter('[', self.history_back)
         self.add_filter(']', self.history_forward)
@@ -1907,7 +1915,7 @@ class Carpet(Ball):
 
     async def rebuild(self):
         #self.hideall()
-        await self.get()
+        await self.get()   # throw one axe away - probably from previous mosaic
         self.generate_mosaic()
 
 
@@ -2047,34 +2055,82 @@ class Carpet(Ball):
             for x in range(self.size[0]):
                 mosaic.append([repr(dict(x=x, y=y)) for y in range(self.size[1])])
 
-        self.size = [len(mosaic), len(mosaic[0])]
-
-        keys = dict(visible=False)
+            
+        subplot_keys = dict(visible=False)
 
         # subplot_mosaic has had a per_subplot_kw since 3.7
-        picture = self.image.subplot_mosaic(mosaic, subplot_kw=keys)
+        self.mosaic = mosaic
+        picture = self.image.subplot_mosaic(mosaic, subplot_kw=subplot_keys)
 
+        # hide all the existing axes - should use the meta data to build a new mosaic - how though?
         while self.axes:
             axe = self.axes.popleft()
             axe.hide()
 
         keys = list(picture.keys())
         random.shuffle(keys)
-        
+
+        # show the ones in the new mosaic
         for key in keys:
             if key in self.picture:
-                self.picture[key].position(picture[key])
                 axe = self.picture[key]
                 axe.position(picture[key])
                 axe.show()
+                del picture[key]
             else:
                 axe = Axe(picture[key], self)
                 self.picture[key] = axe
+                axe.hide()
 
-            axe.meta = eval(key)
+            axe.meta.update(eval(key))
             self.axes.append(axe)
 
-        
+    def shuffle_mosaic(self):
+        """ Pick a couple of meta data keys and shuffle things around """
+
+        metas = [axe.meta for axe in self.axes]
+
+        keys = set()
+        for meta in metas:
+            keys.update(meta.keys())
+
+        xkey = random.choice(list(keys))
+        for xx in range(self.size[0]):
+            for y1 in range(self.size[1]-1):
+                key1 = repr(dict(x=xx, y=y1))
+                axe1 = self.picture[key1]
+                if xkey not in axe1.meta: continue
+                for y2 in range(y1+1, self.size[1]):
+                    key2 = repr(dict(x=xx, y=y2))
+                    axe2 = self.picture[key2]
+                    
+                    if xkey not in axe2.meta: continue
+                    if axe1.meta[xkey] > axe2.meta[xkey]:
+                        print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
+                        axe1.swap_position(axe2)
+                        axe1.show()
+                        axe2.show()
+
+        keys.remove(xkey)
+        xkey = random.choice(list(keys))
+        for yy in range(self.size[1]):
+            for x1 in range(self.size[0]-1):
+                key1 = repr(dict(x=x1, y=yy))
+                axe1 = self.picture[key1]
+                if xkey not in axe1.meta: continue
+                                        
+                for x2 in range(x1+1, self.size[0]):
+                    key2 = repr(dict(x=x2, y=yy))
+                    axe2 = self.picture[key2]
+                    if xkey not in axe2.meta: continue
+
+                    if axe1.meta[xkey] > axe2.meta[xkey]:
+                        print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
+                        axe1.swap_position(axe2)
+                        axe1.show()
+                        axe2.show()
+                        self.picture[key1], self.picture[key2] = self.picture[key2], self.picture[key1]
+                    
     async def run(self):
         # nobody waiting for axes, don't add to the queue
         if self.select().qsize() > 0:
@@ -2481,7 +2537,19 @@ def describe(array, nquants=4):
         quantiles=statistics.quantiles(array, n=nquants))
 
     return results
-                
+
+def dictstats(dicts):
+
+    keys = set()
+    for ddd in dicts:
+        keys.update(ddd.keys())
+
+    print(keys)
+    for key in keys:
+        print(Counter([ddd.setdefault(key) for ddd in dicts]).most_common(4))
+        #print(np.mean([ddd.setdefault(key) for ddd in dicts]))
+    return keys
+
 if __name__ == '__main__':
     
     
