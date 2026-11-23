@@ -372,6 +372,14 @@ class Axe:
         """ Show the axes """
         self.carpet.show(self)
 
+    def show_meta(self, key):
+        """ Show the meta data """
+        msg=[[repr(self.meta[key])]]
+        tab = table.table(self.delegate, cellText=msg, bbox=(0,0,1,1),
+                          cellLoc='center')
+        tab.set_alpha(0.0)
+        self.carpet.draw()
+
     def hide(self):
         """ Hide the axes """
         self.carpet.hide(self)
@@ -1919,19 +1927,6 @@ class Carpet(Ball):
         self.generate_mosaic()
 
 
-    def hideall(self):
-
-        # hide everything currently being shown
-        for key, ax in self.showing.items():
-            ax.hide()
-            
-        self.showing.clear()
-
-        # drain any axes waiting in self.axes
-        for ax in self.axes:
-            ax.figure.delaxes(ax.delegate)
-        self.axes.clear()
-
     async def history_back(self):
 
         await self.history_rotate(-1)
@@ -1951,15 +1946,10 @@ class Carpet(Ball):
 
         # we want to replace the current axes with the value we pop
         pos = await self.get()
-        ax = self.history.popleft()
+        ax = self.history[0]
         ax.position(pos)
         #ax.set_visible(True)
 
-        if pos.delegate in self.image.axes:
-            self.image.delaxes(pos.delegate)
-        del pos
-
-        print(ax.meta)
         ax.show()
 
     async def replay_history(self, maxback=None):
@@ -2082,35 +2072,68 @@ class Carpet(Ball):
                 self.picture[key] = axe
                 axe.hide()
 
-            axe.meta.update(eval(key))
+            #axe.meta.update(eval(key))
             self.axes.append(axe)
 
     def shuffle_mosaic(self):
         """ Pick a couple of meta data keys and shuffle things around """
 
-        metas = [axe.meta for axe in self.axes]
 
+        # Get array of current axes sorted by subplotspec
+        axes = []
+        metas = []
+        for axe in self.axes:
+            sps = axe.get_subplotspec()
+            axes.append([list(sps.rowspan), list(sps.colspan), axe])
+            metas.append(axe.meta)
+
+        axes = sorted(axes)
+
+        # now get some meta key data
         keys = set()
         for meta in metas:
             keys.update(meta.keys())
 
-        xkey = random.choice(list(keys))
-        for xx in range(self.size[0]):
-            for y1 in range(self.size[1]-1):
-                key1 = repr(dict(x=xx, y=y1))
-                axe1 = self.picture[key1]
-                if xkey not in axe1.meta: continue
-                for y2 in range(y1+1, self.size[1]):
-                    key2 = repr(dict(x=xx, y=y2))
-                    axe2 = self.picture[key2]
-                    
-                    if xkey not in axe2.meta: continue
-                    if axe1.meta[xkey] > axe2.meta[xkey]:
-                        print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
-                        axe1.swap_position(axe2)
-                        axe1.show()
-                        axe2.show()
+        fkeys = set()
+        for key in keys:
+            print(key)
+            print(describe([meta.setdefault(key) for meta in metas]))
+            stats = describe([meta.setdefault(key) for meta in metas])
+            if isinstance(stats, dict):
+                fkeys.add(key)
 
+        if not fkeys:
+            return
+
+        xkey = random.choice(list(fkeys))
+        fkeys.remove()
+        ykey = random.choice(list(fkeys))
+        print('sorting rows, colx on ', xkey, ykey)
+        for xx in range(self.size[0]):
+            swaps = True
+            while swaps:
+                swaps = False
+                for y1 in range(self.size[1]-1):
+                    key1 = repr(dict(x=xx, y=y1))
+                    axe1 = self.picture[key1]
+                    if xkey not in axe1.meta: continue
+                    for y2 in range(y1+1, self.size[1]):
+                        key2 = repr(dict(x=xx, y=y2))
+                        axe2 = self.picture[key2]
+                    
+                        if xkey not in axe2.meta: continue
+                        
+                        if axe1.meta[xkey] > axe2.meta[xkey]:
+                            #print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
+                            axe1.swap_position(axe2)
+                            axe1.show()
+                            axe2.show()
+                            axe1.show_meta(xkey)
+                            axe2.show_meta(xkey)
+                            self.picture[key1], self.picture[key2] = self.picture[key2], self.picture[key1]
+                            swaps = True
+
+        return
         keys.remove(xkey)
         xkey = random.choice(list(keys))
         for yy in range(self.size[1]):
@@ -2160,16 +2183,8 @@ class Carpet(Ball):
         
         gg = self.get_axe_geometry(axe)
 
-        if gg in self.showing:
-            tohide = self.showing[gg]
-            #print(f'Showing {id(tohide)} {tohide.get_visible()}')
-            if tohide is not axe:
-                tohide.hide()
-
         self.history.appendleft(axe)
         
-        self.showing[gg] = axe
-
         self.draw()
 
         # if in termux do some magic
@@ -2525,16 +2540,22 @@ def runner(ball):
     TheMagicRoundAbout.put_nowait(ball, 'run')
 
 
-def describe(array, nquants=4):
+def describe(array, nquants=4, drop_none=True):
+
+    if drop_none:
+        array = [x for x in array if x is not None]
 
     if len(array) < 2: return
-    
-    results = dict(
-        mean=statistics.mean(array),
-        stdev=statistics.stdev(array),
-        minimum=min(array),
-        maximum=max(array),
-        quantiles=statistics.quantiles(array, n=nquants))
+
+    try:
+        results = dict(
+            mean=statistics.mean(array),
+            stdev=statistics.stdev(array),
+            minimum=min(array),
+            maximum=max(array),
+            quantiles=statistics.quantiles(array, n=nquants))
+    except TypeError:
+        return Counter(array)
 
     return results
 

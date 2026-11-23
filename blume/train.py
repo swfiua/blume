@@ -69,7 +69,7 @@ class Train(magic.Ball):
             return d + m/60 + s/3600
  
         keys = ['datetime', 'gps_latitude', 'gps_altitude', 'gps_longitude', 'gps_timestamp']
-        angles = set(('gps_latitude', 'gps_longitude'))
+        angles = set(('gps_latitude', 'gps_longitude', 'gps_timestamp'))
         for key in keys:
             if key in fields:
                 results[key] = xf[key]
@@ -80,7 +80,7 @@ class Train(magic.Ball):
 
     def pxif(self):
 
-        xif = self.xif()
+        results = self.xif()
 
         print()
         for k, v in results.items(): print(k, v)
