@@ -323,7 +323,11 @@ class Train(magic.Ball):
         ax = await self.get()
         ax.clear()
         ax.meta['path'] = path
-        ax.meta.update(self.xif(path))
+        try:
+            ax.meta.update(self.xif(path))
+        except:
+            print("xif data parsing failed:", path)
+            pass
         print('publishing', ax.meta, image.size)
         ax.axis('off')
         if self.cmap:

@@ -2079,80 +2079,79 @@ class Carpet(Ball):
         """ Pick a couple of meta data keys and shuffle things around """
 
 
-        # Get array of current axes sorted by subplotspec
+        # Get array of current axes indices sorted by subplotspec
         axes = []
-        metas = []
-        for axe in self.axes:
+        for ix, axe in enumerate(self.axes):
             sps = axe.get_subplotspec()
-            axes.append([list(sps.rowspan), list(sps.colspan), axe])
-            metas.append(axe.meta)
+            axes.append([list(sps.rowspan), list(sps.colspan), sps, ix])
 
         axes = sorted(axes)
 
+        # get the subplot specs
+        positions = [axe[2] for axe in axes]
+
         # now get some meta key data
         keys = set()
-        for meta in metas:
-            keys.update(meta.keys())
+        for junk, junk, junk, axe in axes:
+            keys.update(self.axes[axe].meta.keys())
 
         fkeys = set()
+        defaults = {}
         for key in keys:
             print(key)
-            print(describe([meta.setdefault(key) for meta in metas]))
-            stats = describe([meta.setdefault(key) for meta in metas])
-            if isinstance(stats, dict):
+            print(describe([self.axes[axe].meta.setdefault(key) for j,j,j,axe in axes]))
+            stats = describe([self.axes[axe].meta.setdefault(key) for j,j,j,axe in axes])
+            if isinstance(stats, dict) and 'mean' in stats:
                 fkeys.add(key)
-
+                defaults[key] = 0.
+                
+            if isinstance(stats, Counter):
+                defaults[key] = stats.most_common()[0][0]
+                fkeys.add(key)
+                
         if not fkeys:
             return
 
         xkey = random.choice(list(fkeys))
-        fkeys.remove()
+        fkeys.remove(xkey)
+        if not fkeys: return
+        
         ykey = random.choice(list(fkeys))
         print('sorting rows, colx on ', xkey, ykey)
-        for xx in range(self.size[0]):
-            swaps = True
-            while swaps:
-                swaps = False
-                for y1 in range(self.size[1]-1):
-                    key1 = repr(dict(x=xx, y=y1))
-                    axe1 = self.picture[key1]
-                    if xkey not in axe1.meta: continue
-                    for y2 in range(y1+1, self.size[1]):
-                        key2 = repr(dict(x=xx, y=y2))
-                        axe2 = self.picture[key2]
-                    
-                        if xkey not in axe2.meta: continue
-                        
-                        if axe1.meta[xkey] > axe2.meta[xkey]:
-                            #print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
-                            axe1.swap_position(axe2)
-                            axe1.show()
-                            axe2.show()
-                            axe1.show_meta(xkey)
-                            axe2.show_meta(xkey)
-                            self.picture[key1], self.picture[key2] = self.picture[key2], self.picture[key1]
-                            swaps = True
+
+        grid = []
+        for ix, (rowspan, colspan, sps, axe) in enumerate(axes):
+            axe = self.axes[axe]
+            row = [axe.meta.get(xkey, np.nan), axe.meta.get(ykey, np.nan), ix]
+            grid.append(row)
+
+        default = defaults[xkey]
+        def sortkey(item):
+            return item[0] or default
+
+        #pos = 0
+        #rows, cols = self.size
+        #for row in range(rows):
+        #    grid[pos:cols] = sorted(grid[pos:pos+cols], key=sortkey) 
+        #    pos += cols
+
+        grid = sorted(grid, key=sortkey) 
+        
+        default = defaults[xkey]
+        def sortkey(item):
+            return item[1] or default
+
+        #for col in range(cols):
+        #    grid[pos::cols] = sorted(grid[pos::cols], key=sortkey) 
+        #    pos += 1
+
+        for position, (xkey, ykey, ix) in zip(positions, grid):
+            axe = self.axes[axes[ix][-1]]
+            axe.set_subplotspec(position)
+            #print('showing', ix, position, axe.meta.get('path'))
+            axe.show()
 
         return
-        keys.remove(xkey)
-        xkey = random.choice(list(keys))
-        for yy in range(self.size[1]):
-            for x1 in range(self.size[0]-1):
-                key1 = repr(dict(x=x1, y=yy))
-                axe1 = self.picture[key1]
-                if xkey not in axe1.meta: continue
-                                        
-                for x2 in range(x1+1, self.size[0]):
-                    key2 = repr(dict(x=x2, y=yy))
-                    axe2 = self.picture[key2]
-                    if xkey not in axe2.meta: continue
-
-                    if axe1.meta[xkey] > axe2.meta[xkey]:
-                        print(xkey, key1, key2, axe1.meta[xkey], axe2.meta[xkey])
-                        axe1.swap_position(axe2)
-                        axe1.show()
-                        axe2.show()
-                        self.picture[key1], self.picture[key2] = self.picture[key2], self.picture[key1]
                     
     async def run(self):
         # nobody waiting for axes, don't add to the queue
@@ -2191,7 +2190,7 @@ class Carpet(Ball):
         self.termux_draw()
 
     def termux_draw(self):
-        """ Draw tge current figure on a terminal.
+        """ Draw the current figure on a terminal.
 
         inspired by termux on android
 
