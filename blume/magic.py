@@ -512,13 +512,17 @@ class Axe:
 
         return bbox
 
-    def get(self):
+    def get(self, clear=True):
         """ Return a fresh axis """
-        
         try:
-            return TheMagicRoundAbout.get_nowait()
+            ax =  TheMagicRoundAbout.get_nowait()
         except asyncio.queues.QueueEmpty:
             return self
+
+        if clear:
+            ax.clear()
+
+        return ax
 
 
 class PatchColours:
@@ -2065,16 +2069,18 @@ class Carpet(Ball):
             if key in self.picture:
                 axe = self.picture[key]
                 axe.position(picture[key])
-                axe.show()
+                self.show(axe, draw=False)
                 del picture[key]
             else:
                 axe = Axe(picture[key], self)
                 self.picture[key] = axe
-                axe.hide()
+                #axe.hide()
 
             #axe.meta.update(eval(key))
             self.axes.append(axe)
 
+        self.draw()
+        
     def shuffle_mosaic(self):
         """ Pick a couple of meta data keys and shuffle things around """
 
@@ -2113,43 +2119,28 @@ class Carpet(Ball):
             return
 
         xkey = random.choice(list(fkeys))
-        fkeys.remove(xkey)
-        if not fkeys: return
-        
-        ykey = random.choice(list(fkeys))
-        print('sorting rows, colx on ', xkey, ykey)
+        print('sorting rows, colx on ', xkey)
 
         grid = []
         for ix, (rowspan, colspan, sps, axe) in enumerate(axes):
             axe = self.axes[axe]
-            row = [axe.meta.get(xkey, np.nan), axe.meta.get(ykey, np.nan), ix]
+            row = [axe.meta.get(xkey, np.nan), ix]
             grid.append(row)
 
         default = defaults[xkey]
         def sortkey(item):
             return item[0] or default
 
-        #pos = 0
-        #rows, cols = self.size
-        #for row in range(rows):
-        #    grid[pos:cols] = sorted(grid[pos:pos+cols], key=sortkey) 
-        #    pos += cols
 
         grid = sorted(grid, key=sortkey) 
         
-        default = defaults[xkey]
-        def sortkey(item):
-            return item[1] or default
 
-        #for col in range(cols):
-        #    grid[pos::cols] = sorted(grid[pos::cols], key=sortkey) 
-        #    pos += 1
-
-        for position, (xkey, ykey, ix) in zip(positions, grid):
+        for position, (xkey, ix) in zip(positions, grid):
             axe = self.axes[axes[ix][-1]]
             axe.set_subplotspec(position)
-            #print('showing', ix, position, axe.meta.get('path'))
-            axe.show()
+            self.show(axe, draw=False)
+
+        self.draw()
 
         return
                     
@@ -2174,7 +2165,7 @@ class Carpet(Ball):
 
         return axe.get_subplotspec().get_geometry()
 
-    def show(self, axe):
+    def show(self, axe, draw=True):
 
         axe.set_visible(True)
         #self.patch.set_facecolor(Colours.next())
@@ -2183,11 +2174,10 @@ class Carpet(Ball):
         gg = self.get_axe_geometry(axe)
 
         self.history.appendleft(axe)
-        
+
+        if not draw: return
         self.draw()
 
-        # if in termux do some magic
-        self.termux_draw()
 
     def termux_draw(self):
         """ Draw the current figure on a terminal.
@@ -2221,6 +2211,8 @@ class Carpet(Ball):
     def draw(self):
         """ trigger a redraw """
         self.image.canvas.draw_idle()
+        # if in termux do some magic
+        self.termux_draw()
 
     def hide(self, axe):
 
